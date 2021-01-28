@@ -12,7 +12,7 @@ abstract type Transformation end
 """
     transform!(data::T, transformation::Transformation; kwargs...) -> T
 
-Apply `transformation` to the `data` in-place.
+Apply the`transformation` mutating the input `data`.
 Where possible, this should be extended for new data types `T`.
 """
 function transform! end
@@ -20,8 +20,8 @@ function transform! end
 """
     transform(data::T, transformation::Transformation; kwargs...) -> T
 
-Non-in-place version of [`transform!`](@ref), which it delegates to by default.
-Does not need to be extended unless in-place transformation is not possible.
+Non-mutating version of [`transform!`](@ref), which it delegates to by default.
+Does not need to be extended unless a mutating transformation is not possible.
 """
 function transform end
 

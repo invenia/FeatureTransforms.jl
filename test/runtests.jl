@@ -1,3 +1,6 @@
+using AxisArrays
+using AxisKeys
+using DataFrames: DataFrame
 using Transform
 using Transform: _try_copy
 using Test

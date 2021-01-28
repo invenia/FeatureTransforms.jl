@@ -8,5 +8,6 @@ struct Power <: Transformation
 end
 
 function _transform!(x::AbstractArray{T}, P::Power; kwargs...) where T <: Real
-    x[:] = x.^ P.exponent
+    x[:] = x .^ P.exponent
+    return x
 end

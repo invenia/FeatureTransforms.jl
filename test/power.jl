@@ -1,7 +1,7 @@
 @testset "power" begin
 
     p = Power(3)
-    @test p isa Transformation
+    @test p isa Transform
 
     # TODO: all of these should be part of some test utils
     @testset "Vector" begin

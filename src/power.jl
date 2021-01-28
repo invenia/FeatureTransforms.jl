@@ -1,9 +1,9 @@
 """
-    Power(exponent) <: Transformation
+    Power(exponent) <: Transform
 
 Raise the data by the given `exponent`.
 """
-struct Power <: Transformation
+struct Power <: Transform
     exponent::Real
 end
 

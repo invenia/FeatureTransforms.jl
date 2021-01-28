@@ -28,7 +28,7 @@ jobs:
           Pkg.develop(PackageSpec(path=pwd()))
           Pkg.instantiate()
           using Documenter: doctest
-          using Transform
-          doctest(Transform)
+          using Transforms
+          doctest(Transforms)
           include("docs/make.jl")'
       after_success: skip

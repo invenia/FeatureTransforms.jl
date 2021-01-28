@@ -1,14 +1,14 @@
-using Transform
+using Transforms
 using Documenter
 
 makedocs(;
-    modules=[Transform],
+    modules=[Transforms],
     authors="Invenia Technical Computing Corporation",
-    repo="https://github.com/invenia/Transform.jl/blob/{commit}{path}#L{line}",
-    sitename="Transform.jl",
+    repo="https://github.com/invenia/Transforms.jl/blob/{commit}{path}#L{line}",
+    sitename="Transforms.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://invenia.github.io/Transform.jl",
+        canonical="https://invenia.github.io/Transforms.jl",
         assets=String[],
     ),
     pages=[
@@ -19,5 +19,5 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/invenia/Transform.jl",
+    repo="github.com/invenia/Transforms.jl",
 )

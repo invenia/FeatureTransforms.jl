@@ -1,8 +1,8 @@
-module Transform
+module Transforms
 
 using Tables
 
-export Transformation, Power
+export Transform, Power
 export transform, transform!
 
 include("utils.jl")

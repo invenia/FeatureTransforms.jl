@@ -3,7 +3,7 @@
     p = Power(3)
     @test p isa Transformation
 
-    @testset "vector of reals" begin
+    @testset "vector of integers" begin
         x = [1, 2, 3, 4, 5]
         expected = [1, 8, 27, 64, 125]
 
@@ -15,7 +15,7 @@
         @test _x == expected
     end
 
-    @testset "matrix of reals" begin
+    @testset "matrix of integers" begin
         M = [1 2 3; 4 5 6]
         expected = [1 8 27; 64 125 216]
 
@@ -30,7 +30,7 @@
         end
     end
 
-    @testset "NamedTuple of reals" begin
+    @testset "NamedTuple of integers" begin
         nt = (a = [1, 2, 3], b = [4, 5, 6])
         expected = (a = [1, 8, 27], b = [64, 125, 216])
 

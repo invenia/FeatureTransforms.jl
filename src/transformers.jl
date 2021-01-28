@@ -36,9 +36,11 @@ function transform!(
 ) where T <: Real
     dims == Colon() && return _transform!(A, t; kwargs...)
 
-    return map(eachslice(A; dims=dims)) do x
-        return _transform!(x, t; kwargs...)
+    for x in eachslice(A; dims=dims)
+        _transform!(x, t; kwargs...)
     end
+
+    return A
 end
 
 transform(x, t::Transformation; kwargs...) = transform!(_try_copy(x), t; kwargs...)

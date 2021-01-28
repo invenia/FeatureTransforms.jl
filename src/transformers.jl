@@ -41,7 +41,7 @@ function transform!(
     end
 end
 
-transform(x, t::Transformation; kwargs...) = transform!(_trycopy(x), t; kwargs...)
+transform(x, t::Transformation; kwargs...) = transform!(_try_copy(x), t; kwargs...)
 
 """
     transform!(table::T, ::Transformation; cols=nothing)::T where T

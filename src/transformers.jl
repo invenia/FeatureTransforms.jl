@@ -12,7 +12,7 @@ abstract type Transform end
 """
     transform!(data::T, Transform::Transform; kwargs...) -> T
 
-Apply the`Transform` mutating the input `data`.
+Apply the `Transform` mutating the input `data`.
 Where possible, this should be extended for new data types `T`.
 """
 function transform! end

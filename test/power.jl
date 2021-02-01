@@ -35,7 +35,9 @@
         expected = (a = [1, 8, 27], b = [64, 125, 216])
 
         @testset "all cols" begin
-            @test Transforms.apply(nt, p) == expected
+            transformed = Transforms.apply(nt, p)
+            @test transformed isa NamedTuple{(:a, :b)}
+            @test transformed == expected
             @test p(nt) == expected
 
             _nt = deepcopy(nt)
@@ -61,7 +63,9 @@
         expected = AxisArray([1 8 27; 64 125 216], foo=["a", "b"], bar=["x", "y", "z"])
 
         @testset "dims = $d" for d in (Colon(), 1, 2)
-            @test Transforms.apply(A, p; dims=d) == expected
+            transformed = Transforms.apply(A, p; dims=d)
+            @test transformed isa AxisArray
+            @test transformed == expected
         end
 
     end
@@ -71,7 +75,9 @@
         expected = KeyedArray([1 8 27; 64 125 216], foo=["a", "b"], bar=["x", "y", "z"])
 
         @testset "dims = $d" for d in (Colon(), :foo, :bar)
-            @test Transforms.apply(A, p; dims=d) == expected
+            transformed = Transforms.apply(A, p; dims=d)
+            @test transformed isa KeyedArray
+            @test transformed == expected
         end
 
         _A = copy(A)
@@ -83,7 +89,10 @@
         df = DataFrame(:a => [1, 2, 3], :b => [4, 5, 6])
         expected = DataFrame(:a => [1, 8, 27], :b => [64, 125, 216])
 
-        @test Transforms.apply(df, p) == expected
+        transformed = Transforms.apply(df, p)
+        @test transformed isa DataFrame
+        @test transformed == expected
+
         @test Transforms.apply(df, p; cols=[:a]) == DataFrame(:a => [1, 8, 27], :b => [4, 5, 6])
         @test Transforms.apply(df, p; cols=[:b]) == DataFrame(:a => [1, 2, 3], :b => [64, 125, 216])
 

@@ -10,7 +10,7 @@ abstract type Transform end
 (t::Transform)(x; kwargs...) = apply(x, t; kwargs...)
 
 """
-    apply!(data::T, Transform::Transform; kwargs...) -> T
+    Transforms.apply!(data::T, Transform::Transform; kwargs...) -> T
 
 Applies the [`Transform`](@ref) mutating the input `data`.
 Where possible, this should be extended for new data types `T`.
@@ -18,7 +18,7 @@ Where possible, this should be extended for new data types `T`.
 function apply! end
 
 """
-    apply(data::T, Transform::Transform; kwargs...) -> T
+    Transforms.apply(data::T, Transform::Transform; kwargs...) -> T
 
 Non-mutating version of [`apply!`](@ref), which it delegates to by default.
 Does not need to be extended unless a mutating [`Transform`](@ref) is not possible.
@@ -46,7 +46,7 @@ end
 apply(x, t::Transform; kwargs...) = apply!(_try_copy(x), t; kwargs...)
 
 """
-    apply!(table::T, ::Transform; cols=nothing)::T where T
+    Transforms.apply!(table::T, ::Transform; cols=nothing)::T where T
 
 Applies the [`Transform`](@ref) to each of the specified columns in the `table`.
 If no `cols` are specified, then the [`Transform`](@ref) is applied to all columns.

@@ -7,7 +7,7 @@ struct Power <: Transform
     exponent::Real
 end
 
-function _transform!(x::AbstractArray{T}, P::Power; kwargs...) where T <: Real
+function _apply!(x::AbstractArray{T}, P::Power; kwargs...) where T <: Real
     x[:] = x .^ P.exponent
     return x
 end

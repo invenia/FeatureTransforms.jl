@@ -8,11 +8,11 @@
         x = [1, 2, 3, 4, 5]
         expected = [1, 8, 27, 64, 125]
 
-        @test transform(x, p) == expected
+        @test Transforms.apply(x, p) == expected
         @test p(x) == expected
 
         _x = copy(x)
-        transform!(_x, p)
+        Transforms.apply!(_x, p)
         @test _x == expected
     end
 
@@ -21,11 +21,11 @@
         expected = [1 8 27; 64 125 216]
 
         @testset "dims = $d" for d in (Colon(), 1, 2)
-            @test transform(M, p; dims=d) == expected
+            @test Transforms.apply(M, p; dims=d) == expected
             @test p(M; dims=d) == expected
 
             _M = copy(M)
-            transform!(_M, p; dims=d)
+            Transforms.apply!(_M, p; dims=d)
             @test _M == expected
         end
     end
@@ -35,11 +35,11 @@
         expected = (a = [1, 8, 27], b = [64, 125, 216])
 
         @testset "all cols" begin
-            @test transform(nt, p) == expected
+            @test Transforms.apply(nt, p) == expected
             @test p(nt) == expected
 
             _nt = deepcopy(nt)
-            transform!(_nt, p)
+            Transforms.apply!(_nt, p)
             @test _nt == expected
         end
 
@@ -47,11 +47,11 @@
             nt_mutated = NamedTuple{(Symbol("$c"), )}((expected[c], ))
             nt_expected = merge(nt, nt_mutated)
 
-            @test transform(nt, p; cols=[c]) == nt_expected
+            @test Transforms.apply(nt, p; cols=[c]) == nt_expected
             @test p(nt; cols=[c]) == nt_expected
 
             _nt = deepcopy(nt)
-            transform!(_nt, p; cols=[c])
+            Transforms.apply!(_nt, p; cols=[c])
             @test _nt == nt_expected
         end
     end
@@ -61,7 +61,7 @@
         expected = AxisArray([1 8 27; 64 125 216], foo=["a", "b"], bar=["x", "y", "z"])
 
         @testset "dims = $d" for d in (Colon(), 1, 2)
-            @test transform(A, p; dims=d) == expected
+            @test Transforms.apply(A, p; dims=d) == expected
         end
 
     end
@@ -71,11 +71,11 @@
         expected = AxisArray([1 8 27; 64 125 216], foo=["a", "b"], bar=["x", "y", "z"])
 
         @testset "dims = $d" for d in (Colon(), :foo, :bar)
-            @test transform(A, p; dims=d) == expected
+            @test Transforms.apply(A, p; dims=d) == expected
         end
 
         _A = copy(A)
-        transform!(_A, p)
+        Transforms.apply!(_A, p)
         @test _A == expected
     end
 
@@ -83,12 +83,12 @@
         df = DataFrame(:a => [1, 2, 3], :b => [4, 5, 6])
         expected = DataFrame(:a => [1, 8, 27], :b => [64, 125, 216])
 
-        @test transform(df, p) == expected
-        @test transform(df, p; cols=[:a]) == DataFrame(:a => [1, 8, 27], :b => [4, 5, 6])
-        @test transform(df, p; cols=[:b]) == DataFrame(:a => [1, 2, 3], :b => [64, 125, 216])
+        @test Transforms.apply(df, p) == expected
+        @test Transforms.apply(df, p; cols=[:a]) == DataFrame(:a => [1, 8, 27], :b => [4, 5, 6])
+        @test Transforms.apply(df, p; cols=[:b]) == DataFrame(:a => [1, 2, 3], :b => [64, 125, 216])
 
         _df = deepcopy(df)
-        transform!(_df, p)
+        Transforms.apply!(_df, p)
         @test _df == expected
     end
 

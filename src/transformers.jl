@@ -9,6 +9,24 @@ abstract type Transform end
 # Make Transforms callable types
 (t::Transform)(x; kwargs...) = apply(x, t; kwargs...)
 
+
+"""
+    transform!(::T, data)
+
+Defines the feature engineering pipeline for some type `T`, which comprises a collection of
+[`Transform`](@ref)s to be peformed on the `data`.
+
+`transform!` should be overloaded for custom types `T` that require feature engineering.
+"""
+function transform! end
+
+"""
+    transform(::T, data)
+
+Non-mutating version of [`transform!`](@ref).
+"""
+function transform end
+
 """
     Transforms.apply!(data::T, Transform::Transform; kwargs...) -> T
 

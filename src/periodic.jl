@@ -16,6 +16,15 @@ struct Periodic{T<:PeriodicInput} <: Transform
     f::PeriodicFunction
     period::T
     phase_shift::T
+
+    @doc """
+        Periodic(f::PeriodicFunction, period<:PeriodicInput)
+
+    Returns a Periodic Transform with zero phase shift.
+    """
+    function Periodic(f::PeriodicFunction, period<:PeriodicInput)
+        return new{typeof(period)}(f, period, zero(typeof(period)))
+    end
 end
 
 function _apply!(x::AbstractArray{T}, P::Periodic; kwargs...) where T <: Real

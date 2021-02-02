@@ -1,5 +1,6 @@
 module Transforms
 
+using Dates: TimeType
 using Tables
 
 export Transform, Power, Periodic

@@ -1,4 +1,7 @@
 @testset "periodic" begin
+    # Constructors
+    @test Periodic(sin, 5) == Periodic(sin, 5, 0)
+
     @testset "$f" for f in (sin, cos)
         p = Periodic(f, 5, 2)
 

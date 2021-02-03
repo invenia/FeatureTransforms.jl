@@ -34,3 +34,49 @@ function _apply!(x::AbstractArray{T}, P::Periodic; kwargs...) where T <: Real
     x[:] = P.f.(2π .* (x .- P.phase_shift) / P.period)
     return x
 end
+
+function apply(x::AbstractArray{T}, P::Periodic{U}; kwargs...) where {T<:TimeType, U<:Period}
+    return map(xi -> _periodic(P.f, xi, P.period, P.phase_shift), x)
+end
+
+"""
+    Transforms.apply(x, ::Periodic; cols=nothing)
+
+Applies [`Periodic`](@ref) to each of the specified columns in `x`.
+If no `cols` are specified, then [`Periodic`](@ref) is applied to all columns.
+"""
+function apply(x, P::Periodic{<:Period}; cols=nothing)
+    columntable = Tables.columns(x)
+    cnames = cols === nothing ? propertynames(columntable) : cols
+    return [apply(getproperty(columntable, cname), P) for cname in cnames]
+end
+
+function _periodic(
+    f::PeriodicFunction,
+    instant::TimeType,
+    period::Period,
+    phase_shift::Period=Day(0)
+)
+    # Save the direction of `period` while using abs(period)
+    direction = period < zero(typeof(period)) ? -1 : 1
+    period = abs(period)
+    period_begin = floor(instant, period) + phase_shift
+
+    # Make sure the `instant - period_begin < period` after we add the `phase_shift`.
+    # Performing these adjustments isn't necessary since we're dealing with a periodic
+    # function but it will reduce floating-point errors.
+    if phase_shift > zero(typeof(period))
+        while period_begin > instant
+            period_begin -= period
+        end
+    elseif phase_shift < zero(typeof(period))
+        while period_begin < instant
+            period_begin += period  # Make sure `period_begin <= instant`
+        end
+    end
+
+    period_end = period_begin + period
+    # `period_end - period_begin` converts to the same units so that `/` is defined
+    normalized = (instant - period_begin) / (period_end - period_begin)
+    return f(2π * normalized * direction)
+end

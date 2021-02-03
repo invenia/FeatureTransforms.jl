@@ -19,6 +19,7 @@ AxisArrays = "39de3d68-74b9-583c-8d2d-e117c070f3a9"
 AxisKeys = "94b1ba4f-4ee9-5380-92f1-94cde586c3c5"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+TimeZones = "f269a46b-ccf7-5d73-abea-4c690281aa53"
 
 [targets]
-test = ["AxisArrays", "AxisKeys", "DataFrames", "Test"]
+test = ["AxisArrays", "AxisKeys", "DataFrames", "Test", "TimeZones"]

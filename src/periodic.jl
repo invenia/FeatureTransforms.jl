@@ -30,6 +30,6 @@ function Periodic(f, period)
 end
 
 function _apply!(x::AbstractArray{T}, P::Periodic; kwargs...) where T <: Real
-    x[:] = P.f.(2π .* x ./ P.period .+ P.phase_shift)
+    x[:] = P.f.(2π .* x ./ P.period .- P.phase_shift)
     return x
 end

@@ -317,8 +317,16 @@
     end
 
     @testset "Type mismatch" begin
-        p = Periodic(sin, Day(5), Day(2))
-        x = 0.:11.
-        @test_throws ArgumentError Transforms.apply(x, p)
+        @testset "Real data, Period transform" begin
+            p = Periodic(sin, Day(5), Day(2))
+            x = 0.:11.
+            @test_throws MethodError Transforms.apply(x, p)
+        end
+
+        @testset "TimeType data, Real transform" begin
+            p = Periodic(sin, 5, 2)
+            x = ZonedDateTime(2020, 1, 1, tz"EST") .+ (Day(0):Day(1):Day(5))
+            @test_throws MethodError Transforms.apply(x, p)
+        end
     end
 end

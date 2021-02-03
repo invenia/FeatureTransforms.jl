@@ -31,9 +31,6 @@ function Periodic(f, period)
 end
 
 function _apply!(x::AbstractArray{T}, P::Periodic; kwargs...) where T <: Real
-    if !(P.period isa Real && P.phase_shift isa Real)
-        throw(ArgumentError("period and phase_shift must be of type Real"))
-    end
     x[:] = P.f.(2π .* (x .- P.phase_shift) / P.period)
     return x
 end
@@ -43,14 +40,16 @@ function apply(x::AbstractArray{T}, P::Periodic{U}; kwargs...) where {T <: TimeT
 end
 
 """
-    Transforms.apply(x, ::Periodic{T}; cols=nothing) where T <: Period -> Array
+    Transforms.apply(table, ::Periodic{T}; cols=nothing) where T <: Period -> Array
 
-Applies [`Periodic`](@ref) to each of the specified columns in `x`.
+Applies [`Periodic`](@ref) to each of the specified columns in `table`.
 If no `cols` are specified, then [`Periodic`](@ref) is applied to all columns.
 Returns an array containing each transformed column.
 """
-function apply(x, P::Periodic{T}; cols=nothing) where T <: Period
-    columntable = Tables.columns(x)
+function apply(table, P::Periodic{T}; cols=nothing) where T <: Period
+    Tables.istable(table) || throw(MethodError(apply, (table, P)))
+
+    columntable = Tables.columns(table)
     cnames = cols === nothing ? propertynames(columntable) : cols
     return [apply(getproperty(columntable, cname), P) for cname in cnames]
 end

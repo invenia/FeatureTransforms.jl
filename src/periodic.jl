@@ -39,9 +39,6 @@ function _apply!(x::AbstractArray{T}, P::Periodic; kwargs...) where T <: Real
 end
 
 function apply(x::AbstractArray{T}, P::Periodic{U}; kwargs...) where {T <: TimeType, U <: Period}
-    if !(P.period isa Period && P.phase_shift isa Period)
-        throw(ArgumentError("period and phase_shift must be of type Period"))
-    end
     return map(xi -> _periodic(P.f, xi, P.period, P.phase_shift), x)
 end
 

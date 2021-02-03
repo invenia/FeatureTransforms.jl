@@ -46,10 +46,11 @@ function apply(x::AbstractArray{T}, P::Periodic{U}; kwargs...) where {T <: TimeT
 end
 
 """
-    Transforms.apply(x, ::Periodic; cols=nothing)
+    Transforms.apply(x, ::Periodic{T}; cols=nothing) where T <: Period -> Array
 
 Applies [`Periodic`](@ref) to each of the specified columns in `x`.
 If no `cols` are specified, then [`Periodic`](@ref) is applied to all columns.
+Returns an array containing each transformed column.
 """
 function apply(x, P::Periodic{T}; cols=nothing) where T <: Period
     columntable = Tables.columns(x)

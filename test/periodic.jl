@@ -8,8 +8,8 @@
         @test p isa Transform
 
         @testset "Vector" begin
-            x = collect(0.:10.)
-            expected = f.(2π / 5 .* x .+ 2)
+            x = collect(0.:11.)
+            expected = f.(2π / 5 .* x .- 2)
 
             @test Transforms.apply(x, p) ≈ expected atol=1e-15
             @test p(x) ≈ expected atol=1e-15

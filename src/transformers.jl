@@ -44,14 +44,12 @@ Does not need to be extended unless a mutating [`Transform`](@ref) is not possib
 function apply end
 
 """
-    apply!(A::AbstractArray{T}, ::Transform; dims=:, kwargs...) where T <: Real
+    apply!(A::AbstractArray, ::Transform; dims=:, kwargs...)
 
 Applies the [`Transform`](@ref) to each element of `A`.
 Optionally specify the `dims` to apply the [`Transform`](@ref) along certain dimensions.
 """
-function apply!(
-    A::AbstractArray{T}, t::Transform; dims=:, kwargs...
-) where T <: Real
+function apply!(A::AbstractArray, t::Transform; dims=:, kwargs...)
     dims == Colon() && return _apply!(A, t; kwargs...)
 
     for x in eachslice(A; dims=dims)

@@ -1,5 +1,5 @@
 const PeriodicFunction = Union{typeof(cos), typeof(sin)}
-const PeriodicInput = Union{Real,TimeType}
+const PeriodicParameter = Union{Real,Period}
 
 """
     Periodic(f, period, phase_shift) <: Transform
@@ -8,18 +8,19 @@ Applies a periodic function `f` with provided `period` and `phase_shift` to the 
 
 # Fields
 * `f::PeriodicFunction`: the periodic function
-* `period<:PeriodicInput`: the duration it takes for the periodic function to repeat
-* `phase_shift<:PeriodicInput`: adjusts the phase of the periodic function. A positive
-    value translates the function to the left, toward lower input values.
+* `period<:PeriodicParameter`: the duration it takes for the periodic function to repeat.
+    The sign of the value determines the direction of the function. Must be non-zero.
+* `phase_shift<:PeriodicParameter`: adjusts the phase of the periodic function. Increasing the
+    value translates the function to the right, toward higher/later input values.
 """
-struct Periodic{T<:PeriodicInput} <: Transform
+struct Periodic{T<:PeriodicParameter} <: Transform
     f::PeriodicFunction
     period::T
     phase_shift::T
 end
 
 """
-    Periodic(f::PeriodicFunction, period<:PeriodicInput) -> Periodic
+    Periodic(f::PeriodicFunction, period<:PeriodicParameter) -> Periodic
 
 A constructor for [`Periodic`](@ref).
 Returns a `Periodic` transform with zero phase shift.

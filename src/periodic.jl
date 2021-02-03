@@ -10,8 +10,9 @@ Applies a periodic function `f` with provided `period` and `phase_shift` to the 
 * `f::PeriodicFunction`: the periodic function
 * `period<:PeriodicParameter`: the duration it takes for the periodic function to repeat.
     The sign of the value determines the direction of the function. Must be non-zero.
-* `phase_shift<:PeriodicParameter`: adjusts the phase of the periodic function. Increasing the
-    value translates the function to the right, toward higher/later input values.
+* `phase_shift<:PeriodicParameter`: adjusts the phase of the periodic function, measured
+    in the same units as the input. Increasing the value translates the function to the
+    right, toward higher/later input values.
 """
 struct Periodic{T<:PeriodicParameter} <: Transform
     f::PeriodicFunction
@@ -30,6 +31,6 @@ function Periodic(f, period)
 end
 
 function _apply!(x::AbstractArray{T}, P::Periodic; kwargs...) where T <: Real
-    x[:] = P.f.(2π .* x ./ P.period .- P.phase_shift)
+    x[:] = P.f.(2π .* (x .- P.phase_shift) / P.period)
     return x
 end

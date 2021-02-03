@@ -9,14 +9,14 @@
 
         @testset "Vector" begin
             x = collect(0.:11.)
-            expected = f.(2π / 5 .* x .- 2)
+            expected = f.(2π .* (x .- 2) ./ 5)
 
             @test Transforms.apply(x, p) ≈ expected atol=1e-15
             @test p(x) ≈ expected atol=1e-15
 
             _x = copy(x)
             Transforms.apply!(_x, p)
-            @test _x ≈ expected atol=1e-5
+            @test _x ≈ expected atol=1e-15
         end
     end
 end

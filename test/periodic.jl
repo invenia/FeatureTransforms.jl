@@ -315,4 +315,10 @@
             end
         end
     end
+
+    @testset "Type mismatch" begin
+        p = Periodic(sin, Day(5), Day(2))
+        x = 0.:11.
+        @test_throws ArgumentError Transforms.apply(x, p)
+    end
 end

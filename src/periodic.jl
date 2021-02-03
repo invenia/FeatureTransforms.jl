@@ -31,11 +31,17 @@ function Periodic(f, period)
 end
 
 function _apply!(x::AbstractArray{T}, P::Periodic; kwargs...) where T <: Real
+    if !(P.period isa Real && P.phase_shift isa Real)
+        throw(ArgumentError("period and phase_shift must be of type Real"))
+    end
     x[:] = P.f.(2π .* (x .- P.phase_shift) / P.period)
     return x
 end
 
-function apply(x::AbstractArray{T}, P::Periodic{U}; kwargs...) where {T<:TimeType, U<:Period}
+function apply(x::AbstractArray{T}, P::Periodic{U}; kwargs...) where {T <: TimeType, U <: Period}
+    if !(P.period isa Period && P.phase_shift isa Period)
+        throw(ArgumentError("period and phase_shift must be of type Period"))
+    end
     return map(xi -> _periodic(P.f, xi, P.period, P.phase_shift), x)
 end
 
@@ -45,7 +51,7 @@ end
 Applies [`Periodic`](@ref) to each of the specified columns in `x`.
 If no `cols` are specified, then [`Periodic`](@ref) is applied to all columns.
 """
-function apply(x, P::Periodic{<:Period}; cols=nothing)
+function apply(x, P::Periodic{T}; cols=nothing) where T <: Period
     columntable = Tables.columns(x)
     cnames = cols === nothing ? propertynames(columntable) : cols
     return [apply(getproperty(columntable, cname), P) for cname in cnames]

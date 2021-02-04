@@ -7,7 +7,7 @@ const PeriodicParameter = Union{Real,Period}
 Applies a periodic function `f` with provided `period` and `phase_shift` to the data.
 
 # Fields
-* `f::PeriodicFunction`: the periodic function
+* `f::Union{typeof(cos), typeof(sin)}`: the periodic function
 * `period<:PeriodicParameter`: the duration it takes for the periodic function to repeat.
     The sign of the value determines the direction of the function. Must be non-zero.
 * `phase_shift<:PeriodicParameter`: adjusts the phase of the periodic function, measured

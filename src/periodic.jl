@@ -8,7 +8,7 @@ Applies a periodic function `f` with provided `period` and `phase_shift` to the 
 
 # Fields
 * `f::Union{typeof(cos), typeof(sin)}`: the periodic function
-* `period<:PeriodicParameter`: the duration it takes for the periodic function to repeat.
+* `period<:PeriodicParameter`: the function period. Must be strictly positive.
     The sign of the value determines the direction of the function. Must be non-zero.
 * `phase_shift<:PeriodicParameter`: adjusts the phase of the periodic function, measured
     in the same units as the input. Increasing the value translates the function to the

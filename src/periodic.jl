@@ -17,6 +17,13 @@ struct Periodic{T<:PeriodicParameter} <: Transform
     f::PeriodicFunction
     period::T
     phase_shift::T
+
+    function Periodic(f, period, phase_shift)
+        if period <= zero(typeof(period))
+            throw(ArgumentError("period must be strictly positive."))
+end
+        return new{typeof(period)}(f, period, phase_shift)
+    end
 end
 
 """
@@ -26,7 +33,7 @@ A constructor for [`Periodic`](@ref).
 Returns a `Periodic` transform with zero phase shift.
 """
 function Periodic(f, period)
-    return Periodic{typeof(period)}(f, period, zero(typeof(period)))
+    return Periodic(f, period, zero(typeof(period)))
 end
 
 function _apply!(x::AbstractArray{T}, P::Periodic; kwargs...) where T <: Real
@@ -59,8 +66,6 @@ function _periodic(
     period::Period,
     phase_shift::Period=Day(0)
 )
-    # Save the direction of `period` while using abs(period)
-    direction = period < zero(typeof(period)) ? -1 : 1
     period = abs(period)
     period_begin = floor(instant, period) + phase_shift
 
@@ -80,5 +85,5 @@ function _periodic(
     period_end = period_begin + period
     # `period_end - period_begin` converts to the same units so that `/` is defined
     normalized = (instant - period_begin) / (period_end - period_begin)
-    return f(2π * normalized * direction)
+    return f(2π * normalized)
 end

@@ -2,6 +2,12 @@
     # Constructors
     @test Periodic(sin, 5) == Periodic(sin, 5, 0)
 
+    # Non-positive period
+    @testset "Non-positive period" for period in (0, -1)
+        @test_throws ArgumentError Periodic(sin, period, 1)
+        @test_throws ArgumentError Periodic(sin, period)
+    end
+
     @testset "_periodic" begin
         @testset "$f" for f in (sin, cos)
             # A typical 24-hour day
@@ -36,18 +42,6 @@
                 expected = f(2π / 25 * h)
                 @test result ≈ expected atol=1e-15
             end
-        end
-
-        @testset "negative period" begin
-            @test ==(
-                _periodic(sin, DateTime(2000, 1, 1, 3), Day(-1)),
-                -_periodic(sin, DateTime(2000, 1, 1, 3), Day(1)),
-            )
-
-            @test ==(
-                _periodic(cos, DateTime(2000, 1, 1, 3), Day(-1)),
-                _periodic(cos, DateTime(2000, 1, 1, 3), Day(1)),
-            )
         end
 
         @testset "phase shift" begin

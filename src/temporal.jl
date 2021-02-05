@@ -1,23 +1,15 @@
 """
-    CustomTransform <: Transform
+    HoD <: Transform
 
-Apply the function passed in to CustomTransform as the transform.
+Get the hour of day corresponding to the data.
 """
 struct HoD <: Transform end
 
-function _apply!(x, ::HoD; kwargs...)
-    x[:] = hour.(x)
-    return x
+
+_apply(x, ::HoD) = hour.(x)
+
+function apply(A::AbstractArray, t::HoD; dims=:, kwargs...)
+    dims == Colon() && return _apply(A, t; kwargs...)
+
+    return [_apply(x, t; kwargs...) for x in eachslice(A, dims=dims)]
 end
-
-# struct HoW() <: Transform end
-
-# function _apply!(x, ::HoD; kwargs...)
-
-#     function hour_of_week(x)
-#         # TODO: this doesn't handle DST
-#         return dayofweek(x) * 24 + hour(x)
-#     end
-#     x[:] = hour_of_week.(x)
-#      return x
-# end

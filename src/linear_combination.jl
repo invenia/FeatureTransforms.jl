@@ -1,58 +1,76 @@
 """
-    LinearCombination <: Transform
+    LinearCombination(coefficients) <: Transform
 
 Calculate the linear combination using the column weights passed in.
 """
 struct LinearCombination <: Transform
-    col_weights::Vector{Real}
+    coefficients::Vector{Real}
 end
 
-function _check_dimensions_match(LC::LinearCombination, num_cols)
-    num_weights = length(LC.col_weights)
-    if num_cols != num_weights
+function _check_dimensions_match(LC::LinearCombination, num_inds)
+    num_coefficients = length(LC.coefficients)
+    if num_inds != num_coefficients
         throw(DimensionMismatch(
-            "Number of cols ($num_cols) doesn't match number of weights ($num_weights)"
+            "Size $num_inds doesn't match number of coefficients ($num_coefficients)"
         ))
     end
 end
 
-_sum_row(row, col_weights) = sum(map(*, row, col_weights))
+_sum_row(row, coefficients) = sum(map(*, row, coefficients))
 
 """
-    apply(x, LC::LinearCombination; cols=Colon())
+    apply(x::AbstractVector, LC::LinearCombination; inds=Colon())
 
-Applies the [`LinearCombination`](@ref) to each of the specified columns in `x`.
-If no `cols` are specified, then the [`LinearCombination`](@ref) is applied to all columns.
+Applies the [`LinearCombination`](@ref) to each of the specified indices in `x`.
+
+If no `inds` are specified, then the [`LinearCombination`](@ref) is applied to all elements.
 """
-function apply(x::AbstractVector, LC::LinearCombination; cols=Colon())
+function apply(x::AbstractVector, LC::LinearCombination; inds=Colon())
     # Treat each element as it's own column
     # Error if dimensions don't match
-    num_cols = cols isa Colon ? length(x) : length(cols)
-    _check_dimensions_match(LC, num_cols)
+    num_inds = inds isa Colon ? length(x) : length(inds)
+    _check_dimensions_match(LC, num_inds)
 
-    return [_sum_row(x[cols], LC.col_weights)]
+    return [_sum_row(x[inds], LC.coefficients)]
 end
 
-function apply(x::AbstractArray, LC::LinearCombination; cols=Colon())
-    # Error if dimensions don't match
-    num_cols = cols isa Colon ? size(x, 2) : length(cols)
-    _check_dimensions_match(LC, num_cols)
+"""
+    apply(x::AbstractArray, LC::LinearCombination; dims=1, inds=Colon())
 
-    return [_sum_row(row[cols], LC.col_weights) for row in eachrow(x)]
+Applies the [`LinearCombination`](@ref) to each of the specified indices in `x` along the
+dimension specified, which defaults to applying across the columns of x.
+
+If no `inds` are specified, then the [`LinearCombination`](@ref) is applied to all columns.
+"""
+function apply(x::AbstractArray, LC::LinearCombination; dims=1, inds=Colon())
+    # Get the number of vectors in the dimension not specified
+    other_dim = dims ==  1 ? 2 : 1
+    num_inds = inds isa Colon ? size(x, other_dim) : length(inds)
+    # Error if dimensions don't match
+    _check_dimensions_match(LC, num_inds)
+
+    return [_sum_row(row[inds], LC.coefficients) for row in eachslice(x; dims=dims)]
 end
 
-function apply(x, LC::LinearCombination; cols=nothing)
+"""
+    apply(x::Table, LC::LinearCombination; inds=nothing
+
+Applies the [`LinearCombination`](@ref) to each of the specified indices (columns) in `x`.
+
+If no `inds` are specified, then the [`LinearCombination`](@ref) is applied to all columns.
+"""
+function apply(x, LC::LinearCombination; inds=nothing)
     # Error if dimensions don't match
-    num_cols = cols === nothing ? length(Tables.columnnames(x)) : length(cols)
-    _check_dimensions_match(LC, num_cols)
+    num_inds = inds === nothing ? length(Tables.columnnames(x)) : length(inds)
+    _check_dimensions_match(LC, num_inds)
 
     # Keep the generic form when not specifying column names
     # because that is much more performant than selecting each col by name
-    if cols === nothing
-        return [_sum_row(row, LC.col_weights) for row in Tables.rows(x)]
+    if inds === nothing
+        return [_sum_row(row, LC.coefficients) for row in Tables.rows(x)]
     else
         return [
-            _sum_row([row[cname] for cname in cols], LC.col_weights)
+            _sum_row([row[cname] for cname in inds], LC.coefficients)
             for row in Tables.rows(x)
         ]
     end

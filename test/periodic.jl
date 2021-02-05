@@ -1,13 +1,4 @@
 @testset "periodic" begin
-    # Constructors
-    @test Periodic(sin, 5) == Periodic(sin, 5, 0)
-
-    # Non-positive period
-    @testset "Non-positive period" for period in (0, -1)
-        @test_throws ArgumentError Periodic(sin, period, 1)
-        @test_throws ArgumentError Periodic(sin, period)
-    end
-
     @testset "_periodic" begin
         @testset "$f" for f in (sin, cos)
             # A typical 24-hour day
@@ -63,6 +54,20 @@
     end
 
     @testset "Real input" begin
+        @testset "Constructors" begin
+            @testset "Default" begin
+                p = Periodic(sin, 5, 2)
+                @test p.period == 5
+                @test p.phase_shift == 2
+            end
+
+            @testset "No phase_shift" begin
+                p = Periodic(sin, 5)
+                @test p.period == 5
+                @test p.phase_shift == 0
+            end
+        end
+
         @testset "$f" for f in (sin, cos)
             p = Periodic(f, 5, 2)
 
@@ -200,6 +205,20 @@
     end
 
     @testset "TimeType input" begin
+        @testset "Constructors" begin
+            @testset "Default" begin
+                p = Periodic(sin, Day(5), Day(2))
+                @test p.period == Day(5)
+                @test p.phase_shift == Day(2)
+            end
+
+            @testset "No phase_shift" begin
+                p = Periodic(sin, Day(5))
+                @test p.period == Day(5)
+                @test p.phase_shift == Day(0)
+            end
+        end
+
         @testset "$f" for f in (sin, cos)
             p = Periodic(f, Day(5), Day(2))
 
@@ -308,6 +327,11 @@
                 end
             end
         end
+    end
+
+    @testset "Non-positive period" for period in (0, -1)
+        @test_throws ArgumentError Periodic(sin, period, 1)
+        @test_throws ArgumentError Periodic(sin, period)
     end
 
     @testset "Type mismatch" begin

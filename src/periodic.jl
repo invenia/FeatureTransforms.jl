@@ -60,12 +60,19 @@ function apply(table, P::Periodic{T}; cols=nothing) where T <: Period
     return [apply(getproperty(columntable, cname), P) for cname in cnames]
 end
 
-function _periodic(
-    f::PeriodicFunction,
-    instant::TimeType,
-    period::Period,
-    phase_shift::Period=Day(0)
-)
+"""
+    _periodic(f, instant, period, phase_shift=Day(0))
+
+Computes the value of periodic function `f` at the given instant in time.
+
+# Arguments
+* `f`: the periodic function
+* `period`: the function period
+* `phase_shift`: adjusts the phase of the periodic function, measured in the same units as
+    the input. Increasing the value translates the function to the right, toward
+    higher/later input values.
+"""
+function _periodic(f, instant, period, phase_shift=Day(0))
     period = abs(period)
     period_begin = floor(instant, period) + phase_shift
 

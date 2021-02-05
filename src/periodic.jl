@@ -1,33 +1,30 @@
-const PeriodicFunction = Union{typeof(cos), typeof(sin)}
-const PeriodicParameter = Union{Real,Period}
-
 """
-    Periodic(f, period, phase_shift) <: Transform
+    Periodic{T}(f, period::T, phase_shift::T) <: Transform
 
 Applies a periodic function `f` with provided `period` and `phase_shift` to the data.
 
 # Fields
 * `f::Union{typeof(cos), typeof(sin)}`: the periodic function
-* `period<:PeriodicParameter`: the function period. Must be strictly positive.
-* `phase_shift<:PeriodicParameter`: adjusts the phase of the periodic function, measured
+* `period<:Union{Real, Period}`: the function period. Must be strictly positive.
+* `phase_shift<:Union{Real, Period}`: adjusts the phase of the periodic function, measured
     in the same units as the input. Increasing the value translates the function to the
     right, toward higher/later input values.
 """
-struct Periodic{T<:PeriodicParameter} <: Transform
-    f::PeriodicFunction
+struct Periodic{T} <: Transform where T <: Union{Real, Period}
+    f::Union{typeof(cos), typeof(sin)}
     period::T
     phase_shift::T
 
     function Periodic(f, period, phase_shift)
         if period <= zero(typeof(period))
             throw(ArgumentError("period must be strictly positive."))
-end
+        end
         return new{typeof(period)}(f, period, phase_shift)
     end
 end
 
 """
-    Periodic(f::PeriodicFunction, period<:PeriodicParameter) -> Periodic
+    Periodic(f, period) -> Periodic
 
 A constructor for [`Periodic`](@ref).
 Returns a `Periodic` transform with zero phase shift.
@@ -50,7 +47,7 @@ end
 
 Applies [`Periodic`](@ref) to each of the specified columns in `table`.
 If no `cols` are specified, then [`Periodic`](@ref) is applied to all columns.
-Returns an array containing each transformed column.
+Returns an array containing each transformed column, in the same order as `cols`.
 """
 function apply(table, P::Periodic{T}; cols=nothing) where T <: Period
     Tables.istable(table) || throw(MethodError(apply, (table, P)))

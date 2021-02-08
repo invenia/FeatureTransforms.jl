@@ -64,7 +64,9 @@ Computes the value of periodic function `f` at the given instant in time.
 
 # Arguments
 * `f`: the periodic function
-* `period`: the function period
+* `period`: the function period. Results can change depending on its type, e.g. `Week(1)`
+    starts the function on Monday (with 0 `phase_shift`), while `Second(Week(1))` starts
+    the function on the nearest multiple of 604800 seconds from time 0.
 * `phase_shift`: adjusts the phase of the periodic function, measured in the same units as
     the input. Increasing the value translates the function to the right, toward
     higher/later input values.

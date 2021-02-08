@@ -44,6 +44,9 @@
             @test _periodic(sin, DateTime(2), Week(1), Day(7)) ≈ 0.7818314824680298 atol=1e-14
             @test _periodic(sin, DateTime(2), Week(1), Day(5)) ≈ 0.43388373911755823 atol=1e-14
 
+            # Using the phase shift we can make a Thursday the beginning of the week
+            # (i.e. such that sin(t) == 0). The UNIX epoch 1970-01-01 fell on Thursday.
+            # NOTE: these calculations can change depending on the period type given.
             @test _periodic(sin, DateTime(1970), Week(1), Day(3)) == 0
             @test _periodic(sin, DateTime(1970), Second(Week(1)), Day(5)) == 0
 

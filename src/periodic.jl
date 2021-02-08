@@ -62,14 +62,17 @@ end
 
 Computes the value of periodic function `f` at the given instant in time.
 
+!!! note
+    The result will change depending on the type of `period` given, even if the same amount
+    of time is described. Example: `Week(1)` vs `Second(Week(1))`; the former starts the
+    period on the most recent Monday, while the latter starts the period on the most recent
+    multiple of 604800 seconds since time 0.
+
 # Arguments
 * `f`: the periodic function
-* `period`: the function period. Results can change depending on its type, e.g. `Week(1)`
-    starts the function on Monday (with 0 `phase_shift`), while `Second(Week(1))` starts
-    the function on the nearest multiple of 604800 seconds from time 0.
-* `phase_shift`: adjusts the phase of the periodic function, measured in the same units as
-    the input. Increasing the value translates the function to the right, toward
-    higher/later input values.
+* `period`: the function period
+* `phase_shift`: adjusts the phase of the periodic function. Increasing the value translates
+    the function to the right, toward higher/later input values.
 """
 function _periodic(f, instant, period, phase_shift=Day(0))
     period = abs(period)

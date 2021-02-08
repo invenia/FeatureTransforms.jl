@@ -5,8 +5,8 @@ Applies a periodic function `f` with provided `period` and `phase_shift` to the 
 
 # Fields
 * `f::Union{typeof(cos), typeof(sin)}`: the periodic function
-* `period<:Union{Real, Period}`: the function period. Must be strictly positive.
-* `phase_shift<:Union{Real, Period}`: adjusts the phase of the periodic function, measured
+* `period::Union{Real, Period}`: the function period. Must be strictly positive.
+* `phase_shift::Union{Real, Period}`: adjusts the phase of the periodic function, measured
     in the same units as the input. Increasing the value translates the function to the
     right, toward higher/later input values.
 """
@@ -15,11 +15,9 @@ struct Periodic{T} <: Transform where T <: Union{Real, Period}
     period::T
     phase_shift::T
 
-    function Periodic(f, period, phase_shift)
-        if period <= zero(typeof(period))
-            throw(ArgumentError("period must be strictly positive."))
-        end
-        return new{typeof(period)}(f, period, phase_shift)
+    function Periodic(f, period::T, phase_shift::T) where T
+        period <= zero(T) && throw(ArgumentError("period must be strictly positive."))
+        return new{T}(f, period, phase_shift)
     end
 end
 
@@ -29,9 +27,7 @@ end
 A constructor for [`Periodic`](@ref).
 Returns a `Periodic` transform with zero phase shift.
 """
-function Periodic(f, period)
-    return Periodic(f, period, zero(typeof(period)))
-end
+Periodic(f, period) where T = Periodic(f, period, zero(T))
 
 function _apply!(x::AbstractArray{T}, P::Periodic; kwargs...) where T <: Real
     x[:] = P.f.(2π .* (x .- P.phase_shift) / P.period)

@@ -9,7 +9,7 @@
                     Day(1),
                 )
                 expected = f(2π / 24 * h)
-                @test result ≈ expected atol=1e-15
+                @test result ≈ expected atol=1e-14
             end
 
             # A spring daylight-saving time change where the day has 23-hours
@@ -20,7 +20,7 @@
                     Day(1),
                 )
                 expected = f(2π / 23 * h)
-                @test result ≈ expected atol=1e-15
+                @test result ≈ expected atol=1e-14
             end
 
             # A fall daylight-saving time change where the day has 25-hours
@@ -31,7 +31,7 @@
                     Day(1),
                 )
                 expected = f(2π / 25 * h)
-                @test result ≈ expected atol=1e-15
+                @test result ≈ expected atol=1e-14
             end
         end
 
@@ -68,138 +68,152 @@
             end
         end
 
+        expected_dict = Dict(
+            sin => [
+                -0.5877852522924732,
+                -0.9510565162951535,
+                0.0,
+                0.9510565162951535,
+                0.5877852522924732,
+                -0.58778525229247
+            ],
+            cos => [
+                -0.8090169943749473,
+                0.30901699437494745,
+                1.0,
+                0.30901699437494745,
+               -0.8090169943749473,
+               -0.8090169943749475
+            ]
+        )
+
         @testset "$f" for f in (sin, cos)
             p = Periodic(f, 5, 2)
 
             @test p isa Transform
 
             @testset "Vector" begin
-                x = collect(0.:11.)
-                expected = f.(2π .* (x .- 2) ./ 5)
+                x = collect(0.:5.)
+                expected = expected_dict[f]
 
-                @test Transforms.apply(x, p) ≈ expected atol=1e-15
-                @test p(x) ≈ expected atol=1e-15
+                @test Transforms.apply(x, p) ≈ expected atol=1e-14
+                @test p(x) ≈ expected atol=1e-14
 
                 _x = copy(x)
                 Transforms.apply!(_x, p)
-                @test _x ≈ expected atol=1e-15
+                @test _x ≈ expected atol=1e-14
             end
 
             @testset "Matrix" begin
-                x = collect(0.:11.)
-                M = reshape(x, (6, 2))
-                expected = f.(2π .* (x .- 2) ./ 5)
-                expected = reshape(expected, (6, 2))
+                x = collect(0.:5.)
+                M = reshape(x, (3, 2))
+                expected = expected_dict[f]
+                expected = reshape(expected, (3, 2))
 
                 @testset "dims = $d" for d in (Colon(), 1, 2)
-                    @test Transforms.apply(M, p; dims=d) ≈ expected atol=1e-15
-                    @test p(M; dims=d) ≈ expected atol=1e-15
+                    @test Transforms.apply(M, p; dims=d) ≈ expected atol=1e-14
+                    @test p(M; dims=d) ≈ expected atol=1e-14
 
                     _M = copy(M)
                     Transforms.apply!(_M, p; dims=d)
-                    @test _M ≈ expected atol=1e-15
+                    @test _M ≈ expected atol=1e-14
                 end
             end
 
             @testset "AxisArray" begin
-                x = collect(0.:11.)
-                A = AxisArray(
-                    reshape(x, (6, 2)),
-                    foo=["a", "b", "c", "d", "e", "f"],
-                    bar=["x", "y"]
-                )
+                x = collect(0.:5.)
+                A = AxisArray(reshape(x, (3, 2)), foo=["a", "b", "c"], bar=["x", "y"])
 
-                expected = f.(2π .* (x .- 2) ./ 5)
+                expected = expected_dict[f]
                 expected = AxisArray(
-                    reshape(expected, (6, 2)),
-                    foo=["a", "b", "c", "d", "e", "f"],
+                    reshape(expected, (3, 2)),
+                    foo=["a", "b", "c"],
                     bar=["x", "y"]
                 )
 
                 @testset "dims = $d" for d in (Colon(), 1, 2)
                     transformed = Transforms.apply(A, p; dims=d)
                     @test transformed isa AxisArray
-                    @test transformed ≈ expected atol=1e-15
+                    @test transformed ≈ expected atol=1e-14
                 end
             end
 
             @testset "AxisKey" begin
-                x = collect(0.:11.)
-                A = KeyedArray(
-                    reshape(x, (6, 2)),
-                    foo=["a", "b", "c", "d", "e", "f"],
-                    bar=["x", "y"]
-                )
+                x = collect(0.:5.)
+                A = KeyedArray(reshape(x, (3, 2)), foo=["a", "b", "c"], bar=["x", "y"])
 
-                expected = f.(2π .* (x .- 2) ./ 5)
+                expected = expected_dict[f]
                 expected = KeyedArray(
-                    reshape(expected, (6, 2)),
-                    foo=["a", "b", "c", "d", "e", "f"],
+                    reshape(expected, (3, 2)),
+                    foo=["a", "b", "c"],
                     bar=["x", "y"]
                 )
 
                 @testset "dims = $d" for d in (Colon(), :foo, :bar)
                     transformed = Transforms.apply(A, p; dims=d)
                     @test transformed isa KeyedArray
-                    @test transformed ≈ expected atol=1e-15
+                    @test transformed ≈ expected atol=1e-14
                 end
 
                 _A = copy(A)
                 Transforms.apply!(_A, p)
-                @test _A ≈ expected atol=1e-15
+                @test _A ≈ expected atol=1e-14
             end
 
             @testset "NamedTuple" begin
-                nt = (a = collect(0.:5.), b = collect(6.:11.))
-                expected = (a = f.(2π .* (nt.a .- 2) ./ 5), b = f.(2π .* (nt.b .- 2) ./ 5))
+                nt = (a = collect(0.:2.), b = collect(3.:5.))
+                expected = expected_dict[f]
+                expected = (a = expected[1:3], b = expected[4:6])
 
                 @testset "all cols" begin
                     transformed = Transforms.apply(nt, p)
                     @test transformed isa NamedTuple{(:a, :b)}
-                    @test transformed == expected
-                    @test p(nt) == expected
+                    @test collect(transformed) ≈ collect(expected) atol=1e-14
+                    @test collect(p(nt)) ≈ collect(expected) atol=1e-14
 
                     _nt = deepcopy(nt)
                     Transforms.apply!(_nt, p)
-                    @test _nt == expected
+                    @test collect(_nt) ≈ collect(expected) atol=1e-14
                 end
 
                 @testset "cols = $c" for c in (:a, :b)
                     nt_mutated = NamedTuple{(Symbol("$c"), )}((expected[c], ))
                     nt_expected = merge(nt, nt_mutated)
 
-                    @test Transforms.apply(nt, p; cols=[c]) == nt_expected
-                    @test p(nt; cols=[c]) == nt_expected
+                    transformed = Transforms.apply(nt, p; cols=[c])
+                    @test transformed isa NamedTuple{(:a, :b)}  # before applying `collect`
+                    @test collect(transformed) ≈ collect(nt_expected) atol=1e-14
+                    @test collect(p(nt; cols=[c])) ≈ collect(nt_expected) atol=1e-14
 
                     _nt = deepcopy(nt)
                     Transforms.apply!(_nt, p; cols=[c])
-                    @test _nt == nt_expected
+                    @test collect(_nt) ≈ collect(nt_expected) atol=1e-14
                 end
             end
 
             @testset "DataFrame" begin
-                df = DataFrame(:a => collect(0.:5.), :b => collect(6.:11.))
-                expected = DataFrame(
-                    :a => f.(2π .* (df.a .- 2) ./ 5),
-                    :b => f.(2π .* (df.b .- 2) ./ 5)
-                )
+                df = DataFrame(:a => collect(0.:2.), :b => collect(3.:5.))
+                expected = expected_dict[f]
+                df_expected = DataFrame(:a => expected[1:3], :b => expected[4:6])
 
                 transformed = Transforms.apply(df, p)
                 @test transformed isa DataFrame
-                @test transformed == expected
+                @test transformed ≈ df_expected atol=1e-14
 
-                @test Transforms.apply(df, p; cols=[:a]) == DataFrame(
-                    :a => f.(2π .* (df.a .- 2) ./ 5),
-                    :b => collect(6.:11.)
+                @test ≈(
+                    Transforms.apply(df, p; cols=[:a]),
+                    DataFrame(:a => expected[1:3], :b => collect(3.:5.)),
+                    atol=1e-14
                 )
-                @test Transforms.apply(df, p; cols=[:b]) == DataFrame(
-                    :a => collect(0.:5.),
-                    :b => f.(2π .* (df.b .- 2) ./ 5)
+                @test ≈(
+                    Transforms.apply(df, p; cols=[:b]),
+                    DataFrame(:a => collect(0.:2.), :b => expected[4:6]),
+                    atol=1e-14
                 )
 
                 _df = deepcopy(df)
                 Transforms.apply!(_df, p)
-                @test _df == expected
+                @test _df ≈ df_expected atol=1e-14
             end
         end
     end
@@ -228,8 +242,8 @@
                 x = ZonedDateTime(2020, 1, 1, tz"EST") .+ (Day(0):Day(1):Day(5))
                 expected = _periodic.(f, x, Day(5), Day(2))
 
-                @test Transforms.apply(x, p) ≈ expected atol=1e-15
-                @test p(x) ≈ expected atol=1e-15
+                @test Transforms.apply(x, p) ≈ expected atol=1e-14
+                @test p(x) ≈ expected atol=1e-14
             end
 
             @testset "Matrix" begin
@@ -239,8 +253,8 @@
                 expected = reshape(expected, (3, 2))
 
                 @testset "dims = $d" for d in (Colon(), 1, 2)
-                    @test Transforms.apply(M, p; dims=d) ≈ expected atol=1e-15
-                    @test p(M; dims=d) ≈ expected atol=1e-15
+                    @test Transforms.apply(M, p; dims=d) ≈ expected atol=1e-14
+                    @test p(M; dims=d) ≈ expected atol=1e-14
                 end
             end
 
@@ -262,7 +276,7 @@
                 @testset "dims = $d" for d in (Colon(), 1, 2)
                     transformed = Transforms.apply(A, p; dims=d)
                     @test transformed isa AxisArray
-                    @test transformed ≈ expected atol=1e-15
+                    @test transformed ≈ expected atol=1e-14
                 end
             end
 
@@ -284,7 +298,7 @@
                 @testset "dims = $d" for d in (Colon(), 1, 2)
                     transformed = Transforms.apply(A, p; dims=d)
                     @test transformed isa KeyedArray
-                    @test transformed ≈ expected atol=1e-15
+                    @test transformed ≈ expected atol=1e-14
                 end
             end
 
@@ -298,14 +312,14 @@
 
                 @testset "all cols" begin
                     transformed = Transforms.apply(nt, p)
-                    @test transformed == expected
-                    @test p(nt) == expected
+                    @test transformed ≈ expected atol=1e-14
+                    @test p(nt) ≈ expected atol=1e-14
                 end
 
                 nt_expected = (a = expected[1], b = expected[2])
                 @testset "cols = $c" for c in (:a, :b)
-                    @test Transforms.apply(nt, p; cols=[c]) == [nt_expected[c]]
-                    @test p(nt; cols=[c]) == [nt_expected[c]]
+                    @test Transforms.apply(nt, p; cols=[c]) ≈ [nt_expected[c]] atol=1e-14
+                    @test p(nt; cols=[c]) ≈ [nt_expected[c]] atol=1e-14
                 end
             end
 
@@ -318,12 +332,12 @@
                 ]
 
                 transformed = Transforms.apply(df, p)
-                @test transformed == expected
+                @test transformed ≈ expected atol=1e-14
 
                 nt_expected = (a = expected[1], b = expected[2])
                 @testset "cols = $c" for c in (:a, :b)
-                    @test Transforms.apply(df, p; cols=[c]) == [nt_expected[c]]
-                    @test p(df; cols=[c]) == [nt_expected[c]]
+                    @test Transforms.apply(df, p; cols=[c]) ≈ [nt_expected[c]] atol=1e-14
+                    @test p(df; cols=[c]) ≈ [nt_expected[c]] atol=1e-14
                 end
             end
         end

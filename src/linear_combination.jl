@@ -38,7 +38,7 @@ end
     apply(x::AbstractMatrix, LC::LinearCombination; dims=1, inds=Colon())
 
 Applies the [`LinearCombination`](@ref) to each of the specified indices in `x` along the
-dimension specified, which defaults to applying it row-wise for each column of x."
+dimension specified, which defaults to applying it row-wise for each column of x.
 
 If no `inds` are specified, then the [`LinearCombination`](@ref) is applied to all columns.
 """

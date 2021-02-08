@@ -33,7 +33,7 @@ end
 A constructor for [`Periodic`](@ref).
 Returns a `Periodic` transform with zero phase shift.
 """
-Periodic(f, period) where T = Periodic(f, period, zero(T))
+Periodic(f, period::T) where T = Periodic(f, period, zero(T))
 
 function _apply!(x::AbstractArray{T}, P::Periodic; kwargs...) where T <: Real
     x[:] = P.f.(2π .* (x .- P.phase_shift) / P.period)

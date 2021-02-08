@@ -40,8 +40,10 @@
             @test _periodic(sin, DateTime(1), Week(1), Day(7)) == 0
             @test _periodic(sin, DateTime(1), Week(1), Day(-7)) == 0
 
-            # Using the phase shift we can make a Thursday the beginning of the week.
-            # Note: that these calculations can change depending on the period type given.
+            @test _periodic(sin, DateTime(2), Week(1)) ≈ 0.7818314824680298 atol=1e-14
+            @test _periodic(sin, DateTime(2), Week(1), Day(7)) ≈ 0.7818314824680298 atol=1e-14
+            @test _periodic(sin, DateTime(2), Week(1), Day(5)) ≈ 0.43388373911755823 atol=1e-14
+
             @test _periodic(sin, DateTime(1970), Week(1), Day(3)) == 0
             @test _periodic(sin, DateTime(1970), Second(Week(1)), Day(5)) == 0
 

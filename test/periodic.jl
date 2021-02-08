@@ -80,11 +80,11 @@
         )
 
         @testset "$f" for f in (sin, cos)
+            expected = expected_dict[f]
             p = Periodic(f, 5, 2)
 
             @testset "Vector" begin
                 x = collect(0.:5.)
-                expected = expected_dict[f]
 
                 @test Transforms.apply(x, p) ≈ expected atol=1e-14
                 @test p(x) ≈ expected atol=1e-14
@@ -97,16 +97,15 @@
             @testset "Matrix" begin
                 x = collect(0.:5.)
                 M = reshape(x, (3, 2))
-                expected = expected_dict[f]
-                expected = reshape(expected, (3, 2))
+                M_expected = reshape(expected, (3, 2))
 
                 @testset "dims = $d" for d in (Colon(), 1, 2)
-                    @test Transforms.apply(M, p; dims=d) ≈ expected atol=1e-14
-                    @test p(M; dims=d) ≈ expected atol=1e-14
+                    @test Transforms.apply(M, p; dims=d) ≈ M_expected atol=1e-14
+                    @test p(M; dims=d) ≈ M_expected atol=1e-14
 
                     _M = copy(M)
                     Transforms.apply!(_M, p; dims=d)
-                    @test _M ≈ expected atol=1e-14
+                    @test _M ≈ M_expected atol=1e-14
                 end
             end
 
@@ -114,8 +113,7 @@
                 x = collect(0.:5.)
                 A = AxisArray(reshape(x, (3, 2)), foo=["a", "b", "c"], bar=["x", "y"])
 
-                expected = expected_dict[f]
-                expected = AxisArray(
+                A_expected = AxisArray(
                     reshape(expected, (3, 2)),
                     foo=["a", "b", "c"],
                     bar=["x", "y"]
@@ -124,16 +122,19 @@
                 @testset "dims = $d" for d in (Colon(), 1, 2)
                     transformed = Transforms.apply(A, p; dims=d)
                     @test transformed isa AxisArray
-                    @test transformed ≈ expected atol=1e-14
+                    @test transformed ≈ A_expected atol=1e-14
                 end
+
+                _A = copy(A)
+                Transforms.apply!(_A, p)
+                @test _A ≈ A_expected atol=1e-14
             end
 
             @testset "AxisKey" begin
                 x = collect(0.:5.)
                 A = KeyedArray(reshape(x, (3, 2)), foo=["a", "b", "c"], bar=["x", "y"])
 
-                expected = expected_dict[f]
-                expected = KeyedArray(
+                A_expected = KeyedArray(
                     reshape(expected, (3, 2)),
                     foo=["a", "b", "c"],
                     bar=["x", "y"]
@@ -142,48 +143,46 @@
                 @testset "dims = $d" for d in (Colon(), :foo, :bar)
                     transformed = Transforms.apply(A, p; dims=d)
                     @test transformed isa KeyedArray
-                    @test transformed ≈ expected atol=1e-14
+                    @test transformed ≈ A_expected atol=1e-14
                 end
 
                 _A = copy(A)
                 Transforms.apply!(_A, p)
-                @test _A ≈ expected atol=1e-14
+                @test _A ≈ A_expected atol=1e-14
             end
 
             @testset "NamedTuple" begin
                 nt = (a = collect(0.:2.), b = collect(3.:5.))
-                expected = expected_dict[f]
-                expected = (a = expected[1:3], b = expected[4:6])
+                nt_expected = (a = expected[1:3], b = expected[4:6])
 
                 @testset "all cols" begin
                     transformed = Transforms.apply(nt, p)
                     @test transformed isa NamedTuple{(:a, :b)}
-                    @test collect(transformed) ≈ collect(expected) atol=1e-14
-                    @test collect(p(nt)) ≈ collect(expected) atol=1e-14
+                    @test collect(transformed) ≈ collect(nt_expected) atol=1e-14
+                    @test collect(p(nt)) ≈ collect(nt_expected) atol=1e-14
 
                     _nt = deepcopy(nt)
                     Transforms.apply!(_nt, p)
-                    @test collect(_nt) ≈ collect(expected) atol=1e-14
+                    @test collect(_nt) ≈ collect(nt_expected) atol=1e-14
                 end
 
                 @testset "cols = $c" for c in (:a, :b)
-                    nt_mutated = NamedTuple{(Symbol("$c"), )}((expected[c], ))
-                    nt_expected = merge(nt, nt_mutated)
+                    nt_mutated = NamedTuple{(Symbol("$c"), )}((nt_expected[c], ))
+                    nt_expected_ = merge(nt, nt_mutated)
 
                     transformed = Transforms.apply(nt, p; cols=[c])
                     @test transformed isa NamedTuple{(:a, :b)}  # before applying `collect`
-                    @test collect(transformed) ≈ collect(nt_expected) atol=1e-14
-                    @test collect(p(nt; cols=[c])) ≈ collect(nt_expected) atol=1e-14
+                    @test collect(transformed) ≈ collect(nt_expected_) atol=1e-14
+                    @test collect(p(nt; cols=[c])) ≈ collect(nt_expected_) atol=1e-14
 
                     _nt = deepcopy(nt)
                     Transforms.apply!(_nt, p; cols=[c])
-                    @test collect(_nt) ≈ collect(nt_expected) atol=1e-14
+                    @test collect(_nt) ≈ collect(nt_expected_) atol=1e-14
                 end
             end
 
             @testset "DataFrame" begin
                 df = DataFrame(:a => collect(0.:2.), :b => collect(3.:5.))
-                expected = expected_dict[f]
                 df_expected = DataFrame(:a => expected[1:3], :b => expected[4:6])
 
                 transformed = Transforms.apply(df, p)

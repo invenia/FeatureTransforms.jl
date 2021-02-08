@@ -351,5 +351,8 @@
             x = ZonedDateTime(2020, 1, 1, tz"EST") .+ (Day(0):Day(1):Day(5))
             @test_throws MethodError Transforms.apply(x, p)
         end
+
+        @test_throws MethodError Periodic(sin, 1, Day(3))
+        @test_throws MethodError Periodic(sin, Day(1), 3)
     end
 end

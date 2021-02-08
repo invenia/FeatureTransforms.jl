@@ -3,6 +3,12 @@
 
 Applies a periodic function `f` with provided `period` and `phase_shift` to the data.
 
+!!! note
+    For `TimeType` data, the result will change depending on the type of `period` given,
+    even if the same amount of time is described. Example: `Week(1)` vs `Second(Week(1))`;
+    the former starts the period on the most recent Monday, while the latter starts the
+    period on the most recent multiple of 604800 seconds since time 0.
+
 # Fields
 * `f::Union{typeof(cos), typeof(sin)}`: the periodic function
 * `period::Union{Real, Period}`: the function period. Must be strictly positive.
@@ -57,12 +63,6 @@ end
     _periodic(f, instant, period, phase_shift=Day(0))
 
 Computes the value of periodic function `f` at the given instant in time.
-
-!!! note
-    The result will change depending on the type of `period` given, even if the same amount
-    of time is described. Example: `Week(1)` vs `Second(Week(1))`; the former starts the
-    period on the most recent Monday, while the latter starts the period on the most recent
-    multiple of 604800 seconds since time 0.
 
 # Arguments
 * `f`: the periodic function

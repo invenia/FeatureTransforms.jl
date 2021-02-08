@@ -75,7 +75,6 @@ Computes the value of periodic function `f` at the given instant in time.
     the function to the right, toward higher/later input values.
 """
 function _periodic(f, instant, period, phase_shift=Day(0))
-    period = abs(period)
     period_begin = floor(instant, period) + phase_shift
 
     # Make sure the `instant - period_begin < period` after we add the `phase_shift`.

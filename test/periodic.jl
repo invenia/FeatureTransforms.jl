@@ -285,7 +285,7 @@
                     bar=["x", "y"]
                 )
 
-                @testset "dims = $d" for d in (Colon(), 1, 2)
+                @testset "dims = $d" for d in (Colon(), :foo, :bar)
                     transformed = Transforms.apply(A, p; dims=d)
                     @test transformed isa KeyedArray
                     @test transformed ≈ expected atol=1e-14

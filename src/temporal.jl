@@ -8,10 +8,16 @@ struct HoD <: Transform end
 
 _apply(x, ::HoD) = hour.(x)
 
-function apply(A::AbstractArray, t::HoD; dims=:, kwargs...)
-    dims == Colon() && return _apply(A, t; kwargs...)
+function apply(A::AbstractArray, t::HoD; dims=:, inds=:, kwargs...)
+    if dims === Colon()
+        if inds === Colon()
+            return _apply(A, t; kwargs...)
+        else
+            return [_apply(A[ind], t; kwargs...) for ind in inds]
+        end
+    end
 
-    return [_apply(x, t; kwargs...) for x in eachslice(A, dims=dims)]
+    return [_apply(x[inds], t; kwargs...) for x in eachslice(A, dims=dims)]
 end
 
 function apply(table, t::HoD; cols=nothing, kwargs...)
@@ -22,5 +28,5 @@ function apply(table, t::HoD; cols=nothing, kwargs...)
     columntable = Tables.columns(table)
 
     cnames = cols === nothing ? propertynames(columntable) : cols
-    return [_apply(getproperty(columntable, cname), t)  for cname in cnames]
+    return [_apply(getproperty(columntable, cname), t; kwargs...)  for cname in cnames]
 end

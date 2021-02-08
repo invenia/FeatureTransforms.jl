@@ -30,6 +30,33 @@
             @test Transforms.apply(x, hod) == expected
             @test hod(x) == expected
         end
+
+        @testset "dims" begin
+            @testset "dims = :" begin
+                d = Colon()
+                @test Transforms.apply(x, hod; dims=d) == expected
+                @test hod(x; dims=d) == expected
+            end
+
+            @testset "dims = 1" begin
+                d = 1
+                expected = [[x] for x in [9:23..., 0, 1, 3:9...]]
+                @test Transforms.apply(x, hod; dims=d) == expected
+                @test hod(x; dims=d) == expected
+            end
+        end
+
+        @testset "inds" begin
+            expected = collect(10:13)
+            @test Transforms.apply(x, hod; inds=2:5) == expected
+            @test hod(x; inds=2:5) == expected
+
+            @testset "dims = 1" begin
+                d = 1
+                expected = [[x] for x in [9:23..., 0, 1, 3:9...]]
+                @test Transforms.apply(x, hod; dims=d, inds=[1]) == expected
+            end
+        end
     end
 
     @testset "Matrix" begin
@@ -46,33 +73,52 @@
         # Test the tranform was not mutating
         @test M != expected
 
-        @testset "dims = :" begin
-            d = Colon()
-            @test Transforms.apply(M, hod; dims=d) == expected
-            @test hod(M; dims=d) == expected
+        @testset "dims" begin
+            @testset "dims = :" begin
+                d = Colon()
+                @test Transforms.apply(M, hod; dims=d) == expected
+                @test hod(M; dims=d) == expected
 
-            # Test the tranform was not mutating
-            @test M != expected
+                # Test the tranform was not mutating
+                @test M != expected
+            end
+
+            @testset "dims = 1" begin
+                d = 1
+                expected = [[1, 9], [2, 10], [3, 11]]
+                @test Transforms.apply(M, hod; dims=d) == expected
+                @test hod(M; dims=d) == expected
+
+                # Test the tranform was not mutating
+                @test M != expected
+            end
+
+            @testset "dims = 2" begin
+                d = 2
+                expected = [[1, 2, 3], [9, 10, 11]]
+                @test Transforms.apply(M, hod; dims=d) == expected
+                @test hod(M; dims=d) == expected
+
+                # Test the tranform was not mutating
+                @test M != expected
+            end
         end
 
-        @testset "dims = 1" begin
-            d = 1
-            expected = [[1, 9], [2, 10], [3, 11]]
-            @test Transforms.apply(M, hod; dims=d) == expected
-            @test hod(M; dims=d) == expected
+        @testset "inds" begin
+            expected = [2, 3]
+            @test Transforms.apply(M, hod; inds=[2, 3]) == expected
 
-            # Test the tranform was not mutating
-            @test M != expected
-        end
+            @testset "dims = 1" begin
+                d = 1
+                expected = [[9], [10], [11]]
+                @test Transforms.apply(M, hod; dims=d, inds=[2]) == expected
+            end
 
-        @testset "dims = 2" begin
-            d = 2
-            expected = [[1, 2, 3], [9, 10, 11]]
-            @test Transforms.apply(M, hod; dims=d) == expected
-            @test hod(M; dims=d) == expected
-
-            # Test the tranform was not mutating
-            @test M != expected
+            @testset "dims = 2" begin
+                d = 2
+                expected = [[2, 3], [10, 11]]
+                @test Transforms.apply(M, hod; dims=d, inds=[2, 3]) == expected
+            end
         end
     end
 
@@ -89,24 +135,43 @@
         @test Transforms.apply(A, hod) == expected
         @test hod(A) == expected
 
-        @testset "dims = :" begin
-            d = Colon()
-            @test Transforms.apply(A, hod; dims=d) == expected
-            @test hod(A; dims=d) == expected
+        @testset "dims" begin
+            @testset "dims = :" begin
+                d = Colon()
+                @test Transforms.apply(A, hod; dims=d) == expected
+                @test hod(A; dims=d) == expected
+            end
+
+            @testset "dims = 1" begin
+                d = 1
+                expected = [[1, 9, 10], [2, 10, 11]]
+                @test Transforms.apply(A, hod; dims=d) == expected
+                @test hod(A; dims=d) == expected
+            end
+
+            @testset "dims = 2" begin
+                d = 2
+                expected = [[1, 2], [9, 10], [10, 11]]
+                @test Transforms.apply(A, hod; dims=d) == expected
+                @test hod(A; dims=d) == expected
+            end
         end
 
-        @testset "dims = 1" begin
-            d = 1
-            expected = [[1, 9, 10], [2, 10, 11]]
-            @test Transforms.apply(A, hod; dims=d) == expected
-            @test hod(A; dims=d) == expected
-        end
+        @testset "inds" begin
+            expected = [2, 9]
+            @test Transforms.apply(A, hod; inds=[2, 3]) == expected
 
-        @testset "dims = 2" begin
-            d = 2
-            expected = [[1, 2], [9, 10], [10, 11]]
-            @test Transforms.apply(A, hod; dims=d) == expected
-            @test hod(A; dims=d) == expected
+            @testset "dims = 1" begin
+                d = 1
+                expected = [[9, 10], [10, 11]]
+                @test Transforms.apply(A, hod; dims=d, inds=[2, 3]) == expected
+            end
+
+            @testset "dims = 2" begin
+                d = 2
+                expected = [[2], [10], [11]]
+                @test Transforms.apply(A, hod; dims=d, inds=[2]) == expected
+            end
         end
     end
 
@@ -123,24 +188,43 @@
         @test Transforms.apply(A, hod) == expected
         @test hod(A) == expected
 
-        @testset "dims = :" begin
-            d = Colon()
-            @test Transforms.apply(A, hod; dims=d) == expected
-            @test hod(A; dims=d) == expected
+        @testset "dims" begin
+            @testset "dims = :" begin
+                d = Colon()
+                @test Transforms.apply(A, hod; dims=d) == expected
+                @test hod(A; dims=d) == expected
+            end
+
+            @testset "dims = 1" begin
+                d = 1
+                expected = [[1, 9, 10], [2, 10, 11]]
+                @test Transforms.apply(A, hod; dims=d) == expected
+                @test hod(A; dims=d) == expected
+            end
+
+            @testset "dims = 2" begin
+                d = 2
+                expected = [[1, 2], [9, 10], [10, 11]]
+                @test Transforms.apply(A, hod; dims=d) == expected
+                @test hod(A; dims=d) == expected
+            end
         end
 
-        @testset "dims = 1" begin
-            d = 1
-            expected = [[1, 9, 10], [2, 10, 11]]
-            @test Transforms.apply(A, hod; dims=d) == expected
-            @test hod(A; dims=d) == expected
-        end
+        @testset "inds" begin
+            expected = [2, 9]
+            @test Transforms.apply(A, hod; inds=[2, 3]) == expected
 
-        @testset "dims = 2" begin
-            d = 2
-            expected = [[1, 2], [9, 10], [10, 11]]
-            @test Transforms.apply(A, hod; dims=d) == expected
-            @test hod(A; dims=d) == expected
+            @testset "dims = 1" begin
+                d = 1
+                expected = [[9, 10], [10, 11]]
+                @test Transforms.apply(A, hod; dims=d, inds=[2, 3]) == expected
+            end
+
+            @testset "dims = 2" begin
+                d = 2
+                expected = [[2], [10], [11]]
+                @test Transforms.apply(A, hod; dims=d, inds=[2]) == expected
+            end
         end
     end
 

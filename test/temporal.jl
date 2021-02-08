@@ -144,49 +144,85 @@
         end
     end
 
-    # @testset "NamedTuple" begin
-    #     nt = (a = [1, 2, 3], b = [4, 5, 6])
-    #     expected = (a = [1, 8, 27], b = [64, 125, 216])
+    @testset "NamedTuple" begin
+        nt = (
+            a = DateTime(2020, 1, 1, 0, 0):Hour(1):DateTime(2020, 1, 1, 2, 0),
+            b = DateTime(2020, 1, 1, 3, 0):Hour(1):DateTime(2020, 1, 1, 5, 0)
+        )
+        expected = [[0, 1, 2], [3, 4, 5]]
 
-    #     @testset "all cols" begin
-    #         transformed = Transforms.apply(nt, p)
-    #         @test transformed isa NamedTuple{(:a, :b)}
-    #         @test transformed == expected
-    #         @test p(nt) == expected
+        @testset "all cols" begin
+            @test Transforms.apply(nt, hod) == expected
+            @test hod(nt) == expected
 
-    #         _nt = deepcopy(nt)
-    #         Transforms.apply!(_nt, p)
-    #         @test _nt == expected
-    #     end
+            # Test the tranform was not mutating
+            @test nt != expected
+        end
 
-    #     @testset "cols = $c" for c in (:a, :b)
-    #         nt_mutated = NamedTuple{(Symbol("$c"), )}((expected[c], ))
-    #         nt_expected = merge(nt, nt_mutated)
+        @testset "cols" begin
+            @testset "cols = all" begin
+                cols = [:a, :b]
+                @test Transforms.apply(nt, hod; cols=cols) == expected
+                @test hod(nt; cols=cols) == expected
+            end
 
-    #         @test Transforms.apply(nt, p; cols=[c]) == nt_expected
-    #         @test p(nt; cols=[c]) == nt_expected
+            @testset "cols = :a" begin
+                cols = [:a]
+                # TODO: this is kind of ugly if only a single Vector is expected
+                expected = [[0, 1, 2]]
 
-    #         _nt = deepcopy(nt)
-    #         Transforms.apply!(_nt, p; cols=[c])
-    #         @test _nt == nt_expected
-    #     end
-    # end
+                @test Transforms.apply(nt, hod; cols=cols) == expected
+                @test hod(nt; cols=cols) == expected
+            end
+
+            @testset "cols = :b" begin
+                cols = [:b]
+                expected = [[3, 4, 5]]
+
+                @test Transforms.apply(nt, hod; cols=cols) == expected
+                @test hod(nt; cols=cols) == expected
+            end
+        end
+    end
 
 
-    # @testset "DataFrame" begin
-    #     df = DataFrame(:a => [1, 2, 3], :b => [4, 5, 6])
-    #     expected = DataFrame(:a => [1, 8, 27], :b => [64, 125, 216])
+    @testset "DataFrame" begin
+        df = DataFrame(
+            :a => DateTime(2020, 1, 1, 0, 0):Hour(1):DateTime(2020, 1, 1, 2, 0),
+            :b => DateTime(2020, 1, 1, 3, 0):Hour(1):DateTime(2020, 1, 1, 5, 0)
+        )
+        expected = [[0, 1, 2], [3, 4, 5]]
 
-    #     transformed = Transforms.apply(df, p)
-    #     @test transformed isa DataFrame
-    #     @test transformed == expected
+        @testset "all cols" begin
+            @test Transforms.apply(df, hod) == expected
+            @test hod(df) == expected
 
-    #     @test Transforms.apply(df, p; cols=[:a]) == DataFrame(:a => [1, 8, 27], :b => [4, 5, 6])
-    #     @test Transforms.apply(df, p; cols=[:b]) == DataFrame(:a => [1, 2, 3], :b => [64, 125, 216])
+            # Test the tranform was not mutating
+            @test df != expected
+        end
 
-    #     _df = deepcopy(df)
-    #     Transforms.apply!(_df, p)
-    #     @test _df == expected
-    # end
+        @testset "cols" begin
+            @testset "cols = all" begin
+                cols = [:a, :b]
+                @test Transforms.apply(df, hod; cols=cols) == expected
+                @test hod(df; cols=cols) == expected
+            end
 
+            @testset "cols = :a" begin
+                cols = [:a]
+                expected = [[0, 1, 2]]
+
+                @test Transforms.apply(df, hod; cols=cols) == expected
+                @test hod(df; cols=cols) == expected
+            end
+
+            @testset "cols = :b" begin
+                cols = [:b]
+                expected = [[3, 4, 5]]
+
+                @test Transforms.apply(df, hod; cols=cols) == expected
+                @test hod(df; cols=cols) == expected
+            end
+        end
+    end
 end

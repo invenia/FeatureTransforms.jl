@@ -2,47 +2,32 @@
     @testset "_periodic" begin
         @testset "$f" for f in (sin, cos)
             # A typical 24-hour day
-            for h in 0:24
-                result = _periodic(
-                    f,
-                    ZonedDateTime(2015, 6, 1, tz"America/Winnipeg") + Hour(h),
-                    Day(1),
-                )
-                expected = f(2π / 24 * h)
-                @test result ≈ expected atol=1e-14
-            end
+            x = ZonedDateTime(2015, 6, 1, tz"America/Winnipeg") .+ collect(Hour.(0:2))
+            result = _periodic.(f, x, Day(1))
+            expected = Dict(sin => [0., 0.2588, 0.5], cos => [1.0, 0.9659, 0.866])[f]
+            @test result ≈ expected atol=1e-4
 
             # A spring daylight-saving time change where the day has 23-hours
-            for h in 0:23
-                result = _periodic(
-                    f,
-                    ZonedDateTime(2015, 3, 8, tz"America/Winnipeg") + Hour(h),
-                    Day(1),
-                )
-                expected = f(2π / 23 * h)
-                @test result ≈ expected atol=1e-14
-            end
+            x = ZonedDateTime(2015, 3, 8, tz"America/Winnipeg") .+ collect(Hour.(0:2))
+            result = _periodic.(f, x, Day(1))
+            expected = Dict(sin => [0., 0.2698, 0.5196], cos => [1., 0.9629, 0.8544])[f]
+            @test result ≈ expected atol=1e-4
 
             # A fall daylight-saving time change where the day has 25-hours
-            for h in 0:25
-                result = _periodic(
-                    f,
-                    ZonedDateTime(2015, 11, 1, tz"America/Winnipeg") + Hour(h),
-                    Day(1),
-                )
-                expected = f(2π / 25 * h)
-                @test result ≈ expected atol=1e-14
-            end
+            x = ZonedDateTime(2015, 11, 1, tz"America/Winnipeg") .+ collect(Hour.(0:2))
+            result = _periodic.(f, x, Day(1))
+            expected = Dict(sin => [0., 0.2487, 0.4818], cos => [1., 0.9686, 0.8763])[f]
+            @test result ≈ expected atol=1e-4
         end
 
         @testset "phase shift" begin
-            @test _periodic(sin, DateTime(1), Week(1)) == 0
-            @test _periodic(sin, DateTime(1), Week(1), Day(7)) == 0
-            @test _periodic(sin, DateTime(1), Week(1), Day(-7)) == 0
+            @test _periodic(sin, DateTime(2018), Week(1)) == 0
+            @test _periodic(sin, DateTime(2018), Week(1)) == 0
+            @test _periodic(sin, DateTime(2018), Week(1)) == 0
 
-            @test _periodic(sin, DateTime(2), Week(1)) ≈ 0.7818314824680298 atol=1e-14
-            @test _periodic(sin, DateTime(2), Week(1), Day(7)) ≈ 0.7818314824680298 atol=1e-14
-            @test _periodic(sin, DateTime(2), Week(1), Day(5)) ≈ 0.43388373911755823 atol=1e-14
+            @test _periodic(sin, DateTime(2019), Week(1)) ≈ 0.7818 atol=1e-4
+            @test _periodic(sin, DateTime(2019), Week(1), Day(7)) ≈ 0.7818 atol=1e-4
+            @test _periodic(sin, DateTime(2019), Week(1), Day(5)) ≈ 0.4339 atol=1e-4
 
             # Using the phase shift we can make a Thursday the beginning of the week
             # (i.e. such that sin(t) == 0). The UNIX epoch 1970-01-01 fell on Thursday.
@@ -62,12 +47,14 @@
         @testset "Constructors" begin
             @testset "Default" begin
                 p = Periodic(sin, 5, 2)
+                @test p isa Transform
                 @test p.period == 5
                 @test p.phase_shift == 2
             end
 
             @testset "No phase_shift" begin
                 p = Periodic(sin, 5)
+                @test p isa Transform
                 @test p.period == 5
                 @test p.phase_shift == 0
             end
@@ -94,8 +81,6 @@
 
         @testset "$f" for f in (sin, cos)
             p = Periodic(f, 5, 2)
-
-            @test p isa Transform
 
             @testset "Vector" begin
                 x = collect(0.:5.)
@@ -227,12 +212,14 @@
         @testset "Constructors" begin
             @testset "Default" begin
                 p = Periodic(sin, Day(5), Day(2))
+                @test p isa Transform
                 @test p.period == Day(5)
                 @test p.phase_shift == Day(2)
             end
 
             @testset "No phase_shift" begin
                 p = Periodic(sin, Day(5))
+                @test p isa Transform
                 @test p.period == Day(5)
                 @test p.phase_shift == Day(0)
             end
@@ -241,10 +228,9 @@
         @testset "$f" for f in (sin, cos)
             p = Periodic(f, Day(5), Day(2))
 
-            @test p isa Transform
-
             @testset "Vector" begin
                 x = ZonedDateTime(2020, 1, 1, tz"EST") .+ (Day(0):Day(1):Day(5))
+                # Use _periodic to get expected outputs because we test it elsewhere
                 expected = _periodic.(f, x, Day(5), Day(2))
 
                 @test Transforms.apply(x, p) ≈ expected atol=1e-14

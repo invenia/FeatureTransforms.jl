@@ -35,14 +35,18 @@ function apply(x::AbstractVector, LC::LinearCombination; inds=Colon())
 end
 
 """
-    apply(x::AbstractArray, LC::LinearCombination; dims=1, inds=Colon())
+    apply(x::AbstractMatrix, LC::LinearCombination; dims=1, inds=Colon())
 
 Applies the [`LinearCombination`](@ref) to each of the specified indices in `x` along the
-dimension specified, which defaults to applying across the columns of x.
+dimension specified, which defaults to applying it row-wise for each column of x."
 
 If no `inds` are specified, then the [`LinearCombination`](@ref) is applied to all columns.
 """
-function apply(x::AbstractArray, LC::LinearCombination; dims=1, inds=Colon())
+function apply(x::AbstractMatrix, LC::LinearCombination; dims=1, inds=Colon())
+    if dims === Colon()
+        throw(ArgumentError("Colon() dims is not supported, use 1 or 2 instead"))
+    end
+
     # Get the number of vectors in the dimension not specified
     other_dim = dims ==  1 ? 2 : 1
     num_inds = inds isa Colon ? size(x, other_dim) : length(inds)
@@ -53,24 +57,24 @@ function apply(x::AbstractArray, LC::LinearCombination; dims=1, inds=Colon())
 end
 
 """
-    apply(x::Table, LC::LinearCombination; inds=nothing
+    apply(x::Table, LC::LinearCombination; cols=nothing)
 
-Applies the [`LinearCombination`](@ref) to each of the specified indices (columns) in `x`.
+Applies the [`LinearCombination`](@ref) to each of the specified cols in `x`.
 
-If no `inds` are specified, then the [`LinearCombination`](@ref) is applied to all columns.
+If no `cols` are specified, then the [`LinearCombination`](@ref) is applied to all columns.
 """
-function apply(x, LC::LinearCombination; inds=nothing)
+function apply(x, LC::LinearCombination; cols=nothing)
     # Error if dimensions don't match
-    num_inds = inds === nothing ? length(Tables.columnnames(x)) : length(inds)
-    _check_dimensions_match(LC, num_inds)
+    num_cols = cols === nothing ? length(Tables.columnnames(x)) : length(cols)
+    _check_dimensions_match(LC, num_cols)
 
     # Keep the generic form when not specifying column names
     # because that is much more performant than selecting each col by name
-    if inds === nothing
+    if cols === nothing
         return [_sum_row(row, LC.coefficients) for row in Tables.rows(x)]
     else
         return [
-            _sum_row([row[cname] for cname in inds], LC.coefficients)
+            _sum_row([row[cname] for cname in cols], LC.coefficients)
             for row in Tables.rows(x)
         ]
     end

@@ -40,20 +40,26 @@
             @test lc(M) == expected
         end
 
-        # TODO: Colon() is not supported by eachslice(A, dims=:), do we care?
         @testset "dims" begin
+            @testset "dims = :" begin
+                d = Colon()
+                @test_throws ArgumentError Transforms.apply(M, lc; dims=d)
+            end
+
             @testset "dims = 1" begin
-                @test Transforms.apply(M, lc; dims=1) == expected
-                @test lc(M; dims=1) == expected
+                d = 1
+                @test Transforms.apply(M, lc; dims=d) == expected
+                @test lc(M; dims=d) == expected
             end
 
             @testset "dims = 2" begin
+                d = 2
                 # There are 3 rows so trying to apply along dim 2 without specifying inds
                 # won't work
-                @test_throws DimensionMismatch Transforms.apply(M, lc; dims=2)
+                @test_throws DimensionMismatch Transforms.apply(M, lc; dims=d)
 
-                @test Transforms.apply(M, lc; dims=2, inds=[2, 3]) == [-1, -3]
-                @test lc(M; dims=2, inds=[1, 3]) == [-2, -4]
+                @test Transforms.apply(M, lc; dims=d, inds=[2, 3]) == [-1, -3]
+                @test lc(M; dims=d, inds=[1, 3]) == [-2, -4]
             end
         end
 
@@ -82,14 +88,21 @@
         end
 
         @testset "dims" begin
+            @testset "dims = :" begin
+                d = Colon()
+                @test_throws ArgumentError Transforms.apply(A, lc; dims=d)
+            end
+
             @testset "dims = 1" begin
-                @test Transforms.apply(A, lc; dims=1) == expected
-                @test lc(A; dims=1) == expected
+                d = 1
+                @test Transforms.apply(A, lc; dims=d) == expected
+                @test lc(A; dims=d) == expected
             end
 
             @testset "dims = 2" begin
-                @test Transforms.apply(A, lc; dims=2) == [-3, -3]
-                @test lc(A; dims=2) == [-3, -3]
+                d = 2
+                @test Transforms.apply(A, lc; dims=d) == [-3, -3]
+                @test lc(A; dims=d) == [-3, -3]
             end
         end
 
@@ -118,14 +131,21 @@
         end
 
         @testset "dims" begin
+            @testset "dims = :" begin
+                d = Colon()
+                @test_throws ArgumentError Transforms.apply(A, lc; dims=d)
+            end
+
             @testset "dims = 1" begin
-                @test Transforms.apply(A, lc; dims=1) == expected
-                @test lc(A; dims=1) == expected
+                d = 1
+                @test Transforms.apply(A, lc; dims=d) == expected
+                @test lc(A; dims=d) == expected
             end
 
             @testset "dims = 2" begin
-                @test Transforms.apply(A, lc; dims=2) == [-3, -3]
-                @test lc(A; dims=2) == [-3, -3]
+                d = 2
+                @test Transforms.apply(A, lc; dims=d) == [-3, -3]
+                @test lc(A; dims=d) == [-3, -3]
             end
         end
 
@@ -164,11 +184,11 @@
 
         @testset "specified cols" begin
             nt = (a = [1, 2, 3], b = [4, 5, 6], c = [1, 1, 1])
-            inds = [:a, :b]
+            cols = [:a, :b]
             expected = [-3, -3, -3]
 
-            @test Transforms.apply(nt, lc; inds=inds) == expected
-            @test lc(nt; inds=inds) == expected
+            @test Transforms.apply(nt, lc; cols=cols) == expected
+            @test lc(nt; cols=cols) == expected
         end
     end
 
@@ -192,11 +212,11 @@
 
         @testset "specified cols" begin
             df = DataFrame(:a => [1, 2, 3], :b => [4, 5, 6], :c => [1, 1, 1])
-            inds = [:b, :c]
+            cols = [:b, :c]
             expected = [3, 4, 5]
 
-            @test Transforms.apply(df, lc; inds=inds) == expected
-            @test lc(df; inds=inds) == expected
+            @test Transforms.apply(df, lc; cols=cols) == expected
+            @test lc(df; cols=cols) == expected
         end
     end
 end

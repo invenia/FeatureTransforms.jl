@@ -1,7 +1,7 @@
 """
     LinearCombination(coefficients) <: Transform
 
-Calculate the linear combination using the column weights passed in.
+Calculate the linear combination using the vector coefficients passed in.
 """
 struct LinearCombination <: Transform
     coefficients::Vector{Real}

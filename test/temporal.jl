@@ -21,16 +21,6 @@
             @test hod(x) == expected
         end
 
-        @testset "DST" begin
-            x = ZonedDateTime(2020, 3, 7, 9, 0, tz"America/New_York"):Hour(1):ZonedDateTime(2020, 3, 8, 9, 0, tz"America/New_York")
-
-            # expected result skips the DST transition hour of 2
-            expected = [9:23..., 0, 1, 3:9...]
-
-            @test Transforms.apply(x, hod) == expected
-            @test hod(x) == expected
-        end
-
         @testset "dims" begin
             @testset "dims = :" begin
                 d = Colon()
@@ -40,7 +30,6 @@
 
             @testset "dims = 1" begin
                 d = 1
-                expected = [[x] for x in [9:23..., 0, 1, 3:9...]]
                 @test Transforms.apply(x, hod; dims=d) == expected
                 @test hod(x; dims=d) == expected
             end
@@ -53,9 +42,18 @@
 
             @testset "dims = 1" begin
                 d = 1
-                expected = [[x] for x in [9:23..., 0, 1, 3:9...]]
-                @test Transforms.apply(x, hod; dims=d, inds=[1]) == expected
+                @test Transforms.apply(x, hod; dims=d, inds=[2, 3, 4, 5]) == expected
             end
+        end
+
+        @testset "DST" begin
+            x = ZonedDateTime(2020, 3, 7, 9, 0, tz"America/New_York"):Hour(1):ZonedDateTime(2020, 3, 8, 9, 0, tz"America/New_York")
+
+            # expected result skips the DST transition hour of 2
+            expected = [9:23..., 0, 1, 3:9...]
+
+            @test Transforms.apply(x, hod) == expected
+            @test hod(x) == expected
         end
     end
 
@@ -85,7 +83,6 @@
 
             @testset "dims = 1" begin
                 d = 1
-                expected = [[1, 9], [2, 10], [3, 11]]
                 @test Transforms.apply(M, hod; dims=d) == expected
                 @test hod(M; dims=d) == expected
 
@@ -95,7 +92,6 @@
 
             @testset "dims = 2" begin
                 d = 2
-                expected = [[1, 2, 3], [9, 10, 11]]
                 @test Transforms.apply(M, hod; dims=d) == expected
                 @test hod(M; dims=d) == expected
 
@@ -110,14 +106,21 @@
 
             @testset "dims = 1" begin
                 d = 1
-                expected = [[9], [10], [11]]
-                @test Transforms.apply(M, hod; dims=d, inds=[2]) == expected
+                expected = [2 10; 3 11]
+                @test Transforms.apply(M, hod; dims=d, inds=[2, 3]) == expected
+
+                expected = [1 9; 2 10; 3 11]
+                @test Transforms.apply(M, hod; dims=d, inds=[1, 2, 3]) == expected
             end
 
             @testset "dims = 2" begin
                 d = 2
-                expected = [[2, 3], [10, 11]]
-                @test Transforms.apply(M, hod; dims=d, inds=[2, 3]) == expected
+                expected = [9; 10; 11]
+                expected = reshape(expected, 3, 1)
+                @test Transforms.apply(M, hod; dims=d, inds=[2]) == expected
+
+                expected = [1 9; 2 10; 3 11]
+                @test Transforms.apply(M, hod; dims=d, inds=[1, 2]) == expected
             end
         end
     end
@@ -144,14 +147,12 @@
 
             @testset "dims = 1" begin
                 d = 1
-                expected = [[1, 9, 10], [2, 10, 11]]
                 @test Transforms.apply(A, hod; dims=d) == expected
                 @test hod(A; dims=d) == expected
             end
 
             @testset "dims = 2" begin
                 d = 2
-                expected = [[1, 2], [9, 10], [10, 11]]
                 @test Transforms.apply(A, hod; dims=d) == expected
                 @test hod(A; dims=d) == expected
             end
@@ -163,14 +164,20 @@
 
             @testset "dims = 1" begin
                 d = 1
-                expected = [[9, 10], [10, 11]]
-                @test Transforms.apply(A, hod; dims=d, inds=[2, 3]) == expected
+                expected = [2 10 11]
+                @test Transforms.apply(A, hod; dims=d, inds=[2]) == expected
+
+                expected = [1 9 10; 2 10 11]
+                @test Transforms.apply(M, hod; dims=d, inds=[1, 2]) == expected
             end
 
             @testset "dims = 2" begin
                 d = 2
-                expected = [[2], [10], [11]]
-                @test Transforms.apply(A, hod; dims=d, inds=[2]) == expected
+                expected = [9 10; 10 11]
+                @test Transforms.apply(A, hod; dims=d, inds=[2, 3]) == expected
+
+                expected = [1 9 10; 2 10 11]
+                @test Transforms.apply(M, hod; dims=d, inds=[1, 2, 3]) == expected
             end
         end
     end
@@ -197,14 +204,12 @@
 
             @testset "dims = 1" begin
                 d = 1
-                expected = [[1, 9, 10], [2, 10, 11]]
                 @test Transforms.apply(A, hod; dims=d) == expected
                 @test hod(A; dims=d) == expected
             end
 
             @testset "dims = 2" begin
                 d = 2
-                expected = [[1, 2], [9, 10], [10, 11]]
                 @test Transforms.apply(A, hod; dims=d) == expected
                 @test hod(A; dims=d) == expected
             end
@@ -216,14 +221,20 @@
 
             @testset "dims = 1" begin
                 d = 1
-                expected = [[9, 10], [10, 11]]
-                @test Transforms.apply(A, hod; dims=d, inds=[2, 3]) == expected
+                expected = [2 10 11]
+                @test Transforms.apply(A, hod; dims=d, inds=[2]) == expected
+
+                expected = [1 9 10; 2 10 11]
+                @test Transforms.apply(M, hod; dims=d, inds=[1, 2]) == expected
             end
 
             @testset "dims = 2" begin
                 d = 2
-                expected = [[2], [10], [11]]
-                @test Transforms.apply(A, hod; dims=d, inds=[2]) == expected
+                expected = [9 10; 10 11]
+                @test Transforms.apply(A, hod; dims=d, inds=[2, 3]) == expected
+
+                expected = [1 9 10; 2 10 11]
+                @test Transforms.apply(M, hod; dims=d, inds=[1, 2, 3]) == expected
             end
         end
     end

@@ -30,75 +30,79 @@
         end
     end
 
-    @testset "NamedTuple" begin
-        nt = (a = [1, 2, 3], b = [4, 5, 6])
-        expected = (a = [1, 8, 27], b = [64, 125, 216])
-
-        @testset "all cols" begin
-            transformed = Transforms.apply(nt, p)
-            @test transformed isa NamedTuple{(:a, :b)}
-            @test transformed == expected
-            @test p(nt) == expected
-
-            _nt = deepcopy(nt)
-            Transforms.apply!(_nt, p)
-            @test _nt == expected
-        end
-
-        @testset "cols = $c" for c in (:a, :b)
-            nt_mutated = NamedTuple{(Symbol("$c"), )}((expected[c], ))
-            nt_expected = merge(nt, nt_mutated)
-
-            @test Transforms.apply(nt, p; cols=[c]) == nt_expected
-            @test p(nt; cols=[c]) == nt_expected
-
-            _nt = deepcopy(nt)
-            Transforms.apply!(_nt, p; cols=[c])
-            @test _nt == nt_expected
-        end
-    end
-
     @testset "AxisArray" begin
         A = AxisArray([1 2 3; 4 5 6], foo=["a", "b"], bar=["x", "y", "z"])
-        expected = AxisArray([1 8 27; 64 125 216], foo=["a", "b"], bar=["x", "y", "z"])
+        expected = [1 8 27; 64 125 216]
+        axisarray_expected = AxisArray([1 8 27; 64 125 216], foo=["a", "b"], bar=["x", "y", "z"])
 
         @testset "dims = $d" for d in (Colon(), 1, 2)
-            transformed = Transforms.apply(A, p; dims=d)
-            @test transformed isa AxisArray
-            @test transformed == expected
-        end
-
-    end
-
-    @testset "AxisKey" begin
-        A = KeyedArray([1 2 3; 4 5 6], foo=["a", "b"], bar=["x", "y", "z"])
-        expected = KeyedArray([1 8 27; 64 125 216], foo=["a", "b"], bar=["x", "y", "z"])
-
-        @testset "dims = $d" for d in (Colon(), :foo, :bar)
-            transformed = Transforms.apply(A, p; dims=d)
-            @test transformed isa KeyedArray
-            @test transformed == expected
+            @test Transforms.apply(A, p; dims=d) == expected
         end
 
         _A = copy(A)
         Transforms.apply!(_A, p)
-        @test _A == expected
+        @test _A == axisarray_expected
+        @test _A isa AxisArray
+    end
+
+    @testset "AxisKey" begin
+        A = KeyedArray([1 2 3; 4 5 6], foo=["a", "b"], bar=["x", "y", "z"])
+        expected = [1 8 27; 64 125 216]
+        axiskey_expected = KeyedArray([1 8 27; 64 125 216], foo=["a", "b"], bar=["x", "y", "z"])
+
+        @testset "dims = $d" for d in (Colon(), :foo, :bar)
+            @test Transforms.apply(A, p; dims=d) == expected
+        end
+
+        _A = copy(A)
+        Transforms.apply!(_A, p)
+        @test _A == axiskey_expected
+        @test _A isa KeyedArray
+    end
+
+    @testset "NamedTuple" begin
+        nt = (a = [1, 2, 3], b = [4, 5, 6])
+        expected = [[1, 8, 27], [64, 125, 216]]
+        nt_expected = (a = [1, 8, 27], b = [64, 125, 216])
+
+        @testset "all cols" begin
+            @test Transforms.apply(nt, p) == expected
+            @test p(nt) == expected
+
+            _nt = deepcopy(nt)
+            Transforms.apply!(_nt, p)
+            @test _nt == nt_expected
+            @test _nt isa NamedTuple
+        end
+
+        @testset "cols = $c" for c in (:a, :b)
+            nt_mutated = NamedTuple{(Symbol("$c"), )}((nt_expected[c], ))
+            nt_expected_col = merge(nt, nt_mutated)
+
+            expected = [nt_expected[c]]
+            @test Transforms.apply(nt, p; cols=[c]) == expected
+            @test p(nt; cols=[c]) == expected
+
+            _nt = deepcopy(nt)
+            Transforms.apply!(_nt, p; cols=[c])
+            @test _nt == nt_expected_col
+            @test _nt isa NamedTuple
+        end
     end
 
     @testset "DataFrame" begin
         df = DataFrame(:a => [1, 2, 3], :b => [4, 5, 6])
-        expected = DataFrame(:a => [1, 8, 27], :b => [64, 125, 216])
+        expected = [[1, 8, 27], [64, 125, 216]]
+        df_expected = DataFrame(:a => [1, 8, 27], :b => [64, 125, 216])
 
-        transformed = Transforms.apply(df, p)
-        @test transformed isa DataFrame
-        @test transformed == expected
+        @test Transforms.apply(df, p) == expected
 
-        @test Transforms.apply(df, p; cols=[:a]) == DataFrame(:a => [1, 8, 27], :b => [4, 5, 6])
-        @test Transforms.apply(df, p; cols=[:b]) == DataFrame(:a => [1, 2, 3], :b => [64, 125, 216])
+        @test Transforms.apply(df, p; cols=[:a]) == [[1, 8, 27]]
+        @test Transforms.apply(df, p; cols=[:b]) == [[64, 125, 216]]
 
         _df = deepcopy(df)
         Transforms.apply!(_df, p)
-        @test _df == expected
+        @test _df == df_expected
+        @test _df isa DataFrame
     end
-
 end

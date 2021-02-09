@@ -1,26 +1,29 @@
 @testset "periodic" begin
     @testset "_periodic" begin
         @testset "$f" for f in (sin, cos)
-            # A typical 24-hour day
-            day_typical = ZonedDateTime(2015, 6, 1, tz"America/Winnipeg")
-            hours_typical = day_typical .+ collect(Hour.(0:2))
-            result = _periodic.(f, hours_typical, Day(1))
-            expected = Dict(sin => [0., 0.2588, 0.5], cos => [1.0, 0.9659, 0.866])
-            @test result ≈ expected[f] atol=1e-4
+            @testset "Typical 24-hour day" begin
+                day_typical = ZonedDateTime(2015, 6, 1, tz"America/Winnipeg")
+                hours_typical = day_typical .+ collect(Hour.(0:2))
+                result = _periodic.(f, hours_typical, Day(1))
+                expected = Dict(sin => [0., 0.2588, 0.5], cos => [1.0, 0.9659, 0.866])
+                @test result ≈ expected[f] atol=1e-4
+            end
 
-            # A spring daylight-saving time change where the day has 23-hours
-            day_spring_dst = ZonedDateTime(2015, 3, 8, tz"America/Winnipeg")
-            hours_spring_dst = day_spring_dst .+ collect(Hour.(0:2))
-            result = _periodic.(f, hours_spring_dst, Day(1))
-            expected = Dict(sin => [0., 0.2698, 0.5196], cos => [1., 0.9629, 0.8544])
-            @test result ≈ expected[f] atol=1e-4
+            @testset "Spring daylight-saving time change (23 hours)" begin
+                day_spring_dst = ZonedDateTime(2015, 3, 8, tz"America/Winnipeg")
+                hours_spring_dst = day_spring_dst .+ collect(Hour.(0:2))
+                result = _periodic.(f, hours_spring_dst, Day(1))
+                expected = Dict(sin => [0., 0.2698, 0.5196], cos => [1., 0.9629, 0.8544])
+                @test result ≈ expected[f] atol=1e-4
+            end
 
-            # A fall daylight-saving time change where the day has 25-hours
-            day_fall_dst = ZonedDateTime(2015, 11, 1, tz"America/Winnipeg")
-            hours_fall_dst = day_fall_dst .+ collect(Hour.(0:2))
-            result = _periodic.(f, hours_fall_dst, Day(1))
-            expected = Dict(sin => [0., 0.2487, 0.4818], cos => [1., 0.9686, 0.8763])
-            @test result ≈ expected[f] atol=1e-4
+            @testset "Fall daylight-saving time change (25 hours)" begin
+                day_fall_dst = ZonedDateTime(2015, 11, 1, tz"America/Winnipeg")
+                hours_fall_dst = day_fall_dst .+ collect(Hour.(0:2))
+                result = _periodic.(f, hours_fall_dst, Day(1))
+                expected = Dict(sin => [0., 0.2487, 0.4818], cos => [1., 0.9686, 0.8763])
+                @test result ≈ expected[f] atol=1e-4
+            end
         end
 
         @testset "phase shift" begin

@@ -22,7 +22,7 @@ struct Periodic{T} <: Transform where T <: Union{Real, Period}
     phase_shift::T
 
     function Periodic(f, period::T, phase_shift::T) where T
-        period <= zero(T) && throw(ArgumentError("period must be strictly positive."))
+        period > zero(T) || throw(ArgumentError("period must be strictly positive."))
         return new{T}(f, period, phase_shift)
     end
 end

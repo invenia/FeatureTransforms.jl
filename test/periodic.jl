@@ -22,8 +22,8 @@
 
         @testset "phase shift" begin
             @test _periodic(sin, DateTime(2018), Week(1)) == 0
-            @test _periodic(sin, DateTime(2018), Week(1)) == 0
-            @test _periodic(sin, DateTime(2018), Week(1)) == 0
+            @test _periodic(sin, DateTime(2018), Week(1), Day(7)) == 0
+            @test _periodic(sin, DateTime(2018), Week(1), Day(-7)) == 0
 
             @test _periodic(sin, DateTime(2019), Week(1)) ≈ 0.7818 atol=1e-4
             @test _periodic(sin, DateTime(2019), Week(1), Day(7)) ≈ 0.7818 atol=1e-4

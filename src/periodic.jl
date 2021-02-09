@@ -40,7 +40,13 @@ function _apply!(x::AbstractArray{T}, P::Periodic; kwargs...) where T <: Real
     return x
 end
 
-function apply(x::AbstractArray{T}, P::Periodic{U}; kwargs...) where {T <: TimeType, U <: Period}
+# `U <: Period` needed to avoid method ambiguity with
+# `apply(table, P::Periodic{T}; cols=nothing) where T <: Period`
+function apply(
+    x::AbstractArray{T},
+    P::Periodic{U};
+    kwargs...
+) where {T <: TimeType, U <: Period}
     return map(xi -> _periodic(P.f, xi, P.period, P.phase_shift), x)
 end
 

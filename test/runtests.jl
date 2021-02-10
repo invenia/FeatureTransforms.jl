@@ -13,4 +13,5 @@ using TimeZones
     include("periodic.jl")
     include("power.jl")
     include("temporal.jl")
+    include("scaling.jl")
 end

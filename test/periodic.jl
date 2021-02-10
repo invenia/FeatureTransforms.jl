@@ -127,12 +127,14 @@
 
                 @testset "dims = $d" for d in (Colon(), 1, 2)
                     transformed = Transforms.apply(A, p; dims=d)
-                    @test transformed isa AxisArray
+                    # AxisArray doesn't preserve type when operations are performed on it
+                    @test transformed isa AbstractArray
                     @test transformed ≈ A_expected atol=1e-14
                 end
 
                 _A = copy(A)
                 Transforms.apply!(_A, p)
+                @test _A isa AxisArray
                 @test _A ≈ A_expected atol=1e-14
             end
 
@@ -163,12 +165,12 @@
 
                 @testset "all cols" begin
                     transformed = Transforms.apply(nt, p)
-                    @test transformed isa NamedTuple{(:a, :b)}
-                    @test collect(transformed) ≈ collect(nt_expected) atol=1e-14
-                    @test collect(p(nt)) ≈ collect(nt_expected) atol=1e-14
+                    @test transformed ≈ collect(nt_expected) atol=1e-14
+                    @test p(nt) ≈ collect(nt_expected) atol=1e-14
 
                     _nt = deepcopy(nt)
                     Transforms.apply!(_nt, p)
+                    @test _nt isa NamedTuple{(:a, :b)}
                     @test collect(_nt) ≈ collect(nt_expected) atol=1e-14
                 end
 
@@ -177,12 +179,12 @@
                     nt_expected_ = merge(nt, nt_mutated)
 
                     transformed = Transforms.apply(nt, p; cols=[c])
-                    @test transformed isa NamedTuple{(:a, :b)}  # before applying `collect`
-                    @test collect(transformed) ≈ collect(nt_expected_) atol=1e-14
-                    @test collect(p(nt; cols=[c])) ≈ collect(nt_expected_) atol=1e-14
+                    @test transformed ≈ [collect(nt_expected_[c])] atol=1e-14
+                    @test p(nt; cols=[c]) ≈ [collect(nt_expected_[c])] atol=1e-14
 
                     _nt = deepcopy(nt)
                     Transforms.apply!(_nt, p; cols=[c])
+                    @test _nt isa NamedTuple{(:a, :b)}  # before applying `collect`
                     @test collect(_nt) ≈ collect(nt_expected_) atol=1e-14
                 end
             end
@@ -191,23 +193,19 @@
                 df = DataFrame(:a => collect(0.:2.), :b => collect(3.:5.))
                 df_expected = DataFrame(:a => expected[1:3], :b => expected[4:6])
 
-                transformed = Transforms.apply(df, p)
-                @test transformed isa DataFrame
-                @test transformed ≈ df_expected atol=1e-14
+                @test Transforms.apply(df, p) ≈ [df_expected.a, df_expected.b] atol=1e-14
 
-                @test ≈(
-                    Transforms.apply(df, p; cols=[:a]),
-                    DataFrame(:a => expected[1:3], :b => collect(3.:5.)),
-                    atol=1e-14
-                )
-                @test ≈(
-                    Transforms.apply(df, p; cols=[:b]),
-                    DataFrame(:a => collect(0.:2.), :b => expected[4:6]),
-                    atol=1e-14
-                )
+                @testset "cols = $c" for c in (:a, :b)
+                    @test ≈(
+                        Transforms.apply(df, p; cols=[c]),
+                        [df_expected[!, c]],
+                        atol=1e-14
+                    )
+                end
 
                 _df = deepcopy(df)
                 Transforms.apply!(_df, p)
+                @test _df isa DataFrame
                 @test _df ≈ df_expected atol=1e-14
             end
         end
@@ -271,9 +269,12 @@
 
                 @testset "dims = $d" for d in (Colon(), 1, 2)
                     transformed = Transforms.apply(A, p; dims=d)
-                    @test transformed isa AxisArray
+                    # AxisArray doesn't preserve type when operations are performed on it
+                    @test transformed isa AbstractArray
                     @test transformed ≈ expected atol=1e-14
                 end
+
+                # TODO: confirm we don't support mutating periodic for Time Types
             end
 
             @testset "AxisKey" begin

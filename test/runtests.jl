@@ -8,7 +8,8 @@ using Test
 using TimeZones
 
 @testset "Transforms.jl" begin
-    include("periodic.jl")
     include("linear_combination.jl")
+    include("periodic.jl")
     include("power.jl")
+    include("temporal.jl")
 end

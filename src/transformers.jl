@@ -57,8 +57,8 @@ and `inds` will be the indices to apply the Transform to along the `dims` specif
 If `dims` === : (all dimensions), then `inds` will be the global indices of the array,
 instead of being relative to a certain dimension.
 
-Will return the same datatype except for AxisArrays as operations on those do not preserve
-type.
+May not return the same data type depending on what the data type is, and what `dims` and
+`inds` were specified.
 """
 function apply(A::AbstractArray, t::Transform; dims=:, inds=:, kwargs...)
     if dims === Colon()
@@ -81,7 +81,7 @@ If no `cols` are specified, then the [`Transform`](@ref) is applied to all colum
 Returns an array containing each transformed column, in the same order as `cols`.
 """
 function apply(table, t::Transform; cols=nothing, kwargs...)
-    Tables.istable(table) || throw(MethodError(apply!, (table, t)))
+    Tables.istable(table) || throw(MethodError(apply, (table, t)))
 
     # Extract a columns iterator that we should be able to use to mutate the data.
     # NOTE: Mutation is not guaranteed for all table types, but it avoid copying the data

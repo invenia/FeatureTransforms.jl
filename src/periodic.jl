@@ -44,7 +44,7 @@ function _apply(x, P::Periodic{T}; kwargs...) where T <: Period
 end
 
 function _apply!(x::AbstractArray{T}, P::Periodic; kwargs...) where T <: Real
-    x[:] = apply(x, P; kwargs...)
+    x[:] = _apply(x, P; kwargs...)
     return x
 end
 

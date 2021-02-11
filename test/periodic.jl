@@ -273,8 +273,6 @@
                     @test transformed isa AbstractArray
                     @test transformed ≈ expected atol=1e-14
                 end
-
-                # TODO: confirm we don't support mutating periodic for Time Types
             end
 
             @testset "AxisKey" begin

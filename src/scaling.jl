@@ -14,6 +14,8 @@ struct IdentityScaling <: Scaling end
 # Convenience method
 IdentityScaling(args...; kwargs...) = IdentityScaling()
 
+apply!(A::AbstractArray{T}, scaling::IdentityScaling; kwargs...) where T <: Real = A
+
 """
     MeanStdScaling(mean, std) <: Scaling
 
@@ -30,7 +32,7 @@ mutable struct MeanStdScaling <: Scaling
     Construct a `MeanStdScaling` transform which will populate its `mean` and `std`
     parameters from the first data it is applied to.
     """
-    MeanStdScaling() = new(0, 1, false)
+    MeanStdScaling() = new(0, 1, false)  # initialising to 0 and 1 may be confusing
 end
 
 """
@@ -51,8 +53,6 @@ function populate_stats!(scaling::MeanStdScaling, A; dims)
     scaling.populated = true
     return scaling
 end
-
-apply!(A::AbstractArray{T}, scaling::IdentityScaling; kwargs...) where T <: Real = A
 
 """
     apply!(

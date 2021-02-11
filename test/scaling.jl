@@ -25,6 +25,7 @@
         end
 
         @testset "Vector" begin
+            scaling = MeanStdScaling()
             x = [1., 2., 3.]
             expected = [-1., 0., 1.]
 

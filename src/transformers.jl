@@ -33,7 +33,7 @@ function transform end
 Applies the [`Transform`](@ref) to the data. New transforms should usually only extend
 `_apply` which this method delegates to.
 
-Where possible, this should be extended for new data types `T`.
+Where necessary, this should be extended for new data types `T`.
 """
 function apply end
 
@@ -43,7 +43,7 @@ function apply end
 Applies the [`Transform`](@ref) mutating the input `data`. New transforms should usually
 only extend `_apply!` which this method delegates to.
 
-Where possible, this should be extended for new data types `T`.
+Where necessary, this should be extended for new data types `T`.
 """
 function apply! end
 
@@ -51,14 +51,17 @@ function apply! end
 """
     apply(A::AbstractArray, ::Transform; dims=:, inds=:, kwargs...)
 
-Applies the [`Transform`](@ref) to each element of `A`.
-Optionally specify the `dims` to apply the [`Transform`](@ref) along certain dimensions
-and `inds` will be the indices to apply the Transform to along the `dims` specified.
-If `dims` === : (all dimensions), then `inds` will be the global indices of the array,
+Applies the [`Transform`](@ref) to the elements of `A`.
+Provide the `dims` keyword to apply the [`Transform`](@ref) along a certain dimension.
+Provide the `inds` keyword to apply the [`Transform`](@ref) to certain indices along the
+`dims` specified.
+
+Note: if `dims === :` (all dimensions), then `inds` will be the global indices of the array,
 instead of being relative to a certain dimension.
 
-May not return the same data type depending on what the data type is, and what `dims` and
-`inds` were specified.
+This method does not guarantee the data type of what is returned. It will try to conserve
+type but the returned type depends on what the original `A` was, and the `dims` and `inds`
+specified.
 """
 function apply(A::AbstractArray, t::Transform; dims=:, inds=:, kwargs...)
     if dims === Colon()
@@ -73,7 +76,7 @@ function apply(A::AbstractArray, t::Transform; dims=:, inds=:, kwargs...)
 end
 
 """
-    apply(table, ::Transform; cols=nothing, kwargs...)
+    apply(table, ::Transform; cols=nothing, kwargs...) -> Vector
 
 Applies the [`Transform`](@ref) to each of the specified columns in the `table`.
 If no `cols` are specified, then the [`Transform`](@ref) is applied to all columns.
@@ -91,8 +94,7 @@ function apply(table, t::Transform; cols=nothing, kwargs...)
     return [_apply(getproperty(columntable, cname), t; kwargs...)  for cname in cnames]
 end
 
-#TODO: should this be apply! ?
-_apply(x, t::Transform; kwargs...) = apply!(_try_copy(x), t; kwargs...)
+_apply(x, t::Transform; kwargs...) = _apply!(_try_copy(x), t; kwargs...)
 
 
 """

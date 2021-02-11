@@ -5,15 +5,24 @@
         @test scaling isa Transform
 
         @testset "Vector" begin
-            scaling = MeanStdScaling()
             x = [1., 2., 3.]
             expected = [-1., 0., 1.]
 
-            @test Transforms.apply(x, scaling) ≈ expected atol=1e-5
-            @test scaling(x) ≈ expected atol=1e-5
+            @testset "Non-mutating" begin
+                scaling = MeanStdScaling()
+                @test Transforms.apply(x, scaling) ≈ expected atol=1e-5
+                @test scaling(x) ≈ expected atol=1e-5
 
-            # Test the transform was not mutating
-            @test !isapprox(x, expected; atol=1e-5)
+                # Test the transform was not mutating
+                @test !isapprox(x, expected; atol=1e-5)
+            end
+
+            @testset "Mutating" begin
+                scaling = MeanStdScaling()
+                _x = copy(x)
+                Transforms.apply!(_x, scaling)
+                @test _x ≈ expected atol=1e-5
+            end
         end
 
         @testset "3D array" begin
@@ -113,6 +122,34 @@
 
                     @test Transforms.apply(M, scaling; dims=d) ≈ M_3_expected atol=1e-5
                 end
+            end
+        end
+
+        @testset "DataFrame" begin
+            scaling = MeanStdScaling()
+            df = DataFrame(:a => [0.0, -0.5, 0.5], :b => [1.0, 0.0, 2.0])
+            df_expected = DataFrame(
+                :a => [-0.559017, -1.118034, 0.0], :b => [0.559017, -0.559017, 1.67705]
+            )
+
+            @testset "Non-mutating" begin
+                @test ≈(
+                    Transforms.apply(df, scaling),
+                    [df_expected.a, df_expected.b],
+                    atol=1e-5
+                )
+            end
+
+            @testset "Mutating" begin
+                _df = deepcopy(df)
+                Transforms.apply!(_df, p)
+                @test _df isa DataFrame
+                @test _df ≈ df_expected atol=1e-5
+            end
+
+            @testset "cols = $c" for c in (:a, :b)
+                scaling = MeanStdScaling()
+                @test Transforms.apply(df, scaling; cols=[c]) ≈ [[0., -1., 1.]] atol=1e-5
             end
         end
     end

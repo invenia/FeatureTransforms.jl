@@ -56,17 +56,18 @@ apply!(A::AbstractArray{T}, scaling::IdentityScaling; kwargs...) where T <: Real
 
 """
     apply!(
-        x::AbstractArray{T}, t::Scaling;
+        x::AbstractArray{T}, t::MeanStdScaling;
         dims=:, inverse=false, kwargs...
     ) where T <: Real
 
-Applies [`Scaling`](@ref) to each element of `x`.
-Optionally specify the `dims` to apply the [`Scaling`](@ref) along certain dimensions,
+Applies [`MeanStdScaling`](@ref) to each element of `x`.
+Optionally specify the `dims` to apply [`MeanStdScaling`](@ref) along certain dimensions,
 and `inverse=true` to reconstruct the originally scaled data from `x`.
+For `inverse=false`, all 0 std values get replaced by the value `eps` before scaling.
 """
 function apply!(
     A::AbstractArray{T}, scaling::MeanStdScaling;
-    dims=:, inverse=false, kwargs...
+    dims=:, inverse=false, eps=1e-3, kwargs...
 ) where T <: Real
     if !scaling.populated
         populate_stats!(scaling, A; dims)
@@ -74,8 +75,15 @@ function apply!(
     if inverse
         A[:] = A .* scaling.std .+ scaling.mean
     else
-        # TODO: avoid division by zero?
-        A[:] = (A .- scaling.mean) ./ scaling.std
+        # Avoid division by 0
+        # If std is 0 then data was uniform, so the scaled value would end up ≈0
+        # Therefore the particular `eps` value should not matter much.
+        scaling_std_safe = if scaling.std isa Real
+            scaling.std == 0 ? eps : scaling.std
+        else  # AbstractArray
+            replace(scaling.std, 0 => eps)
+        end
+        A[:] = (A .- scaling.mean) ./ scaling_std_safe
     end
     return A
 end

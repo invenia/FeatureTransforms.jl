@@ -35,34 +35,17 @@ Returns a `Periodic` transform with zero phase shift.
 """
 Periodic(f, period::T) where T = Periodic(f, period, zero(T))
 
+function _apply(x, P::Periodic; kwargs...)
+    return P.f.(2π .* (x .- P.phase_shift) / P.period)
+end
+
+function _apply(x, P::Periodic{T}; kwargs...) where T <: Period
+    map(xi -> _periodic(P.f, xi, P.period, P.phase_shift), x)
+end
+
 function _apply!(x::AbstractArray{T}, P::Periodic; kwargs...) where T <: Real
-    x[:] = P.f.(2π .* (x .- P.phase_shift) / P.period)
+    x[:] = _apply(x, P; kwargs...)
     return x
-end
-
-# `U <: Period` needed to avoid method ambiguity with
-# `apply(table, P::Periodic{T}; cols=nothing) where T <: Period`
-function apply(
-    x::AbstractArray{T},
-    P::Periodic{U};
-    kwargs...
-) where {T <: TimeType, U <: Period}
-    return map(xi -> _periodic(P.f, xi, P.period, P.phase_shift), x)
-end
-
-"""
-    Transforms.apply(table, ::Periodic{T}; cols=nothing) where T <: Period -> Array
-
-Applies [`Periodic`](@ref) to each of the specified columns in `table`.
-If no `cols` are specified, then [`Periodic`](@ref) is applied to all columns.
-Returns an array containing each transformed column, in the same order as `cols`.
-"""
-function apply(table, P::Periodic{T}; cols=nothing) where T <: Period
-    Tables.istable(table) || throw(MethodError(apply, (table, P)))
-
-    columntable = Tables.columns(table)
-    cnames = cols === nothing ? propertynames(columntable) : cols
-    return [apply(getproperty(columntable, cname), P) for cname in cnames]
 end
 
 """

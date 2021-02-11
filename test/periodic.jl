@@ -98,6 +98,15 @@
                 _x = copy(x)
                 Transforms.apply!(_x, p)
                 @test _x ≈ expected atol=1e-14
+
+                @testset "inds" begin
+                    @test Transforms.apply(x, p; inds=2:5) ≈ expected[2:5] atol=1e-14
+                    @test Transforms.apply(x, p; dims=:) ≈ expected atol=1e-14
+                    @test Transforms.apply(x, p; dims=1) ≈ expected atol=1e-14
+                    @test Transforms.apply(x, p; dims=1, inds=[2, 3, 4, 5]) ≈ expected[2:5] atol=1e-14
+
+                    @test_throws BoundsError Transforms.apply(x, p; dims=2)
+                end
             end
 
             @testset "Matrix" begin
@@ -112,6 +121,13 @@
                     _M = copy(M)
                     Transforms.apply!(_M, p; dims=d)
                     @test _M ≈ M_expected atol=1e-14
+                end
+
+                @testset "inds" begin
+                    @test Transforms.apply(M, p; inds=[2, 3]) ≈ M_expected[[2, 3]] atol=1e-14
+                    @test Transforms.apply(M, p; dims=:, inds=[2, 3]) ≈ M_expected[[2, 3]] atol=1e-14
+                    @test Transforms.apply(M, p; dims=1, inds=[2]) ≈ reshape(M_expected[[2, 5]], 1, 2) atol=1e-14
+                    @test Transforms.apply(M, p; dims=2, inds=[2]) ≈ reshape(M_expected[[4, 5, 6]], 3, 1) atol=1e-14
                 end
             end
 
@@ -136,6 +152,13 @@
                 Transforms.apply!(_A, p)
                 @test _A isa AxisArray
                 @test _A ≈ A_expected atol=1e-14
+
+                @testset "inds" begin
+                    @test Transforms.apply(A, p; inds=[2, 3]) ≈ A_expected[[2, 3]] atol=1e-14
+                    @test Transforms.apply(A, p; dims=:, inds=[2, 3]) ≈ A_expected[[2, 3]] atol=1e-14
+                    @test Transforms.apply(A, p; dims=1, inds=[2]) ≈ reshape(A_expected[[2, 5]], 1, 2) atol=1e-14
+                    @test Transforms.apply(A, p; dims=2, inds=[2]) ≈ reshape(A_expected[[4, 5, 6]], 3, 1) atol=1e-14
+                end
             end
 
             @testset "AxisKey" begin
@@ -157,6 +180,13 @@
                 _A = copy(A)
                 Transforms.apply!(_A, p)
                 @test _A ≈ A_expected atol=1e-14
+
+                @testset "inds" begin
+                    @test Transforms.apply(A, p; inds=[2, 3]) ≈ [A_expected[2], A_expected[3]] atol=1e-14
+                    @test Transforms.apply(A, p; dims=:, inds=[2, 3]) ≈ [A_expected[2], A_expected[3]] atol=1e-14
+                    @test Transforms.apply(A, p; dims=1, inds=[2]) ≈ reshape([A_expected[2], A_expected[5]], 1, 2) atol=1e-14
+                    @test Transforms.apply(A, p; dims=2, inds=[2]) ≈ reshape([A_expected[4], A_expected[5], A_expected[6]], 3, 1) atol=1e-14
+                end
             end
 
             @testset "NamedTuple" begin

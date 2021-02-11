@@ -14,6 +14,15 @@
         _x = copy(x)
         Transforms.apply!(_x, p)
         @test _x == expected
+
+        @testset "inds" begin
+            @test Transforms.apply(x, p; inds=2:5) ==  expected[2:5]
+            @test Transforms.apply(x, p; dims=:) == expected
+            @test Transforms.apply(x, p; dims=1) == expected
+            @test Transforms.apply(x, p; dims=1, inds=[2, 3, 4, 5]) == expected[2:5]
+
+            @test_throws BoundsError Transforms.apply(x, p; dims=2)
+        end
     end
 
     @testset "Matrix" begin
@@ -27,6 +36,13 @@
             _M = copy(M)
             Transforms.apply!(_M, p; dims=d)
             @test _M == expected
+        end
+
+        @testset "inds" begin
+            @test Transforms.apply(M, p; inds=[2, 3]) == expected[[2, 3]]
+            @test Transforms.apply(M, p; dims=:, inds=[2, 3]) == expected[[2, 3]]
+            @test Transforms.apply(M, p; dims=1, inds=[2]) == [64 125 216]
+            @test Transforms.apply(M, p; dims=2, inds=[2]) == reshape([8, 125], 2, 1)
         end
     end
 
@@ -45,6 +61,13 @@
         Transforms.apply!(_A, p)
         @test _A isa AxisArray
         @test _A == expected
+
+        @testset "inds" begin
+            @test Transforms.apply(A, p; inds=[2, 3]) == expected[[2, 3]]
+            @test Transforms.apply(A, p; dims=:, inds=[2, 3]) == expected[[2, 3]]
+            @test Transforms.apply(A, p; dims=1, inds=[2]) == [64 125 216]
+            @test Transforms.apply(A, p; dims=2, inds=[2]) == reshape([8, 125], 2, 1)
+        end
     end
 
     @testset "AxisKey" begin
@@ -61,6 +84,13 @@
         Transforms.apply!(_A, p)
         @test _A isa KeyedArray
         @test _A == expected
+
+        @testset "inds" begin
+            @test Transforms.apply(A, p; inds=[2, 3]) == [64, 8]
+            @test Transforms.apply(A, p; dims=:, inds=[2, 3]) == [64, 8]
+            @test Transforms.apply(A, p; dims=1, inds=[2]) == [64 125 216]
+            @test Transforms.apply(A, p; dims=2, inds=[2]) == reshape([8, 125], 2, 1)
+        end
     end
 
     @testset "NamedTuple" begin

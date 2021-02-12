@@ -88,6 +88,61 @@ function _apply!(
     return A
 end
 
-function apply(A::AbstractArray, scaling::Scaling; kwargs...)
+function apply(A::AbstractArray, scaling::MeanStdScaling; kwargs...)
     return apply!(_try_copy(A), scaling; kwargs...)
+end
+
+"""
+    apply!(table::T, scaling::MeanStdScaling; cols=nothing, kwargs...)::T where T
+
+Applies the [`MeanStdScaling`](@ref) to each of the specified columns in the `table`.
+If no `cols` are specified, then the [`MeanStdScaling`](@ref) is applied to all columns.
+Optionally specify `inverse=true` to reconstruct the originally scaled data.
+For `inverse=false`, all 0 std values get replaced by the value `eps` before scaling.
+"""
+function apply!(table::T, scaling::MeanStdScaling; cols=nothing, kwargs...)::T where T
+    # TODO: We could probably handle iterators of tables here
+    Tables.istable(table) || throw(MethodError(apply!, (table, scaling)))
+
+    if isempty(scaling.mean) || isempty(scaling.std)
+        # Populate with mean and std of this data, once and for all
+        populate_stats!(scaling, table; cols=cols)
+    end
+
+    # Extract a columns iterator that we should be able to use to mutate the data.
+    # NOTE: Mutation is not guaranteed for all table types, but it avoid copying the data
+    columntable = Tables.columns(table)
+
+    cnames = cols === nothing ? propertynames(columntable) : cols
+    for cname in cnames
+        apply!(getproperty(columntable, cname), scaling; name=cname, kwargs...)
+    end
+
+    return table
+end
+
+"""
+    apply(table, scaling::MeanStdScaling; cols=nothing, kwargs...)
+
+Applies the [`MeanStdScaling`](@ref) to each of the specified columns in the `table`.
+If no `cols` are specified, then the [`MeanStdScaling`](@ref) is applied to all columns.
+Optionally specify `inverse=true` to reconstruct the originally scaled data.
+For `inverse=false`, all 0 std values get replaced by the value `eps` before scaling.
+"""
+function apply(table, scaling::MeanStdScaling; cols=nothing, kwargs...)
+    # TODO: We could probably handle iterators of tables here
+    Tables.istable(table) || throw(MethodError(apply!, (table, scaling)))
+
+    if isempty(scaling.mean) || isempty(scaling.std)
+        # Populate with mean and std of this data, once and for all
+        populate_stats!(scaling, table; cols=cols)
+    end
+
+    # Extract a columns iterator that we should be able to use to mutate the data.
+    # NOTE: Mutation is not guaranteed for all table types, but it avoid copying the data
+    columntable = Tables.columns(table)
+
+    cnames = cols === nothing ? propertynames(columntable) : cols
+
+    return [apply(getproperty(columntable, cname), scaling; name=cname, kwargs...) for cname in cnames]
 end

@@ -66,10 +66,10 @@
         end
 
         @testset "inds" begin
-            @test Transforms.apply(M, hod; inds=[2, 3]) == expected[[2, 3]]
-            @test Transforms.apply(M, hod; dims=:, inds=[2, 3]) == expected[[2, 3]]
-            @test Transforms.apply(M, hod; dims=1, inds=[2]) == reshape(expected[[2, 5]], 1, 2)
-            @test Transforms.apply(M, hod; dims=2, inds=[2]) == reshape(expected[[4, 5, 6]], 3, 1)
+            @test Transforms.apply(M, hod; inds=[2, 3]) == [2, 3]
+            @test Transforms.apply(M, hod; dims=:, inds=[2, 3]) == [2, 3]
+            @test Transforms.apply(M, hod; dims=1, inds=[2]) == [2 10]
+            @test Transforms.apply(M, hod; dims=2, inds=[2]) == reshape([9; 10; 11], 3, 1)
         end
     end
 
@@ -77,11 +77,11 @@
         x = [
             DateTime(2020, 1, 1, 1, 0):Hour(1):DateTime(2020, 1, 1, 2, 0);
             DateTime(2020, 1, 1, 9, 0):Hour(1):DateTime(2020, 1, 1, 10, 0);
-            DateTime(2020, 1, 1, 10, 0):Hour(1):DateTime(2020, 1, 1, 11, 0)
+            DateTime(2020, 1, 1, 11, 0):Hour(1):DateTime(2020, 1, 1, 12, 0)
         ]
         M = reshape(x, 2, 3)
         A = AxisArray(M, foo=["a", "b"], bar=["x", "y", "z"])
-        expected = [1 9 10; 2 10 11]
+        expected = [1 9 11; 2 10 12]
 
         @test Transforms.apply(A, hod) == expected
         @test hod(A) == expected
@@ -94,10 +94,10 @@
         end
 
         @testset "inds" begin
-            @test Transforms.apply(A, hod; inds=[2, 3]) == expected[[2, 3]]
-            @test Transforms.apply(A, hod; dims=:, inds=[2, 3]) == expected[[2, 3]]
-            @test Transforms.apply(A, hod; dims=1, inds=[2]) == reshape(expected[[2, 4, 6]], 1, 3)
-            @test Transforms.apply(A, hod; dims=2, inds=[2]) == reshape(expected[[3, 5]], 2, 1)
+            @test Transforms.apply(A, hod; inds=[2, 3]) == [2, 9]
+            @test Transforms.apply(A, hod; dims=:, inds=[2, 3]) == [2, 9]
+            @test Transforms.apply(A, hod; dims=1, inds=[2]) == [2 10 12]
+            @test Transforms.apply(A, hod; dims=2, inds=[2]) == reshape([9, 10], 2, 1)
         end
     end
 
@@ -105,11 +105,11 @@
         x = [
             DateTime(2020, 1, 1, 1, 0):Hour(1):DateTime(2020, 1, 1, 2, 0);
             DateTime(2020, 1, 1, 9, 0):Hour(1):DateTime(2020, 1, 1, 10, 0);
-            DateTime(2020, 1, 1, 10, 0):Hour(1):DateTime(2020, 1, 1, 11, 0)
+            DateTime(2020, 1, 1, 11, 0):Hour(1):DateTime(2020, 1, 1, 12, 0)
         ]
         M = reshape(x, 2, 3)
         A = KeyedArray(M, foo=["a", "b"], bar=["x", "y", "z"])
-        expected = [1 9 10; 2 10 11]
+        expected = [1 9 11; 2 10 12]
 
         @test Transforms.apply(A, hod) == expected
         @test hod(A) == expected
@@ -121,10 +121,10 @@
         end
 
         @testset "inds" begin
-            @test Transforms.apply(A, hod; inds=[2, 3]) == expected[[2, 3]]
-            @test Transforms.apply(A, hod; dims=:, inds=[2, 3]) == expected[[2, 3]]
-            @test Transforms.apply(A, hod; dims=1, inds=[2]) == reshape(expected[[2, 4, 6]], 1, 3)
-            @test Transforms.apply(A, hod; dims=2, inds=[2]) == reshape(expected[[3, 5]], 2, 1)
+            @test Transforms.apply(A, hod; inds=[2, 3]) == [2, 9]
+            @test Transforms.apply(A, hod; dims=:, inds=[2, 3]) == [2, 9]
+            @test Transforms.apply(A, hod; dims=1, inds=[2]) == [2 10 12]
+            @test Transforms.apply(A, hod; dims=2, inds=[2]) == reshape([9, 10], 2, 1)
         end
     end
 

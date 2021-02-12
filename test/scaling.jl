@@ -70,7 +70,11 @@
             end
 
             @testset "Inverse" begin
+<<<<<<< HEAD
                 scaling = MeanStdScaling(x)
+=======
+                scaling = MeanStdScaling()
+>>>>>>> dce74df... Add testsets for inverse=true
                 transformed = Transforms.apply(x, scaling)
                 inverted = Transforms.apply(transformed, scaling; inverse=true)
 
@@ -144,6 +148,15 @@
 
             @testset "Inverse" begin
                 scaling = MeanStdScaling(M)
+                transformed = Transforms.apply(M, scaling)
+                inverted = Transforms.apply(transformed, scaling; inverse=true)
+
+                @test transformed ≈ M_expected atol=1e-5
+                @test inverted ≈ M atol=1e-5
+            end
+
+            @testset "Inverse" begin
+                scaling = MeanStdScaling()
                 transformed = Transforms.apply(M, scaling)
                 inverted = Transforms.apply(transformed, scaling; inverse=true)
 
@@ -226,6 +239,15 @@
                 @test transformed ≈ A_expected atol=1e-5
                 @test inverted ≈ A atol=1e-5
             end
+
+            @testset "Inverse" begin
+                scaling = MeanStdScaling()
+                transformed = Transforms.apply(A, scaling)
+                inverted = Transforms.apply(transformed, scaling; inverse=true)
+
+                @test transformed ≈ A_expected atol=1e-5
+                @test inverted ≈ A atol=1e-5
+            end
         end
 
         @testset "AxisKey" begin
@@ -296,6 +318,15 @@
 
             @testset "Inverse" begin
                 scaling = MeanStdScaling(A)
+                transformed = Transforms.apply(A, scaling)
+                inverted = Transforms.apply(transformed, scaling; inverse=true)
+
+                @test transformed ≈ A_expected atol=1e-5
+                @test inverted ≈ A atol=1e-5
+            end
+
+            @testset "Inverse" begin
+                scaling = MeanStdScaling()
                 transformed = Transforms.apply(A, scaling)
                 inverted = Transforms.apply(transformed, scaling; inverse=true)
 
@@ -477,6 +508,16 @@
                     [df_expected2.a, df_expected2.b],
                     atol=1e-5
                 )
+            end
+
+            @testset "Inverse" begin
+                scaling = MeanStdScaling()
+                transformed = Transforms.apply(df, scaling)
+                transformed = DataFrame(:a => transformed[1], :b => transformed[2])
+                inverted = Transforms.apply(transformed, scaling; inverse=true)
+
+                @test transformed ≈ df_expected atol=1e-5
+                @test inverted ≈ [df.a, df.b] atol=1e-5
             end
         end
     end

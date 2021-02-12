@@ -93,7 +93,7 @@ function apply!(
         populate_stats!(scaling, A; dims=dims)
     end
 
-    dims == Colon() && return _apply!(A, scaling; kwargs...)
+    dims == Colon() && return _apply!(A, scaling; inverse=inverse, eps=eps, kwargs...)
 
     for (i, x) in enumerate(eachslice(A; dims=dims))
         _apply!(x, scaling; name=Symbol(i), inverse=inverse, eps=eps, kwargs...)

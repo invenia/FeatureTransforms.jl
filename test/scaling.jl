@@ -31,6 +31,15 @@
                 expected2 = [-2.5, -1.5, -2.0]
                 @test Transforms.apply(x2, scaling) ≈ expected2 atol=1e-5
             end
+
+            @testset "Inverse" begin
+                scaling = MeanStdScaling()
+                transformed = Transforms.apply(x, scaling)
+                inverted = Transforms.apply(transformed, scaling; inverse=true)
+
+                @test transformed ≈ expected atol=1e-5
+                @test inverted ≈ x atol=1e-5
+            end
         end
 
         @testset "Matrix" begin
@@ -79,6 +88,15 @@
                 M2_expected = [2.0 -4.0 -2.0; -0.5 -1.0 -0.5]
 
                 @test Transforms.apply(M2, scaling; dims=1) ≈ M2_expected atol=1e-5
+            end
+
+            @testset "Inverse" begin
+                scaling = MeanStdScaling()
+                transformed = Transforms.apply(M, scaling)
+                inverted = Transforms.apply(transformed, scaling; inverse=true)
+
+                @test transformed ≈ M_expected atol=1e-5
+                @test inverted ≈ M atol=1e-5
             end
         end
 
@@ -132,6 +150,15 @@
 
                 @test Transforms.apply(A2, scaling; dims=1) ≈ A2_expected atol=1e-5
             end
+
+            @testset "Inverse" begin
+                scaling = MeanStdScaling()
+                transformed = Transforms.apply(A, scaling)
+                inverted = Transforms.apply(transformed, scaling; inverse=true)
+
+                @test transformed ≈ A_expected atol=1e-5
+                @test inverted ≈ A atol=1e-5
+            end
         end
 
         @testset "AxisKey" begin
@@ -184,6 +211,15 @@
 
                 @test Transforms.apply(A2, scaling; dims=1) ≈ A2_expected atol=1e-5
             end
+
+            @testset "Inverse" begin
+                scaling = MeanStdScaling()
+                transformed = Transforms.apply(A, scaling)
+                inverted = Transforms.apply(transformed, scaling; inverse=true)
+
+                @test transformed ≈ A_expected atol=1e-5
+                @test inverted ≈ A atol=1e-5
+            end
         end
 
         @testset "NamedTuple" begin
@@ -218,6 +254,16 @@
                 Transforms.apply!(_nt, scaling; cols=[c])
                 @test _nt isa NamedTuple{(:a, :b)}  # before applying `collect`
                 @test collect(_nt) ≈ collect(nt_expected_) atol=1e-14
+            end
+
+            @testset "Inverse" begin
+                scaling = MeanStdScaling()
+                transformed = Transforms.apply(nt, scaling)
+                transformed = (a = transformed[1], b = transformed[2])
+                inverted = Transforms.apply(transformed, scaling; inverse=true)
+
+                @test collect(transformed) ≈ collect(nt_expected) atol=1e-5
+                @test inverted ≈ [nt.a, nt.b] atol=1e-5
             end
         end
 
@@ -266,6 +312,16 @@
                     [df_expected2.a, df_expected2.b],
                     atol=1e-5
                 )
+            end
+
+            @testset "Inverse" begin
+                scaling = MeanStdScaling()
+                transformed = Transforms.apply(df, scaling)
+                transformed = DataFrame(:a => transformed[1], :b => transformed[2])
+                inverted = Transforms.apply(transformed, scaling; inverse=true)
+
+                @test transformed ≈ df_expected atol=1e-5
+                @test inverted ≈ [df.a, df.b] atol=1e-5
             end
         end
     end

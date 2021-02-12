@@ -433,47 +433,50 @@
         end
 
         @testset "DataFrame" begin
-            scaling = MeanStdScaling()
             df = DataFrame(:a => [0.0, -0.5, 0.5], :b => [1.0, 0.0, 2.0])
             df_expected = DataFrame(:a => [0.0, -1.0, 1.0], :b => [0.0, -1.0, 1.0])
 
             @testset "Non-mutating" begin
-                @test ≈(
-                    Transforms.apply(df, scaling),
-                    [df_expected.a, df_expected.b],
-                    atol=1e-5
-                )
+                scaling = MeanStdScaling()
+                transformed = Transforms.apply(df, scaling)
+                @test transformed ≈ [df_expected.a, df_expected.b] atol=1e-5
+                @test scaling(df) ≈ [df_expected.a, df_expected.b] atol=1e-5
             end
 
             @testset "Mutating" begin
+                scaling = MeanStdScaling()
                 _df = deepcopy(df)
                 Transforms.apply!(_df, scaling)
                 @test _df isa DataFrame
                 @test _df ≈ df_expected atol=1e-5
             end
 
-            @testset "cols = :a" begin
+            @testset "cols = $c" for c in (:a, :b)
                 scaling = MeanStdScaling()
 
-                @test Transforms.apply(df, scaling; cols=[:a]) ≈ [df_expected.a] atol=1e-5
+                transformed = Transforms.apply(df, scaling; cols=[c])
+                @test transformed ≈ [df_expected[!, c]] atol=1e-5
 
                 _df = deepcopy(df)
-                _df_expected = DataFrame(:a => df_expected.a, :b => df.b)
-                Transforms.apply!(_df, scaling; cols=[:a])
+                _df_expected = deepcopy(df)
+                _df_expected[!, c] = df_expected[!, c]
+                Transforms.apply!(_df, scaling; cols=[c])
                 @test _df isa DataFrame
                 @test _df ≈ _df_expected atol=1e-5
             end
 
-            @testset "cols = :b" begin
+            @testset "Re-apply" begin
                 scaling = MeanStdScaling()
+                Transforms.apply(df, scaling)
 
-                @test Transforms.apply(df, scaling; cols=[:b]) ≈ [df_expected.b] atol=1e-5
-
-                _df = deepcopy(df)
-                _df_expected = DataFrame(:a => df.a, :b => df_expected.b)
-                Transforms.apply!(_df, scaling; cols=[:b])
-                @test _df isa DataFrame
-                @test _df ≈ _df_expected atol=1e-5
+                # Expect scaling parameters to be fixed to the first data applied to
+                df2 = DataFrame(:a => [-1.0, 0.5, 0.0], :b => [2.0, 2.0, 1.0])
+                df_expected2 = DataFrame(:a => [-2.0, 1.0, 0.0], :b => [1.0, 1.0, 0.0])
+                @test ≈(
+                    Transforms.apply(df2, scaling),
+                    [df_expected2.a, df_expected2.b],
+                    atol=1e-5
+                )
             end
         end
     end

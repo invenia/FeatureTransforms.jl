@@ -91,7 +91,11 @@ function apply(table, t::Transform; cols=nothing, kwargs...)
     columntable = Tables.columns(table)
 
     cnames = cols === nothing ? propertynames(columntable) : cols
-    return [_apply(getproperty(columntable, cname), t; kwargs...)  for cname in cnames]
+
+    return [
+        _apply(getproperty(columntable, cname), t; name=cname, kwargs...)
+        for cname in cnames
+    ]
 end
 
 _apply(x, t::Transform; kwargs...) = _apply!(_try_copy(x), t; kwargs...)
@@ -106,8 +110,8 @@ Optionally specify the `dims` to apply the [`Transform`](@ref) along certain dim
 function apply!(A::AbstractArray, t::Transform; dims=:, kwargs...)
     dims == Colon() && return _apply!(A, t; kwargs...)
 
-    for x in eachslice(A; dims=dims)
-        _apply!(x, t; kwargs...)
+    for (i, x) in enumerate(eachslice(A; dims=dims))
+        _apply!(x, t; name=Symbol(i), kwargs...)
     end
 
     return A
@@ -119,7 +123,7 @@ end
 Applies the [`Transform`](@ref) to each of the specified columns in the `table`.
 If no `cols` are specified, then the [`Transform`](@ref) is applied to all columns.
 """
-function apply!(table::T, t::Transform; cols=nothing)::T where T
+function apply!(table::T, t::Transform; cols=nothing, kwargs...)::T where T
     # TODO: We could probably handle iterators of tables here
     Tables.istable(table) || throw(MethodError(apply!, (table, t)))
 
@@ -129,7 +133,7 @@ function apply!(table::T, t::Transform; cols=nothing)::T where T
 
     cnames = cols === nothing ? propertynames(columntable) : cols
     for cname in cnames
-        apply!(getproperty(columntable, cname), t)
+        apply!(getproperty(columntable, cname), t; name=cname, kwargs...)
     end
 
     return table

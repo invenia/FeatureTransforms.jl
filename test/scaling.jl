@@ -1,13 +1,13 @@
 @testset "scaling" begin
     @testset "MeanStdScaling" begin
-        @test MeanStdScaling() isa Transform
+        @test MeanStdScaling([1., 2., 3.]) isa Transform
 
         @testset "Vector" begin
             x = [1., 2., 3.]
             expected = [-1., 0., 1.]
 
             @testset "Non-mutating" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(x)
                 @test Transforms.apply(x, scaling) ≈ expected atol=1e-5
                 @test scaling(x) ≈ expected atol=1e-5
 
@@ -16,14 +16,14 @@
             end
 
             @testset "Mutating" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(x)
                 _x = copy(x)
                 Transforms.apply!(_x, scaling)
                 @test _x ≈ expected atol=1e-5
             end
 
             @testset "Re-apply" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(x)
                 Transforms.apply(x, scaling)
 
                 # Expect scaling parameters to be fixed to the first data applied to
@@ -33,7 +33,7 @@
             end
 
             @testset "Inverse" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(x)
                 transformed = Transforms.apply(x, scaling)
                 inverted = Transforms.apply(transformed, scaling; inverse=true)
 
@@ -47,7 +47,7 @@
             M_expected = [-0.559017 -1.11803 0.0; -0.559017 0.559017 1.67705]
 
             @testset "Non-mutating" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(M)
                 @test Transforms.apply(M, scaling) ≈ M_expected atol=1e-5
                 @test scaling(M) ≈ M_expected atol=1e-5
 
@@ -56,31 +56,31 @@
             end
 
             @testset "Mutating" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(M)
                 _M = copy(M)
                 Transforms.apply!(_M, scaling)
                 @test _M ≈ M_expected atol=1e-5
             end
 
             @testset "dims = :" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(M; dims=:)
                 @test Transforms.apply(M, scaling; dims=:) ≈ M_expected atol=1e-5
             end
 
             @testset "dims = 1" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(M; dims=1)
                 M_1_expected = [0.0 -1.0 1.0; -1.0 0.0 1.0]
                 @test Transforms.apply(M, scaling; dims=1) ≈ M_1_expected atol=1e-5
             end
 
             @testset "dims = 2" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(M; dims=2)
                 M_2_expected = [0.0 -0.707107 -0.707107; 0.0 0.707107 0.707107]
                 @test Transforms.apply(M, scaling; dims=2) ≈ M_2_expected atol=1e-5
             end
 
             @testset "Re-apply" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(M; dims=1)
                 Transforms.apply(M, scaling; dims=1)
 
                 # Expect scaling parameters to be fixed to the first data applied to
@@ -91,7 +91,7 @@
             end
 
             @testset "Inverse" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(M)
                 transformed = Transforms.apply(M, scaling)
                 inverted = Transforms.apply(transformed, scaling; inverse=true)
 
@@ -107,7 +107,7 @@
             A_expected = AxisArray(M_expected; foo=["a", "b"], bar=["x", "y", "z"])
 
             @testset "Non-mutating" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(A)
                 @test Transforms.apply(A, scaling) ≈ A_expected atol=1e-5
                 @test scaling(A) ≈ A_expected atol=1e-5
 
@@ -116,7 +116,7 @@
             end
 
             @testset "Mutating" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(A)
                 _A = copy(A)
                 Transforms.apply!(_A, scaling)
                 @test _A isa AxisArray
@@ -124,24 +124,24 @@
             end
 
             @testset "dims = :" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(A)
                 @test Transforms.apply(A, scaling; dims=:) ≈ A_expected atol=1e-5
             end
 
             @testset "dims = 1" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(A; dims=1)
                 A_1_expected = [0.0 -1.0 1.0; -1.0 0.0 1.0]
                 @test Transforms.apply(A, scaling; dims=1) ≈ A_1_expected atol=1e-5
             end
 
             @testset "dims = 2" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(A; dims=2)
                 A_2_expected = [0.0 -0.707107 -0.707107; 0.0 0.707107 0.707107]
                 @test Transforms.apply(A, scaling; dims=2) ≈ A_2_expected atol=1e-5
             end
 
             @testset "Re-apply" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(A; dims=1)
                 Transforms.apply(A, scaling; dims=1)
 
                 # Expect scaling parameters to be fixed to the first data applied to
@@ -152,7 +152,7 @@
             end
 
             @testset "Inverse" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(A)
                 transformed = Transforms.apply(A, scaling)
                 inverted = Transforms.apply(transformed, scaling; inverse=true)
 
@@ -168,7 +168,7 @@
             A_expected = KeyedArray(M_expected; foo=["a", "b"], bar=["x", "y", "z"])
 
             @testset "Non-mutating" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(A)
                 @test Transforms.apply(A, scaling) ≈ A_expected atol=1e-5
                 @test scaling(A) ≈ A_expected atol=1e-5
 
@@ -177,7 +177,7 @@
             end
 
             @testset "Mutating" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(A)
                 _A = copy(A)
                 Transforms.apply!(_A, scaling)
                 @test _A isa KeyedArray
@@ -185,24 +185,24 @@
             end
 
             @testset "dims = :" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(A)
                 @test Transforms.apply(A, scaling; dims=:) ≈ A_expected atol=1e-5
             end
 
             @testset "dims = 1" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(A; dims=1)
                 A_1_expected = [0.0 -1.0 1.0; -1.0 0.0 1.0]
                 @test Transforms.apply(A, scaling; dims=1) ≈ A_1_expected atol=1e-5
             end
 
             @testset "dims = 2" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(A; dims=2)
                 A_2_expected = [0.0 -0.707107 -0.707107; 0.0 0.707107 0.707107]
                 @test Transforms.apply(A, scaling; dims=2) ≈ A_2_expected atol=1e-5
             end
 
             @testset "Re-apply" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(A; dims=1)
                 Transforms.apply(A, scaling; dims=1)
 
                 # Expect scaling parameters to be fixed to the first data applied to
@@ -213,7 +213,7 @@
             end
 
             @testset "Inverse" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(A)
                 transformed = Transforms.apply(A, scaling)
                 inverted = Transforms.apply(transformed, scaling; inverse=true)
 
@@ -227,14 +227,14 @@
             nt_expected = (a = [0.0, -1.0, 1.0], b = [0.0, -1.0, 1.0])
 
             @testset "Non-mutating" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(nt)
                 transformed = Transforms.apply(nt, scaling)
                 @test transformed ≈ [nt_expected.a, nt_expected.b] atol=1e-5
                 @test scaling(nt) ≈ [nt_expected.a, nt_expected.b] atol=1e-5
             end
 
             @testset "Mutating" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(nt)
                 _nt = deepcopy(nt)
                 Transforms.apply!(_nt, scaling)
                 @test _nt isa NamedTuple{(:a, :b)}
@@ -242,7 +242,7 @@
             end
 
             @testset "cols = $c" for c in (:a, :b)
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(nt; cols=[c])
                 nt_mutated = NamedTuple{(Symbol("$c"), )}((nt_expected[c], ))
                 nt_expected_ = merge(nt, nt_mutated)
 
@@ -256,8 +256,22 @@
                 @test collect(_nt) ≈ collect(nt_expected_) atol=1e-14
             end
 
+            @testset "Re-apply" begin
+                scaling = MeanStdScaling(nt)
+                Transforms.apply(nt, scaling)
+
+                # Expect scaling parameters to be fixed to the first data applied to
+                nt2 = (a = [-1.0, 0.5, 0.0], b = [2.0, 2.0, 1.0])
+                nt_expected2 = (a = [-2.0, 1.0, 0.0], b = [1.0, 1.0, 0.0])
+                @test ≈(
+                    Transforms.apply(nt2, scaling),
+                    [nt_expected2.a, nt_expected2.b],
+                    atol=1e-5
+                )
+            end
+
             @testset "Inverse" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(nt)
                 transformed = Transforms.apply(nt, scaling)
                 transformed = (a = transformed[1], b = transformed[2])
                 inverted = Transforms.apply(transformed, scaling; inverse=true)
@@ -272,14 +286,14 @@
             df_expected = DataFrame(:a => [0.0, -1.0, 1.0], :b => [0.0, -1.0, 1.0])
 
             @testset "Non-mutating" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(df)
                 transformed = Transforms.apply(df, scaling)
                 @test transformed ≈ [df_expected.a, df_expected.b] atol=1e-5
                 @test scaling(df) ≈ [df_expected.a, df_expected.b] atol=1e-5
             end
 
             @testset "Mutating" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(df)
                 _df = deepcopy(df)
                 Transforms.apply!(_df, scaling)
                 @test _df isa DataFrame
@@ -287,7 +301,7 @@
             end
 
             @testset "cols = $c" for c in (:a, :b)
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(df; cols=[c])
 
                 transformed = Transforms.apply(df, scaling; cols=[c])
                 @test transformed ≈ [df_expected[!, c]] atol=1e-5
@@ -301,7 +315,7 @@
             end
 
             @testset "Re-apply" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(df)
                 Transforms.apply(df, scaling)
 
                 # Expect scaling parameters to be fixed to the first data applied to
@@ -315,7 +329,7 @@
             end
 
             @testset "Inverse" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(df)
                 transformed = Transforms.apply(df, scaling)
                 transformed = DataFrame(:a => transformed[1], :b => transformed[2])
                 inverted = Transforms.apply(transformed, scaling; inverse=true)

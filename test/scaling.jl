@@ -70,11 +70,7 @@
             end
 
             @testset "Inverse" begin
-<<<<<<< HEAD
                 scaling = MeanStdScaling(x)
-=======
-                scaling = MeanStdScaling()
->>>>>>> dce74df... Add testsets for inverse=true
                 transformed = Transforms.apply(x, scaling)
                 inverted = Transforms.apply(transformed, scaling; inverse=true)
 

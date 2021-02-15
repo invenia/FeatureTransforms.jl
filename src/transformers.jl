@@ -114,9 +114,8 @@ Optionally specify the `dims` to apply the [`Transform`](@ref) along certain dim
 function apply!(A::AbstractArray, t::Transform; dims=:, kwargs...)
     dims == Colon() && return _apply!(A, t; kwargs...)
 
-    _dims = invert_dims(A, dims)  # opposite convention to `eachslice`
-    for (slice_index, slice) in enumerate(eachslice(A; dims=_dims))
-        _apply!(slice, t; name=Symbol(slice_index), kwargs...)
+    for (i, x) in enumerate(eachslice(A; dims=dims))
+        _apply!(x, t; name=Symbol(i), kwargs...)
     end
 
     return A

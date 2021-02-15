@@ -152,7 +152,7 @@
             end
 
             @testset "Inverse" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(M)
                 transformed = Transforms.apply(M, scaling)
                 inverted = Transforms.apply(transformed, scaling; inverse=true)
 
@@ -237,7 +237,7 @@
             end
 
             @testset "Inverse" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(A)
                 transformed = Transforms.apply(A, scaling)
                 inverted = Transforms.apply(transformed, scaling; inverse=true)
 
@@ -322,7 +322,7 @@
             end
 
             @testset "Inverse" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(A)
                 transformed = Transforms.apply(A, scaling)
                 inverted = Transforms.apply(transformed, scaling; inverse=true)
 
@@ -471,7 +471,7 @@
             end
 
             @testset "Mutating" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(df)
                 _df = deepcopy(df)
                 Transforms.apply!(_df, scaling)
                 @test _df isa DataFrame
@@ -479,7 +479,7 @@
             end
 
             @testset "cols = $c" for c in (:a, :b)
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(df; cols=[c])
 
                 transformed = Transforms.apply(df, scaling; cols=[c])
                 @test transformed ≈ [df_expected[!, c]] atol=1e-5
@@ -493,7 +493,7 @@
             end
 
             @testset "Re-apply" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(df)
                 Transforms.apply(df, scaling)
 
                 # Expect scaling parameters to be fixed to the first data applied to
@@ -507,7 +507,7 @@
             end
 
             @testset "Inverse" begin
-                scaling = MeanStdScaling()
+                scaling = MeanStdScaling(df)
                 transformed = Transforms.apply(df, scaling)
                 transformed = DataFrame(:a => transformed[1], :b => transformed[2])
                 inverted = Transforms.apply(transformed, scaling; inverse=true)

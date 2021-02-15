@@ -14,7 +14,7 @@ struct IdentityScaling <: Scaling end
 # Convenience method
 IdentityScaling(args...; kwargs...) = IdentityScaling()
 
-apply!(A::AbstractArray{T}, scaling::IdentityScaling; kwargs...) where T <: Real = A
+apply!(x, ::IdentityScaling; kwargs...) = x
 
 """
     MeanStdScaling(mean, std) <: Scaling

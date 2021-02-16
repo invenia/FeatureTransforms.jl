@@ -378,5 +378,16 @@
                 @test inverted ≈ [df.a, df.b] atol=1e-5
             end
         end
+
+        @testset "Zero std" begin
+            x = ones(Float64, 3)
+            expected = zeros(Float64, 3)
+
+            scaling = MeanStdScaling(x)
+
+            @test Transforms.apply(x, scaling) == expected  # default `eps`
+            @test Transforms.apply(x, scaling; eps=1) == expected
+            @test all(isnan.(Transforms.apply(x, scaling; eps=0)))  # 0/0
+        end
     end
 end

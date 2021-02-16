@@ -23,6 +23,15 @@ Linearly scale the data by a statistical `mean` and standard deviation `std`.
 This is also known as standardization, or the Z score transform.
 Once computed, the statistics of a `MeanStdScaling` are immutable.
 
+Can take a precomputed `mean` and `std` as arguments, or compute them from data.
+
+# Arguments
+* `mean::NamedTuple`: tuple of mean values, named by the scope of values it applies to.
+  Write `(all=μ, )` to apply to all data; `(1=μ1, 2=μ2)` to apply μ1 to the first slice
+  and μ2 to the second slice in an `AbstractArray`; `(a=μ1, b=μ2)` to apply μ1 to column
+  `a` and μ2 to column `b` in a `Table`.
+* `std::NamedTuple`: similar to `mean` but for standard deviation values.
+
 # Keyword arguments to `apply`
 * `inverse=true`: inverts the scaling (e.g. to reconstruct the unscaled data)
 * `eps=1e-3`: replaces all 0 values in `std` before scaling (if `inverse=false`)

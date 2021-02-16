@@ -1,6 +1,28 @@
 @testset "scaling" begin
     @testset "MeanStdScaling" begin
-        @test MeanStdScaling([1., 2., 3.]) isa Transform
+        @testset "Constructor" begin
+            x = [1., 2., 3.]
+
+            @testset "from data" begin
+                scaling = MeanStdScaling(x)
+
+                @test scaling isa Transform
+                @test scaling.mean == (all=2., )
+                @test scaling.std == (all=1., )
+                @test x == [1., 2., 3.]  # constructor does not mutate data
+            end
+
+            @testset "from precomputed" begin
+                scaling = MeanStdScaling((all=1., ), (all=2., ))  # unlike from data
+                expected = [0., 0.5, 1.]
+
+                @test scaling isa Transform
+                @test scaling.mean == (all=1., )
+                @test scaling.std == (all=2., )
+
+                @test Transforms.apply(x, scaling) == expected
+            end
+        end
 
         @testset "Vector" begin
             x = [1., 2., 3.]

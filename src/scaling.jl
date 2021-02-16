@@ -14,7 +14,7 @@ struct IdentityScaling <: Scaling end
 # Convenience method
 IdentityScaling(args...; kwargs...) = IdentityScaling()
 
-apply!(x, ::IdentityScaling; kwargs...) = x
+_apply!(x, ::IdentityScaling; kwargs...) = x
 
 """
     MeanStdScaling(mean, std) <: Scaling

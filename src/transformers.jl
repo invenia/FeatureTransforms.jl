@@ -72,7 +72,11 @@ function apply(A::AbstractArray, t::Transform; dims=:, inds=:, kwargs...)
         end
     end
 
-    return mapslices(x -> _apply(x[inds], t; kwargs...), A, dims=dims)
+    slice_index = 0
+    return mapslices(A, dims=dims) do x
+        slice_index += 1
+        _apply(x[inds], t; name=Symbol(slice_index), kwargs...)
+    end
 end
 
 """

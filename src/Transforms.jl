@@ -4,9 +4,7 @@ using Dates: TimeType, Period, Day
 using Statistics
 using Tables
 
-export Transform
-export HoD, LinearCombination, Periodic, Power
-export IdentityScaling, MeanStdScaling
+export HoD, LinearCombination, MeanStdScaling, Periodic, Power, Transform
 export transform, transform!
 
 include("utils.jl")

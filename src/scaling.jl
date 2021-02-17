@@ -87,7 +87,3 @@ function _apply!(
     end
     return A
 end
-
-function apply(A::AbstractArray, scaling::Scaling; kwargs...)
-    return apply!(_try_copy(A), scaling; kwargs...)
-end

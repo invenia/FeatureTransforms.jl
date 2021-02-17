@@ -27,9 +27,9 @@ Can take a precomputed `mean` and `std` as arguments, or compute them from data.
 
 # Arguments
 * `mean::NamedTuple`: tuple of mean values, named by the scope of values it applies to.
-  Write `(all=μ, )` to apply to all data; `(1=μ1, 2=μ2)` to apply μ1 to the first slice
-  and μ2 to the second slice in an `AbstractArray`; `(a=μ1, b=μ2)` to apply μ1 to column
-  `a` and μ2 to column `b` in a `Table`.
+  `(all=μ, )` will apply to all data; `(1=μ1, 2=μ2)` for `AbstractArray` data will apply μ1
+  to the first slice and μ2 to the second slice; `(a=μ1, b=μ2)` for `Table` data will apply
+  μ1 to column `a` and μ2 to column `b`.
 * `std::NamedTuple`: similar to `mean` but for standard deviation values.
 
 # Keyword arguments to `apply`

@@ -60,8 +60,8 @@ function compute_stats(A::AbstractArray; dims=:)
         μ = (all = mean(A), )
         σ = (all = std(A), )
     else
-        μ_pairs = [(Symbol(i), mean(x)) for (i, x) in enumerate(eachslice(A; dims=dims))]
-        σ_pairs = [(Symbol(i), std(x)) for (i, x) in enumerate(eachslice(A; dims=dims))]
+        μ_pairs = [(Symbol(i), x) for (i, x) in enumerate(mean(A; dims=dims))]
+        σ_pairs = [(Symbol(i), x) for (i, x) in enumerate(std(A; dims=dims))]
 
         μ = (; μ_pairs...)
         σ = (; σ_pairs...)
@@ -97,8 +97,4 @@ function _apply!(
         A[:] = (A .- μ) ./ σ_safe
     end
     return A
-end
-
-function apply(A::AbstractArray, scaling::Scaling; kwargs...)
-    return apply!(_try_copy(A), scaling; kwargs...)
 end

@@ -16,7 +16,15 @@
         expected = [1 0 0; 0 0 1; 0 1 0; 0 0 1]
         @test Transforms.apply(x, ohe) == expected
 
+        # Test cannot pass duplicate values as the categories
+        @test_throws ArgumentError OneHotEncoding(x)
+
+        # Test a value does not exist as a category
+        x = ["foo", "baz", "bar", "dne"]
+        @test_throws KeyError Transforms.apply(x, ohe)
+
         @testset "inds" begin
+             x = ["foo", "baz", "bar", "baz"]
             @test Transforms.apply(x, ohe; inds=2:4) == [0 0 1; 0 1 0; 0 0 1]
             @test Transforms.apply(x, ohe; dims=:) == expected
 
@@ -27,12 +35,12 @@
         end
     end
 
-    categories = ["foo", "bar", "foo2", "bar2"]
+    categories = ["foo", "bar", "baz", "foo2", "bar2"]
     ohe = OneHotEncoding(categories)
 
     @testset "Matrix" begin
         M = ["foo" "bar"; "foo2" "bar2"]
-        expected = [1 0 0 0; 0 0 1 0; 0 1 0 0; 0 0 0 1]
+        expected = [1 0 0 0 0; 0 0 0 1 0; 0 1 0 0 0; 0 0 0 0 1]
 
         @test Transforms.apply(M, ohe) == expected
 
@@ -43,15 +51,15 @@
         end
 
         @testset "inds" begin
-            @test Transforms.apply(M, ohe; inds=[2, 3]) == [0 0 1 0; 0 1 0 0]
-            @test Transforms.apply(M, ohe; dims=:, inds=[2, 3]) == [0 0 1 0; 0 1 0 0]
+            @test Transforms.apply(M, ohe; inds=[2, 3]) == [0 0 0 1 0; 0 1 0 0 0]
+            @test Transforms.apply(M, ohe; dims=:, inds=[2, 3]) == [0 0 0 1 0; 0 1 0 0 0]
         end
     end
 
     @testset "AxisArray" begin
         M = ["foo" "bar"; "foo2" "bar2"]
         A = AxisArray(M, foo=["a", "b"], bar=["x", "y"])
-        expected = [1 0 0 0; 0 0 1 0; 0 1 0 0; 0 0 0 1]
+        expected = [1 0 0 0 0; 0 0 0 1 0; 0 1 0 0 0; 0 0 0 0 1]
 
         @testset "dims" begin
             transformed = Transforms.apply(A, ohe; dims=:)
@@ -64,15 +72,15 @@
         end
 
         @testset "inds" begin
-            @test Transforms.apply(A, ohe; inds=[2, 3]) == [0 0 1 0; 0 1 0 0]
-            @test Transforms.apply(A, ohe; dims=:, inds=[2, 3]) == [0 0 1 0; 0 1 0 0]
+            @test Transforms.apply(A, ohe; inds=[2, 3]) == [0 0 0 1 0; 0 1 0 0 0]
+            @test Transforms.apply(A, ohe; dims=:, inds=[2, 3]) == [0 0 0 1 0; 0 1 0 0 0]
         end
     end
 
     @testset "AxisKey" begin
         M = ["foo" "bar"; "foo2" "bar2"]
         A = KeyedArray(M, foo=["a", "b"], bar=["x", "y"])
-        expected = [1 0 0 0; 0 0 1 0; 0 1 0 0; 0 0 0 1]
+        expected = [1 0 0 0 0; 0 0 0 1 0; 0 1 0 0 0; 0 0 0 0 1]
 
         @testset "dims" begin
             transformed = Transforms.apply(A, ohe; dims=:)
@@ -85,14 +93,14 @@
         end
 
         @testset "inds" begin
-            @test Transforms.apply(A, ohe; inds=[2, 3]) == [0 0 1 0; 0 1 0 0]
-            @test Transforms.apply(A, ohe; dims=:, inds=[2, 3]) == [0 0 1 0; 0 1 0 0]
+            @test Transforms.apply(A, ohe; inds=[2, 3]) == [0 0 0 1 0; 0 1 0 0 0]
+            @test Transforms.apply(A, ohe; dims=:, inds=[2, 3]) == [0 0 0 1 0; 0 1 0 0 0]
         end
     end
 
     @testset "NamedTuple" begin
         nt = (a = ["foo" "bar"], b = ["foo2" "bar2"])
-        expected_nt = (a = [1 0 0 0; 0 1 0 0], b = [0 0 1 0; 0 0 0 1])
+        expected_nt = (a = [1 0 0 0 0; 0 1 0 0 0], b = [0 0 0 1 0; 0 0 0 0 1])
         expected = [expected_nt.a, expected_nt.b]
 
         @testset "all cols" begin
@@ -108,11 +116,11 @@
 
     @testset "DataFrame" begin
         df = DataFrame(:a => ["foo", "bar"], :b => ["foo2", "bar2"])
-        expected = [[1 0 0 0; 0 1 0 0], [0 0 1 0; 0 0 0 1]]
+        expected = [[1 0 0 0 0; 0 1 0 0 0], [0 0 0 1 0; 0 0 0 0 1]]
 
         @test Transforms.apply(df, ohe) == expected
 
-        @test Transforms.apply(df, ohe; cols=[:a]) == [[1 0 0 0; 0 1 0 0]]
-        @test Transforms.apply(df, ohe; cols=[:b]) ==[[0 0 1 0; 0 0 0 1]]
+        @test Transforms.apply(df, ohe; cols=[:a]) == [[1 0 0 0 0; 0 1 0 0 0]]
+        @test Transforms.apply(df, ohe; cols=[:b]) ==[[0 0 0 1 0; 0 0 0 0 1]]
     end
 end

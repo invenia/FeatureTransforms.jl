@@ -17,7 +17,7 @@ struct OneHotEncoding <: Transform
 
     function OneHotEncoding(possible_values::AbstractVector)
         if length(unique(possible_values)) < length(possible_values)
-            throw(ArgumentError("Expected an ordered list of all unique possible values"))
+            throw(ArgumentError("Expected a list of all unique possible values"))
         end
 
         # Create a dictionary that maps unique values in the input array to column positions

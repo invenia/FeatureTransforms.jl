@@ -1,22 +1,4 @@
 @testset "scaling" begin
-    @testset "IdentityScaling" begin
-        scaling = IdentityScaling()
-
-        @test scaling isa Transform
-
-        M = [0.0 -0.5 0.5; 0.0 1.0 2.0]
-        @test Transforms.apply(M, scaling) == M
-        @test scaling(M) == M
-
-        _M = copy(M)
-        Transforms.apply!(_M, scaling)
-        @test _M == M
-
-        # args do not matter
-        scaling = IdentityScaling([0. 1.]; cols=:a)
-        @test Transforms.apply(M, scaling) == M
-    end
-
     @testset "MeanStdScaling" begin
         @testset "Constructor" begin
             x = [1., 2., 3.]

@@ -1,6 +1,6 @@
 module Transforms
 
-using Dates: TimeType, Period, Day
+using Dates: TimeType, Period, Day, hour
 using Statistics
 using Tables
 

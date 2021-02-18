@@ -1,10 +1,10 @@
 module Transforms
 
 using Dates: TimeType, Period, Day, hour
-using Statistics
+using Statistics: mean, std
 using Tables
 
-export HoD, LinearCombination, MeanStdScaling, Periodic, Power, Transform
+export HoD, LinearCombination, MeanStdScaling, OneHotEncoding, Periodic, Power, Transform
 export transform, transform!
 
 include("utils.jl")

@@ -12,5 +12,6 @@ using TimeZones
     include("one_hot_encoding.jl")
     include("periodic.jl")
     include("power.jl")
+    include("scaling.jl")
     include("temporal.jl")
 end

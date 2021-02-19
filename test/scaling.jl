@@ -1,4 +1,173 @@
 @testset "scaling" begin
+
+    @testset "IdentityScaling" begin
+        scaling = IdentityScaling()
+        @test scaling isa Transform
+
+        @testset "Vector" begin
+            x = [1., 2., 3.]
+            expected = [1., 2., 3.]
+
+            @test Transforms.apply(x, scaling) == expected
+            @test scaling(x) == expected
+
+            @testset "Mutating" begin
+                _x = copy(x)
+                Transforms.apply!(_x, scaling)
+                @test _x == expected
+            end
+
+            @testset "dims" begin
+                @test Transforms.apply(x, scaling; dims=1) == expected
+                @test_throws BoundsError Transforms.apply(expected, scaling; dims=2)
+            end
+
+            @testset "inds" begin
+                @test Transforms.apply(x, scaling; inds=[2, 3]) == [2., 3.]
+                @test Transforms.apply(x, scaling; dims=:, inds=[2, 3]) == [2., 3.]
+                @test Transforms.apply(x, scaling; dims=1, inds=[2, 3]) == [2., 3.]
+            end
+
+            @testset "Inverse" begin
+                @test Transforms.apply(x, scaling; inverse=true) == expected
+            end
+        end
+
+        @testset "Matrix" begin
+            M = [0.0 -0.5 0.5; 0.0 1.0 2.0]
+            M_expected = [0.0 -0.5 0.5; 0.0 1.0 2.0]
+
+           @test Transforms.apply(M, scaling) == M_expected
+
+            @testset "Mutating" begin
+                _M = copy(M)
+                Transforms.apply!(_M, scaling)
+                @test _M == M_expected
+            end
+
+            @testset "dims = $d" for d in (Colon(), 1, 2)
+                @test Transforms.apply(M, scaling; dims=d) == M_expected
+            end
+
+            @testset "inds" begin
+                @test Transforms.apply(M, scaling; inds=[2, 3]) == [0.0, -0.5]
+                @test Transforms.apply(M, scaling; dims=:, inds=[2, 3]) == [0.0, -0.5]
+                @test Transforms.apply(M, scaling; dims=1, inds=[2]) == [0.0 1.0 2.0]
+                @test Transforms.apply(M, scaling; dims=2, inds=[2]) == reshape([-0.5; 1.0], 2, 1)
+            end
+
+            @testset "Inverse" begin
+                @test Transforms.apply(M, scaling; inverse=true) == M_expected
+            end
+        end
+
+        @testset "AxisArray" begin
+            M = [0.0 -0.5 0.5; 0.0 1.0 2.0]
+            A = AxisArray(M; foo=["a", "b"], bar=["x", "y", "z"])
+            M_expected = [0.0 -0.5 0.5; 0.0 1.0 2.0]
+            A_expected = AxisArray(M_expected; foo=["a", "b"], bar=["x", "y", "z"])
+
+            @test Transforms.apply(A, scaling) == A_expected
+
+            @testset "Mutating" begin
+                _A = copy(A)
+                Transforms.apply!(_A, scaling)
+                @test _A isa AxisArray
+                @test _A == A_expected
+            end
+
+            @testset "dims = $d" for d in (Colon(), 1, 2)
+                @test Transforms.apply(M, scaling; dims=d) == A_expected
+            end
+
+            @testset "inds" begin
+                @test Transforms.apply(A, scaling; inds=[2, 3]) == [0.0, -0.5]
+                @test Transforms.apply(A, scaling; dims=:, inds=[2, 3]) == [0.0, -0.5]
+                @test Transforms.apply(A, scaling; dims=1, inds=[2]) == [0.0 1.0 2.0]
+                @test Transforms.apply(A, scaling; dims=2, inds=[2]) == reshape([-0.5; 1.0], 2, 1)
+            end
+
+            @testset "Inverse" begin
+                @test Transforms.apply(A, scaling; inverse=true) == A_expected
+            end
+        end
+
+        @testset "AxisKey" begin
+            M = [0.0 -0.5 0.5; 0.0 1.0 2.0]
+            A = KeyedArray(M; foo=["a", "b"], bar=["x", "y", "z"])
+            M_expected = [0.0 -0.5 0.5; 0.0 1.0 2.0]
+            A_expected = KeyedArray(M_expected; foo=["a", "b"], bar=["x", "y", "z"])
+
+            @test Transforms.apply(A, scaling) == A_expected
+
+            @testset "Mutating" begin
+                _A = copy(A)
+                Transforms.apply!(_A, scaling)
+                @test _A isa KeyedArray
+                @test _A == A_expected
+            end
+
+            @testset "dims = $d" for d in (Colon(), 1, 2)
+                @test Transforms.apply(M, scaling; dims=d) == A_expected
+            end
+
+            @testset "inds" begin
+                @test Transforms.apply(A, scaling; inds=[2, 3]) == [0.0, -0.5]
+                @test Transforms.apply(A, scaling; dims=:, inds=[2, 3]) == [0.0, -0.5]
+                @test Transforms.apply(A, scaling; dims=1, inds=[2]) == [0.0 1.0 2.0]
+                @test Transforms.apply(A, scaling; dims=2, inds=[2]) == reshape([-0.5; 1.0], 2, 1)
+            end
+
+            @testset "Inverse" begin
+                @test Transforms.apply(A, scaling; inverse=true) == A_expected
+            end
+        end
+
+        @testset "NamedTuple" begin
+            nt = (a = [0.0, -0.5, 0.5], b = [1.0, 0.0, 2.0])
+            nt_expected = (a = [0.0, -0.5, 0.5], b = [1.0, 0.0, 2.0])
+
+           @test Transforms.apply(nt, scaling) == [nt_expected.a, nt_expected.b]
+
+            @testset "Mutating" begin
+                _nt = deepcopy(nt)
+                Transforms.apply!(_nt, scaling)
+                @test _nt isa NamedTuple{(:a, :b)}
+                @test _nt == nt_expected
+            end
+
+            @testset "cols = $c" for c in (:a, :b)
+                @test Transforms.apply(nt, scaling; cols=[c]) ≈ [nt_expected[c]]
+            end
+
+            @testset "Inverse" begin
+                @test Transforms.apply(nt, scaling; inverse=true) == [nt_expected.a, nt_expected.b]
+            end
+        end
+
+        @testset "DataFrame" begin
+            df = DataFrame(:a => [0.0, -0.5, 0.5], :b => [1.0, 0.0, 2.0])
+            df_expected = DataFrame(:a => [0.0, -0.5, 0.5], :b => [1.0, 0.0, 2.0])
+
+            @test Transforms.apply(df, scaling) == [df_expected.a, df_expected.b]
+
+            @testset "Mutating" begin
+                _df = deepcopy(df)
+                Transforms.apply!(_df, scaling)
+                @test _df isa DataFrame
+                @test _df == df_expected
+            end
+
+            @testset "cols = $c" for c in (:a, :b)
+                @test Transforms.apply(df, scaling; cols=[c]) ≈ [df_expected[!, c]]
+            end
+
+            @testset "Inverse" begin
+                @test Transforms.apply(df, scaling; inverse=true) == [df_expected.a, df_expected.b]
+            end
+        end
+    end
+
     @testset "MeanStdScaling" begin
         @testset "Constructor" begin
             x = [1., 2., 3.]
@@ -297,7 +466,7 @@
                 nt_mutated = NamedTuple{(Symbol("$c"), )}((nt_expected[c], ))
                 nt_expected_ = merge(nt, nt_mutated)
 
-                @test  Transforms.apply(nt, scaling; cols=[c]) ≈ [collect(nt_expected_[c])] atol=1e-14
+                @test Transforms.apply(nt, scaling; cols=[c]) ≈ [collect(nt_expected_[c])] atol=1e-14
                 @test scaling(nt; cols=[c]) ≈ [collect(nt_expected_[c])] atol=1e-14
 
                 _nt = deepcopy(nt)

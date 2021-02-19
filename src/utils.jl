@@ -14,7 +14,7 @@ end
 
 function invert_dims(A::AbstractArray, dims)
     ndims(A) == 1 && return dims
-    # TODO: support named dims
+    # TODO: support named dims https://github.com/invenia/Transforms.jl/issues/20
     inverted_dims = setdiff(1:ndims(A), dims)
     if length(inverted_dims) == 1
         inverted_dims = inverted_dims[1]

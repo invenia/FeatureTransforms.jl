@@ -21,5 +21,5 @@ makedocs(;
 deploydocs(;
     repo="github.com/invenia/Transforms.jl",
     devbranch = "main",
-    push_preview = "true",
+    push_preview = true,
 )

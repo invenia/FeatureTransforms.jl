@@ -114,7 +114,8 @@ Optionally specify the `dims` to apply the [`Transform`](@ref) along certain dim
 function apply!(A::AbstractArray, t::Transform; dims=:, kwargs...)
     dims == Colon() && return _apply!(A, t; kwargs...)
 
-    _dims = invert_dims(A, dims)  # opposite convention to `eachslice`
+    _dims = invert_dims(A, dims)  # opposite convention to iterating `eachslice`
+    # TODO support multiple _dims https://github.com/invenia/Transforms.jl/issues/21
     for (slice_index, slice) in enumerate(eachslice(A; dims=_dims))
         _apply!(slice, t; name=Symbol(slice_index), kwargs...)
     end

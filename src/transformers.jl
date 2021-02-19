@@ -110,6 +110,11 @@ _apply(x, t::Transform; kwargs...) = _apply!(_try_copy(x), t; kwargs...)
 
 Applies the [`Transform`](@ref) to each element of `A`.
 Optionally specify the `dims` to apply the [`Transform`](@ref) along certain dimensions.
+For example in a [`Matrix`](@ref), `dims=1` applies to each column, while `dims=2` applies
+to each row.
+
+!!! note
+    For arrays with more than 2 dimensions, single `dims` are not supported.
 """
 function apply!(A::AbstractArray, t::Transform; dims=:, kwargs...)
     dims == Colon() && return _apply!(A, t; kwargs...)

@@ -35,6 +35,11 @@ end
 
 Construct a [`MeanStdScaling`](@ref) using the mean and standard deviation of the data.
 
+!!! note
+    `dims` and `cols` keyword arguments must be specified the same way when constructing
+    and applying the transform.
+    Otherwise, the results will be inconsistent, or an error may occur.
+
 # Keyword arguments
 * `dims=:`: for `AbstractArray` data, the dimension(s) to compute statistics along.
 * `cols=nothing`: for `Table` data, the column names to compute statistics for.

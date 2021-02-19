@@ -20,4 +20,5 @@ makedocs(;
 
 deploydocs(;
     repo="github.com/invenia/Transforms.jl",
+    devbranch = "main",
 )

@@ -110,7 +110,7 @@ _apply(x, t::Transform; kwargs...) = _apply!(_try_copy(x), t; kwargs...)
 
 Applies the [`Transform`](@ref) to each element of `A`.
 Optionally specify the `dims` to apply the [`Transform`](@ref) along certain dimensions.
-For example in a [`Matrix`](@ref), `dims=1` applies to each column, while `dims=2` applies
+For example in a `Matrix`, `dims=1` applies to each column, while `dims=2` applies
 to each row.
 
 !!! note

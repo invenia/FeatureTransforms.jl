@@ -40,10 +40,10 @@ function apply end
 """
     apply!(data::T, ::Transform; kwargs...) -> T
 
-Applies the [`Transform`](@ref) mutating the input `data`. New transforms should usually
-only extend `_apply!` which this method delegates to.
+Applies the [`Transform`](@ref) mutating the input `data`. This method delegates to
+[`apply`](@ref) under the hood so does not need to be defined separately.
 
-Where necessary, this should be extended for new data types `T`.
+If [`Transform`](@ref) does not support mutation, this method will error.
 """
 function apply! end
 
@@ -136,7 +136,3 @@ function apply!(table::T, t::Transform; cols=nothing, kwargs...)::T where T
 
     return table
 end
-
-
-# Fallback method for when _apply is not directly defined
-_apply(x, t::Transform; kwargs...) = _apply!(_try_copy(x), t; kwargs...)

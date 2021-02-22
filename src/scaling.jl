@@ -1,12 +1,23 @@
 """
-    Scaling <: Transform
+    AbstractScaling <: Transform
 
 Linearly scale the data as `ax + b`, according to some statistics `a` and `b`.
 """
-abstract type Scaling <: Transform end
+abstract type AbstractScaling <: Transform end
 
 """
-    MeanStdScaling(mean, std) <: Scaling
+    IdentityScaling <: AbstractScaling
+
+Represents the no-op scaling which simply returns the `data` it is applied on.
+"""
+struct IdentityScaling <: AbstractScaling end
+
+_apply(x, scaling::IdentityScaling; kwargs...) = x
+_apply!(x, scaling::IdentityScaling; kwargs...) = _apply(x, scaling; kwargs...)
+
+
+"""
+    MeanStdScaling(mean, std) <: AbstractScaling
 
 Linearly scale the data by a statistical `mean` and standard deviation `std`.
 This is also known as standardization, or the Z score transform.
@@ -25,7 +36,7 @@ Can take a precomputed `mean` and `std` as arguments, or compute them from data.
 * `inverse=true`: inverts the scaling (e.g. to reconstruct the unscaled data)
 * `eps=1e-3`: replaces all 0 values in `std` before scaling (if `inverse=false`)
 """
-struct MeanStdScaling <: Scaling
+struct MeanStdScaling <: AbstractScaling
     mean::NamedTuple
     std::NamedTuple
 end

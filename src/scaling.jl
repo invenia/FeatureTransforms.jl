@@ -74,7 +74,7 @@ function compute_stats(table; cols=nothing)
     return (; μ_pairs...), (; σ_pairs...)
 end
 
-function _apply!(
+function _apply(
     A::AbstractArray, scaling::MeanStdScaling;
     name=nothing, inverse=false, eps=1e-3, kwargs...
 )
@@ -82,13 +82,12 @@ function _apply!(
     μ = scaling.mean[name]
     σ = scaling.std[name]
     if inverse
-        A[:] = μ .+ σ .* A
+        return μ .+ σ .* A
     else
         # Avoid division by 0
         # If std is 0 then data was uniform, so the scaled value would end up ≈ 0
         # Therefore the particular `eps` value should not matter much.
         σ_safe = σ == 0 ? eps : σ
-        A[:] = (A .- μ) ./ σ_safe
+        return (A .- μ) ./ σ_safe
     end
-    return A
 end

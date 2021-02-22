@@ -80,6 +80,19 @@ function apply(A::AbstractArray, t::Transform; dims=:, inds=:, kwargs...)
 end
 
 """
+    apply!(A::AbstractArray, ::Transform; dims=:, kwargs...)
+
+Applies the [`Transform`](@ref) to each element of `A`, mutating the data.
+Optionally specify the `dims` to apply the [`Transform`](@ref) along certain dimensions.
+For example in a `Matrix`, `dims=1` applies to each column, while `dims=2` applies
+to each row.
+"""
+function apply!(A::AbstractArray, t::Transform; dims=:, kwargs...)
+    A[:] = apply(A, t; dims=dims, kwargs...)
+    return A
+end
+
+"""
     apply(table, ::Transform; cols=nothing, kwargs...) -> Vector
 
 Applies the [`Transform`](@ref) to each of the specified columns in the `table`.
@@ -100,32 +113,6 @@ function apply(table, t::Transform; cols=nothing, kwargs...)
         _apply(getproperty(columntable, cname), t; name=cname, kwargs...)
         for cname in cnames
     ]
-end
-
-_apply(x, t::Transform; kwargs...) = _apply!(_try_copy(x), t; kwargs...)
-
-
-"""
-    apply!(A::AbstractArray, ::Transform; dims=:, kwargs...)
-
-Applies the [`Transform`](@ref) to each element of `A`.
-Optionally specify the `dims` to apply the [`Transform`](@ref) along certain dimensions.
-For example in a `Matrix`, `dims=1` applies to each column, while `dims=2` applies
-to each row.
-
-!!! note
-    For arrays with more than 2 dimensions, single `dims` are not supported.
-"""
-function apply!(A::AbstractArray, t::Transform; dims=:, kwargs...)
-    dims == Colon() && return _apply!(A, t; kwargs...)
-
-    _dims = invert_dims(A, dims)  # opposite convention to iterating `eachslice`
-    # TODO support multiple _dims https://github.com/invenia/Transforms.jl/issues/21
-    for (slice_index, slice) in enumerate(eachslice(A; dims=_dims))
-        _apply!(slice, t; name=Symbol(slice_index), kwargs...)
-    end
-
-    return A
 end
 
 """
@@ -149,3 +136,7 @@ function apply!(table::T, t::Transform; cols=nothing, kwargs...)::T where T
 
     return table
 end
+
+
+# Fallback method for when _apply is not directly defined
+_apply(x, t::Transform; kwargs...) = _apply!(_try_copy(x), t; kwargs...)

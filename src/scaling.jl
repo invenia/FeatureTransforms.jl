@@ -6,7 +6,7 @@ Linearly scale the data as `ax + b`, according to some statistics `a` and `b`.
 abstract type AbstractScaling <: Transform end
 
 """
-    IdentityScaling
+    IdentityScaling <: AbstractScaling
 
 Represents the no-op scaling which simply returns the `data` it is applied on.
 """
@@ -17,7 +17,7 @@ _apply!(x, scaling::IdentityScaling; kwargs...) = _apply(x, scaling; kwargs...)
 
 
 """
-    MeanStdScaling(mean, std) <: Scaling
+    MeanStdScaling(mean, std) <: AbstractScaling
 
 Linearly scale the data by a statistical `mean` and standard deviation `std`.
 This is also known as standardization, or the Z score transform.

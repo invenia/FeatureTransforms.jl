@@ -32,7 +32,7 @@ function _apply(x, encoding::OneHotEncoding; kwargs...)
 
     results = zeros(Int, length(x), n_categories)
 
-    for (i, value) in enumerate(x)
+    @views for (i, value) in enumerate(x)
         col_pos = encoding.categories[value]
         results[i, col_pos] = 1
     end

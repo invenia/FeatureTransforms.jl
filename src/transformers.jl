@@ -72,12 +72,12 @@ function apply(A::AbstractArray, t::Transform; dims=:, inds=:, kwargs...)
         if inds === Colon()
             return _apply(A, t; kwargs...)
         else
-            return _apply(A[:][inds], t; kwargs...)
+            return @views _apply(A[:][inds], t; kwargs...)
         end
     end
 
     slice_index = 0
-    return mapslices(A, dims=dims) do x
+    return @views mapslices(A, dims=dims) do x
         slice_index += 1
         _apply(x[inds], t; name=Symbol(slice_index), kwargs...)
     end

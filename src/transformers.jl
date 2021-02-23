@@ -52,7 +52,11 @@ function apply! end
     apply(A::AbstractArray, ::Transform; dims=:, inds=:, kwargs...)
 
 Applies the [`Transform`](@ref) to the elements of `A`.
+
 Provide the `dims` keyword to apply the [`Transform`](@ref) along a certain dimension.
+For example, given a `Matrix`, `dims=1` applies to each column, while `dims=2` applies
+to each row.
+
 Provide the `inds` keyword to apply the [`Transform`](@ref) to certain indices along the
 `dims` specified.
 
@@ -83,12 +87,9 @@ end
     apply!(A::AbstractArray, ::Transform; dims=:, kwargs...)
 
 Applies the [`Transform`](@ref) to each element of `A`, mutating the data.
-Optionally specify the `dims` to apply the [`Transform`](@ref) along certain dimensions.
-For example in a `Matrix`, `dims=1` applies to each column, while `dims=2` applies
-to each row.
 """
-function apply!(A::AbstractArray, t::Transform; dims=:, kwargs...)
-    A[:] = apply(A, t; dims=dims, kwargs...)
+function apply!(A::AbstractArray, t::Transform; kwargs...)
+    A[:] = apply(A, t; kwargs...)
     return A
 end
 

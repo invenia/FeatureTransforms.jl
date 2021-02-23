@@ -146,6 +146,7 @@
 
         @testset "cols = $c" for c in (:a, :b)
             @test Transforms.apply(nt, hod; cols=[c]) == [expected_nt[c]]
+            @test Transforms.apply(nt, hod; cols=c) == expected_nt[c]
             @test hod(nt; cols=[c]) == [expected_nt[c]]
         end
     end
@@ -168,6 +169,7 @@
         end
 
         @test Transforms.apply(df, hod; cols=[:a]) == [expected_df.a]
+        @test Transforms.apply(df, hod; cols=:a) == expected_df.a
         @test Transforms.apply(df, hod; cols=[:b]) ==[expected_df.b]
     end
 end

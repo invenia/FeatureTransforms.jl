@@ -110,10 +110,14 @@ function apply(table, t::Transform; cols=nothing, kwargs...)
 
     cnames = cols === nothing ? propertynames(columntable) : cols
 
-    return [
-        _apply(getproperty(columntable, cname), t; name=cname, kwargs...)
-        for cname in cnames
-    ]
+    if cnames isa Union{Symbol, AbstractString}  # want unwrapped single column
+        return _apply(getproperty(columntable, cnames), t; name=cnames, kwargs...)
+    else
+        return [
+            _apply(getproperty(columntable, cname), t; name=cname, kwargs...)
+            for cname in cnames
+        ]
+    end
 end
 
 """
@@ -125,6 +129,10 @@ If no `cols` are specified, then the [`Transform`](@ref) is applied to all colum
 function apply!(table::T, t::Transform; cols=nothing, kwargs...)::T where T
     # TODO: We could probably handle iterators of tables here
     Tables.istable(table) || throw(MethodError(apply!, (table, t)))
+
+    if cols isa Union{Symbol, AbstractString}  # want same behaviour for single column
+        cols = [cols]
+    end
 
     # Extract a columns iterator that we should be able to use to mutate the data.
     # NOTE: Mutation is not guaranteed for all table types, but it avoid copying the data

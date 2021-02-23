@@ -190,6 +190,14 @@
             @test Transforms.apply(nt, lc; cols=cols) == expected
             @test lc(nt; cols=cols) == expected
         end
+
+        @testset "single col" begin
+            lc_single = LinearCombination([-1])
+
+            @test Transforms.apply(nt, lc_single; cols=:a) == [-1, -2, -3]
+            @test Transforms.apply(nt, lc_single; cols=[:a]) == [-1, -2, -3]
+            @test lc_single(nt; cols=:a) == [-1, -2, -3]
+        end
     end
 
     @testset "DataFrame" begin
@@ -217,6 +225,14 @@
 
             @test Transforms.apply(df, lc; cols=cols) == expected
             @test lc(df; cols=cols) == expected
+        end
+
+        @testset "single col" begin
+            lc_single = LinearCombination([-1])
+
+            @test Transforms.apply(df, lc_single; cols=:a) == [-1, -2, -3]
+            @test Transforms.apply(df, lc_single; cols=[:a]) == [-1, -2, -3]
+            @test lc_single(df; cols=:a) == [-1, -2, -3]
         end
     end
 end

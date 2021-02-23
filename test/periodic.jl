@@ -221,14 +221,16 @@
                     nt_mutated = NamedTuple{(Symbol("$c"), )}((nt_expected[c], ))
                     nt_expected_ = merge(nt, nt_mutated)
 
-                    transformed = Transforms.apply(nt, p; cols=[c])
-                    @test transformed ≈ [collect(nt_expected_[c])] atol=1e-14
+                    @test Transforms.apply(nt, p; cols=[c]) ≈ [collect(nt_expected_[c])] atol=1e-14
+                    @test Transforms.apply(nt, p; cols=c) ≈ collect(nt_expected_[c]) atol=1e-14
                     @test p(nt; cols=[c]) ≈ [collect(nt_expected_[c])] atol=1e-14
 
-                    _nt = deepcopy(nt)
-                    Transforms.apply!(_nt, p; cols=[c])
-                    @test _nt isa NamedTuple{(:a, :b)}  # before applying `collect`
-                    @test collect(_nt) ≈ collect(nt_expected_) atol=1e-14
+                    @testset "mutating" for _c in (c, [c])
+                        _nt = deepcopy(nt)
+                        Transforms.apply!(_nt, p; cols=_c)
+                        @test _nt isa NamedTuple{(:a, :b)}  # before applying `collect`
+                        @test collect(_nt) ≈ collect(nt_expected_) atol=1e-14
+                    end
                 end
             end
 
@@ -236,20 +238,21 @@
                 df = DataFrame(:a => collect(0.:2.), :b => collect(3.:5.))
                 df_expected = DataFrame(:a => expected[1:3], :b => expected[4:6])
 
-                @test Transforms.apply(df, p) ≈ [df_expected.a, df_expected.b] atol=1e-14
+                @testset "all cols" begin
+                    @test Transforms.apply(df, p) ≈ [df_expected.a, df_expected.b] atol=1e-14
+                    @test p(df) ≈ [df_expected.a, df_expected.b] atol=1e-14
 
-                @testset "cols = $c" for c in (:a, :b)
-                    @test ≈(
-                        Transforms.apply(df, p; cols=[c]),
-                        [df_expected[!, c]],
-                        atol=1e-14
-                    )
+                    _df = deepcopy(df)
+                    Transforms.apply!(_df, p)
+                    @test _df isa DataFrame
+                    @test _df ≈ df_expected atol=1e-14
                 end
 
-                _df = deepcopy(df)
-                Transforms.apply!(_df, p)
-                @test _df isa DataFrame
-                @test _df ≈ df_expected atol=1e-14
+                @testset "cols = $c" for c in (:a, :b)
+                    @test Transforms.apply(df, p; cols=[c]) ≈ [df_expected[!, c]] atol=1e-14
+                    @test Transforms.apply(df, p; cols=c) ≈ df_expected[!, c] atol=1e-14
+                    @test p(df; cols=[c]) ≈ [df_expected[!, c]]
+                end
             end
         end
     end
@@ -373,6 +376,7 @@
                 nt_expected = (a = expected[1], b = expected[2])
                 @testset "cols = $c" for c in (:a, :b)
                     @test Transforms.apply(nt, p; cols=[c]) ≈ [nt_expected[c]] atol=1e-14
+                    @test Transforms.apply(nt, p; cols=c) ≈ nt_expected[c] atol=1e-14
                     @test p(nt; cols=[c]) ≈ [nt_expected[c]] atol=1e-14
                 end
             end
@@ -380,18 +384,18 @@
             @testset "DataFrame" begin
                 x = ZonedDateTime(2020, 1, 1, tz"EST") .+ (Day(0):Day(1):Day(5))
                 df = DataFrame(:a => x[1:3], :b => x[4:6])
-                expected = [
-                    _periodic.(f, x[1:3], Day(5), Day(2)),
-                    _periodic.(f, x[4:6], Day(5), Day(2))
-                ]
+                df_expected = DataFrame(
+                    :a => _periodic.(f, x[1:3], Day(5), Day(2)),
+                    :b => _periodic.(f, x[4:6], Day(5), Day(2))
+                )
 
                 transformed = Transforms.apply(df, p)
-                @test transformed ≈ expected atol=1e-14
+                @test transformed ≈ [df_expected.a, df_expected.b] atol=1e-14
 
-                nt_expected = (a = expected[1], b = expected[2])
                 @testset "cols = $c" for c in (:a, :b)
-                    @test Transforms.apply(df, p; cols=[c]) ≈ [nt_expected[c]] atol=1e-14
-                    @test p(df; cols=[c]) ≈ [nt_expected[c]] atol=1e-14
+                    @test Transforms.apply(df, p; cols=[c]) ≈ [df_expected[!, c]] atol=1e-14
+                    @test Transforms.apply(df, p; cols=c) ≈ df_expected[!, c] atol=1e-14
+                    @test p(df; cols=[c]) ≈ [df_expected[!, c]] atol=1e-14
                 end
             end
         end

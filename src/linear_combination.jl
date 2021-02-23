@@ -35,25 +35,23 @@ function apply(x::AbstractVector, LC::LinearCombination; inds=Colon())
 end
 
 """
-    apply(x::AbstractMatrix, LC::LinearCombination; dims=1, inds=Colon())
+    apply(A::AbstractMatrix, LC::LinearCombination; dims=2, inds=Colon())
 
-Applies the [`LinearCombination`](@ref) to each of the specified indices in `x` along the
-dimension specified, which defaults to applying it row-wise for each column of x.
+Applies the [`LinearCombination`](@ref) to each of the specified indices in `A` along the
+dimension specified, which defaults to applying it row-wise for each column of `A`.
 
 If no `inds` are specified, then the [`LinearCombination`](@ref) is applied to all columns.
 """
-function apply(x::AbstractMatrix, LC::LinearCombination; dims=1, inds=Colon())
+function apply(A::AbstractMatrix, LC::LinearCombination; dims=2, inds=Colon())
     if dims === Colon()
         throw(ArgumentError("Colon() dims is not supported, use 1 or 2 instead"))
     end
 
-    # Get the number of vectors in the dimension not specified
-    other_dim = dims ==  1 ? 2 : 1
-    num_inds = inds isa Colon ? size(x, other_dim) : length(inds)
-    # Error if dimensions don't match
+    # Check the number of vectors in the dimension specified - Error if dimensions don't match
+    num_inds = inds isa Colon ? size(A, dims) : length(inds)
     _check_dimensions_match(LC, num_inds)
 
-    return [_sum_row(row[inds], LC.coefficients) for row in eachslice(x; dims=dims)]
+    return mapslices(x -> _sum_row(x[inds], LC.coefficients), A; dims=dims)
 end
 
 """

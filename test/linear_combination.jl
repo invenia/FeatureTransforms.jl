@@ -33,7 +33,7 @@
 
     @testset "Matrix" begin
         M = [1 1; 2 2; 3 5]
-        expected = [0, 0, -2]
+        expected = hcat([0, 0, -2])
 
         @testset "all inds" begin
             @test Transforms.apply(M, lc) == expected
@@ -46,20 +46,20 @@
                 @test_throws ArgumentError Transforms.apply(M, lc; dims=d)
             end
 
-            @testset "dims = 1" begin
-                d = 1
+            @testset "dims = 2" begin
+                d = 2
                 @test Transforms.apply(M, lc; dims=d) == expected
                 @test lc(M; dims=d) == expected
             end
 
-            @testset "dims = 2" begin
-                d = 2
+            @testset "dims = 1" begin
+                d = 1
                 # There are 3 rows so trying to apply along dim 2 without specifying inds
                 # won't work
                 @test_throws DimensionMismatch Transforms.apply(M, lc; dims=d)
 
-                @test Transforms.apply(M, lc; dims=d, inds=[2, 3]) == [-1, -3]
-                @test lc(M; dims=d, inds=[1, 3]) == [-2, -4]
+                @test Transforms.apply(M, lc; dims=d, inds=[2, 3]) == [-1 -3]
+                @test lc(M; dims=d, inds=[1, 3]) == [-2 -4]
             end
         end
 
@@ -71,7 +71,7 @@
         @testset "specified inds" begin
             M = [1 1 5; 2 2 4]
             inds = [2, 3]
-            expected = [-4, -2]
+            expected = hcat([-4, -2])
 
             @test Transforms.apply(M, lc; inds=inds) == expected
             @test lc(M; inds=inds) == expected
@@ -80,7 +80,7 @@
 
     @testset "AxisArray" begin
         A = AxisArray([1 2; 4 5], foo=["a", "b"], bar=["x", "y"])
-        expected = [-1, -1]
+        expected = hcat([-1, -1])
 
         @testset "all inds" begin
             @test Transforms.apply(A, lc) == expected
@@ -93,16 +93,16 @@
                 @test_throws ArgumentError Transforms.apply(A, lc; dims=d)
             end
 
-            @testset "dims = 1" begin
-                d = 1
+            @testset "dims = 2" begin
+                d = 2
                 @test Transforms.apply(A, lc; dims=d) == expected
                 @test lc(A; dims=d) == expected
             end
 
-            @testset "dims = 2" begin
-                d = 2
-                @test Transforms.apply(A, lc; dims=d) == [-3, -3]
-                @test lc(A; dims=d) == [-3, -3]
+            @testset "dims = 1" begin
+                d = 1
+                @test Transforms.apply(A, lc; dims=d) == [-3 -3]
+                @test lc(A; dims=d) == [-3 -3]
             end
         end
 
@@ -114,7 +114,7 @@
         @testset "specified inds" begin
             A = AxisArray([1 2 3; 4 5 5], foo=["a", "b"], bar=["x", "y", "z"])
             inds = [1, 2]
-            expected = [-1, -1]
+            expected = hcat([-1, -1])
 
             @test Transforms.apply(A, lc; inds=inds) == expected
             @test lc(A; inds=inds) == expected
@@ -123,7 +123,7 @@
 
     @testset "AxisKey" begin
         A = KeyedArray([1 2; 4 5], foo=["a", "b"], bar=["x", "y"])
-        expected = [-1, -1]
+        expected = hcat([-1, -1])
 
         @testset "all inds" begin
             @test Transforms.apply(A, lc) == expected
@@ -136,16 +136,16 @@
                 @test_throws ArgumentError Transforms.apply(A, lc; dims=d)
             end
 
-            @testset "dims = 1" begin
-                d = 1
+            @testset "dims = 2" begin
+                d = 2
                 @test Transforms.apply(A, lc; dims=d) == expected
                 @test lc(A; dims=d) == expected
             end
 
-            @testset "dims = 2" begin
-                d = 2
-                @test Transforms.apply(A, lc; dims=d) == [-3, -3]
-                @test lc(A; dims=d) == [-3, -3]
+            @testset "dims = 1" begin
+                d = 1
+                @test Transforms.apply(A, lc; dims=d) == [-3 -3]
+                @test lc(A; dims=d) == [-3 -3]
             end
         end
 
@@ -157,7 +157,7 @@
         @testset "specified inds" begin
             A = KeyedArray([1 2 3; 4 5 5], foo=["a", "b"], bar=["x", "y", "z"])
             inds = [1, 2]
-            expected = [-1, -1]
+            expected = hcat([-1, -1])
 
             @test Transforms.apply(A, lc; inds=inds) == expected
             @test lc(A; inds=inds) == expected

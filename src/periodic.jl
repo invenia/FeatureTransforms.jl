@@ -1,7 +1,10 @@
 """
-    Periodic{T}(f, period::T, phase_shift::T) <: Transform
+    Periodic{P, S}(f, period::P, [phase_shift::S]) <: Transform
 
 Applies a periodic function `f` with provided `period` and `phase_shift` to the data.
+
+The `period` and `phase_shift` must have the same supertype of `Real` or `Period`, depending on
+whether the data is `Real` or `TimeType` respectively.
 
 !!! note
     For `TimeType` data, the result will change depending on the type of `period` given,
@@ -12,18 +15,21 @@ Applies a periodic function `f` with provided `period` and `phase_shift` to the 
 # Fields
 * `f::Union{typeof(cos), typeof(sin)}`: the periodic function
 * `period::Union{Real, Period}`: the function period. Must be strictly positive.
-* `phase_shift::Union{Real, Period}`: adjusts the phase of the periodic function, measured
-    in the same units as the input. Increasing the value translates the function to the
-    right, toward higher/later input values.
+* `phase_shift::Union{Real, Period}` (optional): adjusts the phase of the periodic function,
+  measured in the same units as the input. Increasing the value translates the function to
+  the right, toward higher/later input values.
 """
-struct Periodic{T} <: Transform where T <: Union{Real, Period}
+struct Periodic{P, S} <: Transform
     f::Union{typeof(cos), typeof(sin)}
-    period::T
-    phase_shift::T
+    period::P
+    phase_shift::S
 
-    function Periodic(f, period::T, phase_shift::T) where T
-        period > zero(T) || throw(ArgumentError("period must be strictly positive."))
-        return new{T}(f, period, phase_shift)
+    function Periodic(f, period::P, phase_shift::S) where {P, S}
+        if !((P <: Real && S <: Real) || (P <: Period && S <: Period))
+            throw(ArgumentError("period and phase_shift must have the same supertype"))
+        end
+        period > zero(P) || throw(DomainError(period, "period must be strictly positive."))
+        return new{P, S}(f, period, phase_shift)
     end
 end
 
@@ -33,14 +39,14 @@ end
 A constructor for [`Periodic`](@ref).
 Returns a `Periodic` transform with zero phase shift.
 """
-Periodic(f, period::T) where T = Periodic(f, period, zero(T))
+Periodic(f, period::P) where P = Periodic(f, period, zero(P))
 
 function _apply(x, P::Periodic; kwargs...)
     return P.f.(2π .* (x .- P.phase_shift) / P.period)
 end
 
-function _apply(x, P::Periodic{T}; kwargs...) where T <: Period
-    map(xi -> _periodic(P.f, xi, P.period, P.phase_shift), x)
+function _apply(x, p::Periodic{P}; kwargs...) where P <: Period
+    map(xi -> _periodic(p.f, xi, p.period, p.phase_shift), x)
 end
 
 """

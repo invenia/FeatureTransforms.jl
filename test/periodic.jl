@@ -64,6 +64,19 @@
                 @test p.period == 5
                 @test p.phase_shift == 0
             end
+
+            @testset "Non-positive period" for period in (0, -1)
+                @test_throws DomainError Periodic(sin, period, 1)
+                @test_throws DomainError Periodic(sin, period)
+            end
+
+            @testset "Different field subtypes" begin
+                p = Periodic(sin, 4.0, 2)
+                x = [2.0, 3.0, 5.0]
+
+                @test Transforms.apply(x, p) ≈ [0.0, 1.0, -1.0] atol=1e-14
+                @test p(x) ≈ [0.0, 1.0, -1.0] atol=1e-14
+            end
         end
 
         expected_dict = Dict(
@@ -256,6 +269,22 @@
                 @test p.period == Day(5)
                 @test p.phase_shift == Day(0)
             end
+
+            @testset "Non-positive period" for period in (Day(0), Day(-1))
+                @test_throws DomainError Periodic(sin, period, Day(1))
+                @test_throws DomainError Periodic(sin, period)
+            end
+
+            @testset "Different field subtypes" begin
+                p = Periodic(sin, Week(1), Day(5))
+
+                x = ZonedDateTime(2020, 1, 1, tz"EST") .+ (Day(0):Day(1):Day(5))
+                # Use _periodic to get expected outputs because we test it elsewhere
+                expected = _periodic.(sin, x, Week(1), Day(5))
+
+                @test Transforms.apply(x, p) ≈ expected atol=1e-14
+                @test p(x) ≈ expected atol=1e-14
+            end
         end
 
         @testset "$f" for f in (sin, cos)
@@ -368,11 +397,6 @@
         end
     end
 
-    @testset "Non-positive period" for period in (0, -1)
-        @test_throws ArgumentError Periodic(sin, period, 1)
-        @test_throws ArgumentError Periodic(sin, period)
-    end
-
     @testset "Type mismatch" begin
         @testset "Real data, Period transform" begin
             p = Periodic(sin, Day(5), Day(2))
@@ -386,7 +410,7 @@
             @test_throws MethodError Transforms.apply(x, p)
         end
 
-        @test_throws MethodError Periodic(sin, 1, Day(3))
-        @test_throws MethodError Periodic(sin, Day(1), 3)
+        @test_throws ArgumentError Periodic(sin, 1, Day(3))
+        @test_throws ArgumentError Periodic(sin, Day(1), 3)
     end
 end

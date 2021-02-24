@@ -10,8 +10,3 @@ end
 function _apply(x::AbstractArray{T}, P::Power; kwargs...) where T <: Real
     return x .^ P.exponent
 end
-
-function _apply!(x::AbstractArray{T}, P::Power; kwargs...) where T <: Real
-    x[:] = _apply(x, P; kwargs...)
-    return x
-end

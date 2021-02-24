@@ -43,11 +43,6 @@ function _apply(x, P::Periodic{T}; kwargs...) where T <: Period
     map(xi -> _periodic(P.f, xi, P.period, P.phase_shift), x)
 end
 
-function _apply!(x::AbstractArray{T}, P::Periodic; kwargs...) where T <: Real
-    x[:] = _apply(x, P; kwargs...)
-    return x
-end
-
 """
     _periodic(f, instant, period, phase_shift=Day(0))
 

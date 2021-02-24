@@ -40,10 +40,10 @@ function apply end
 """
     apply!(data::T, ::Transform; kwargs...) -> T
 
-Applies the [`Transform`](@ref) mutating the input `data`. New transforms should usually
-only extend `_apply!` which this method delegates to.
+Applies the [`Transform`](@ref) mutating the input `data`. This method delegates to
+[`apply`](@ref) under the hood so does not need to be defined separately.
 
-Where necessary, this should be extended for new data types `T`.
+If [`Transform`](@ref) does not support mutation, this method will error.
 """
 function apply! end
 
@@ -52,7 +52,11 @@ function apply! end
     apply(A::AbstractArray, ::Transform; dims=:, inds=:, kwargs...)
 
 Applies the [`Transform`](@ref) to the elements of `A`.
+
 Provide the `dims` keyword to apply the [`Transform`](@ref) along a certain dimension.
+For example, given a `Matrix`, `dims=1` applies to each column, while `dims=2` applies
+to each row.
+
 Provide the `inds` keyword to apply the [`Transform`](@ref) to certain indices along the
 `dims` specified.
 
@@ -68,15 +72,25 @@ function apply(A::AbstractArray, t::Transform; dims=:, inds=:, kwargs...)
         if inds === Colon()
             return _apply(A, t; kwargs...)
         else
-            return _apply(A[:][inds], t; kwargs...)
+            return @views _apply(A[:][inds], t; kwargs...)
         end
     end
 
     slice_index = 0
-    return mapslices(A, dims=dims) do x
+    return @views mapslices(A, dims=dims) do x
         slice_index += 1
         _apply(x[inds], t; name=Symbol(slice_index), kwargs...)
     end
+end
+
+"""
+    apply!(A::AbstractArray, ::Transform; dims=:, kwargs...)
+
+Applies the [`Transform`](@ref) to each element of `A`, mutating the data.
+"""
+function apply!(A::AbstractArray, t::Transform; kwargs...)
+    A[:] = apply(A, t; kwargs...)
+    return A
 end
 
 """
@@ -100,32 +114,6 @@ function apply(table, t::Transform; cols=nothing, kwargs...)
         _apply(getproperty(columntable, cname), t; name=cname, kwargs...)
         for cname in cnames
     ]
-end
-
-_apply(x, t::Transform; kwargs...) = _apply!(_try_copy(x), t; kwargs...)
-
-
-"""
-    apply!(A::AbstractArray, ::Transform; dims=:, kwargs...)
-
-Applies the [`Transform`](@ref) to each element of `A`.
-Optionally specify the `dims` to apply the [`Transform`](@ref) along certain dimensions.
-For example in a `Matrix`, `dims=1` applies to each column, while `dims=2` applies
-to each row.
-
-!!! note
-    For arrays with more than 2 dimensions, single `dims` are not supported.
-"""
-function apply!(A::AbstractArray, t::Transform; dims=:, kwargs...)
-    dims == Colon() && return _apply!(A, t; kwargs...)
-
-    _dims = invert_dims(A, dims)  # opposite convention to iterating `eachslice`
-    # TODO support multiple _dims https://github.com/invenia/Transforms.jl/issues/21
-    for (slice_index, slice) in enumerate(eachslice(A; dims=_dims))
-        _apply!(slice, t; name=Symbol(slice_index), kwargs...)
-    end
-
-    return A
 end
 
 """

@@ -1,9 +1,9 @@
 """
-    Periodic{P, S}(f, period::P, phase_shift::S) <: Transform
+    Periodic{P, S}(f, period::P, [phase_shift::S]) <: Transform
 
 Applies a periodic function `f` with provided `period` and `phase_shift` to the data.
 
-`period` and `phase_shift` must have the same supertype of `Real` or `Period`, depending on
+The `period` and `phase_shift` must have the same supertype of `Real` or `Period`, depending on
 whether the data is `Real` or `TimeType` respectively.
 
 !!! note

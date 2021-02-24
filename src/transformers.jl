@@ -132,7 +132,7 @@ function apply!(table::T, t::Transform; cols=nothing, kwargs...)::T where T
     # TODO: We could probably handle iterators of tables here
     Tables.istable(table) || throw(MethodError(apply!, (table, t)))
 
-    cols = _to_vec(cols)
+    cols = _to_vec(cols)  # handle single column name
 
     # Extract a columns iterator that we should be able to use to mutate the data.
     # NOTE: Mutation is not guaranteed for all table types, but it avoid copying the data

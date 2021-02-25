@@ -1,4 +1,4 @@
-module Transforms
+module FeatureTransforms
 
 using Dates: TimeType, Period, Day, hour
 using Statistics: mean, std

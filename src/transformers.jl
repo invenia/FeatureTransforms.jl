@@ -2,7 +2,7 @@
 """
     Transform
 
-Abstract supertype for all Transforms.
+Abstract supertype for all feature Transforms.
 """
 abstract type Transform end
 

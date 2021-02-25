@@ -9,7 +9,7 @@
         # with 126 full days in the middle
         expected = [9:23..., repeat(0:23, 126)..., 0:9...]
 
-        @test Transforms.apply(x, hod) == expected
+        @test FeatureTransforms.apply(x, hod) == expected
         @test hod(x) == expected
 
         # Test the tranform was not mutating
@@ -17,22 +17,22 @@
 
         @testset "StepRange" begin
             x = DateTime(2020, 1, 1, 9, 0):Hour(1):DateTime(2020, 5, 7, 9, 0)
-            @test Transforms.apply(x, hod) == expected
+            @test FeatureTransforms.apply(x, hod) == expected
             @test hod(x) == expected
         end
 
         @testset "dims = $d" for d in (Colon(), 1)
-            @test Transforms.apply(x, hod; dims=d) == expected
+            @test FeatureTransforms.apply(x, hod; dims=d) == expected
             @test hod(x; dims=d) == expected
         end
 
-        @test_throws BoundsError Transforms.apply(x, hod; dims=2)
+        @test_throws BoundsError FeatureTransforms.apply(x, hod; dims=2)
 
         @testset "inds" begin
-            @test Transforms.apply(x, hod; inds=2:5) == expected[2:5]
-            @test Transforms.apply(x, hod; dims=:) == expected
-            @test Transforms.apply(x, hod; dims=1) == expected
-            @test Transforms.apply(x, hod; dims=1, inds=[2, 3, 4, 5]) == expected[2:5]
+            @test FeatureTransforms.apply(x, hod; inds=2:5) == expected[2:5]
+            @test FeatureTransforms.apply(x, hod; dims=:) == expected
+            @test FeatureTransforms.apply(x, hod; dims=1) == expected
+            @test FeatureTransforms.apply(x, hod; dims=1, inds=[2, 3, 4, 5]) == expected[2:5]
         end
 
         @testset "DST" begin
@@ -41,7 +41,7 @@
             # expected result skips the DST transition hour of 2
             expected_dst = [9:23..., 0, 1, 3:9...]
 
-            @test Transforms.apply(x, hod) == expected_dst
+            @test FeatureTransforms.apply(x, hod) == expected_dst
             @test hod(x) == expected_dst
         end
     end
@@ -54,22 +54,22 @@
         M = reshape(x, 3, 2)
         expected = [1 9; 2 10; 3 11]
 
-        @test Transforms.apply(M, hod) == expected
+        @test FeatureTransforms.apply(M, hod) == expected
         @test hod(M) == expected
 
         # Test the tranform was not mutating
         @test M != expected
 
         @testset "dims = $d" for d in (Colon(), 1, 2)
-            @test Transforms.apply(M, hod; dims=d) == expected
+            @test FeatureTransforms.apply(M, hod; dims=d) == expected
             @test hod(M; dims=d) == expected
         end
 
         @testset "inds" begin
-            @test Transforms.apply(M, hod; inds=[2, 3]) == [2, 3]
-            @test Transforms.apply(M, hod; dims=:, inds=[2, 3]) == [2, 3]
-            @test Transforms.apply(M, hod; dims=1, inds=[2]) == [2 10]
-            @test Transforms.apply(M, hod; dims=2, inds=[2]) == reshape([9; 10; 11], 3, 1)
+            @test FeatureTransforms.apply(M, hod; inds=[2, 3]) == [2, 3]
+            @test FeatureTransforms.apply(M, hod; dims=:, inds=[2, 3]) == [2, 3]
+            @test FeatureTransforms.apply(M, hod; dims=1, inds=[2]) == [2 10]
+            @test FeatureTransforms.apply(M, hod; dims=2, inds=[2]) == reshape([9; 10; 11], 3, 1)
         end
     end
 
@@ -83,21 +83,21 @@
         A = AxisArray(M, foo=["a", "b"], bar=["x", "y", "z"])
         expected = [1 9 11; 2 10 12]
 
-        @test Transforms.apply(A, hod) == expected
+        @test FeatureTransforms.apply(A, hod) == expected
         @test hod(A) == expected
 
         @testset "dims = $d" for d in (Colon(), 1, 2)
-            transformed = Transforms.apply(A, hod; dims=d)
+            transformed = FeatureTransforms.apply(A, hod; dims=d)
             # AxisArray doesn't preserve the type it operates on
             @test transformed isa AbstractArray
             @test transformed == expected
         end
 
         @testset "inds" begin
-            @test Transforms.apply(A, hod; inds=[2, 3]) == [2, 9]
-            @test Transforms.apply(A, hod; dims=:, inds=[2, 3]) == [2, 9]
-            @test Transforms.apply(A, hod; dims=1, inds=[2]) == [2 10 12]
-            @test Transforms.apply(A, hod; dims=2, inds=[2]) == reshape([9, 10], 2, 1)
+            @test FeatureTransforms.apply(A, hod; inds=[2, 3]) == [2, 9]
+            @test FeatureTransforms.apply(A, hod; dims=:, inds=[2, 3]) == [2, 9]
+            @test FeatureTransforms.apply(A, hod; dims=1, inds=[2]) == [2 10 12]
+            @test FeatureTransforms.apply(A, hod; dims=2, inds=[2]) == reshape([9, 10], 2, 1)
         end
     end
 
@@ -111,20 +111,20 @@
         A = KeyedArray(M, foo=["a", "b"], bar=["x", "y", "z"])
         expected = [1 9 11; 2 10 12]
 
-        @test Transforms.apply(A, hod) == expected
+        @test FeatureTransforms.apply(A, hod) == expected
         @test hod(A) == expected
 
         @testset "dims = $d" for d in (Colon(), 1, 2)
-            transformed = Transforms.apply(A, hod; dims=d)
+            transformed = FeatureTransforms.apply(A, hod; dims=d)
             @test transformed isa KeyedArray
             @test transformed == expected
         end
 
         @testset "inds" begin
-            @test Transforms.apply(A, hod; inds=[2, 3]) == [2, 9]
-            @test Transforms.apply(A, hod; dims=:, inds=[2, 3]) == [2, 9]
-            @test Transforms.apply(A, hod; dims=1, inds=[2]) == [2 10 12]
-            @test Transforms.apply(A, hod; dims=2, inds=[2]) == reshape([9, 10], 2, 1)
+            @test FeatureTransforms.apply(A, hod; inds=[2, 3]) == [2, 9]
+            @test FeatureTransforms.apply(A, hod; dims=:, inds=[2, 3]) == [2, 9]
+            @test FeatureTransforms.apply(A, hod; dims=1, inds=[2]) == [2 10 12]
+            @test FeatureTransforms.apply(A, hod; dims=2, inds=[2]) == reshape([9, 10], 2, 1)
         end
     end
 
@@ -137,7 +137,7 @@
         expected = [[0, 1, 2], [3, 4, 5]]
 
         @testset "all cols" begin
-            @test Transforms.apply(nt, hod) == expected
+            @test FeatureTransforms.apply(nt, hod) == expected
             @test hod(nt) == expected
 
             # Test the tranform was not mutating
@@ -145,8 +145,8 @@
         end
 
         @testset "cols = $c" for c in (:a, :b)
-            @test Transforms.apply(nt, hod; cols=[c]) == [expected_nt[c]]
-            @test Transforms.apply(nt, hod; cols=c) == expected_nt[c]
+            @test FeatureTransforms.apply(nt, hod; cols=[c]) == [expected_nt[c]]
+            @test FeatureTransforms.apply(nt, hod; cols=c) == expected_nt[c]
             @test hod(nt; cols=[c]) == [expected_nt[c]]
         end
     end
@@ -161,15 +161,15 @@
         expected = [expected_df.a, expected_df.b]
 
         @testset "all cols" begin
-            @test Transforms.apply(df, hod) == expected
+            @test FeatureTransforms.apply(df, hod) == expected
             @test hod(df) == expected
 
             # Test the tranform was not mutating
             @test df != expected
         end
 
-        @test Transforms.apply(df, hod; cols=[:a]) == [expected_df.a]
-        @test Transforms.apply(df, hod; cols=:a) == expected_df.a
-        @test Transforms.apply(df, hod; cols=[:b]) ==[expected_df.b]
+        @test FeatureTransforms.apply(df, hod; cols=[:a]) == [expected_df.a]
+        @test FeatureTransforms.apply(df, hod; cols=:a) == expected_df.a
+        @test FeatureTransforms.apply(df, hod; cols=[:b]) ==[expected_df.b]
     end
 end

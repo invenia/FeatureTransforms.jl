@@ -110,6 +110,7 @@
 
         @testset "cols = $c" for c in (:a, :b)
             @test Transforms.apply(nt, ohe; cols=[c]) == [expected_nt[c]]
+            @test Transforms.apply(nt, ohe; cols=c) == expected_nt[c]
             @test ohe(nt; cols=[c]) == [expected_nt[c]]
         end
     end
@@ -121,6 +122,7 @@
         @test Transforms.apply(df, ohe) == expected
 
         @test Transforms.apply(df, ohe; cols=[:a]) == [[1 0 0 0 0; 0 1 0 0 0]]
+        @test Transforms.apply(df, ohe; cols=:a) == [1 0 0 0 0; 0 1 0 0 0]
         @test Transforms.apply(df, ohe; cols=[:b]) ==[[0 0 0 1 0; 0 0 0 0 1]]
     end
 end

@@ -99,7 +99,9 @@ end
 Applies the [`Transform`](@ref) to each of the specified columns in the `table`.
 If no `cols` are specified, then the [`Transform`](@ref) is applied to all columns.
 
-Returns an array containing each transformed column, in the same order as `cols`.
+# Return
+* If `cols` is a single value (not in a list): the transformed column vector.
+* Otherwise: an array containing each transformed column, in the same order as `cols`.
 """
 function apply(table, t::Transform; cols=nothing, kwargs...)
     Tables.istable(table) || throw(MethodError(apply, (table, t)))
@@ -110,10 +112,14 @@ function apply(table, t::Transform; cols=nothing, kwargs...)
 
     cnames = cols === nothing ? propertynames(columntable) : cols
 
-    return [
-        _apply(getproperty(columntable, cname), t; name=cname, kwargs...)
-        for cname in cnames
-    ]
+    if cnames isa Union{Tuple, AbstractArray}
+        return [
+            _apply(getproperty(columntable, cname), t; name=cname, kwargs...)
+            for cname in cnames
+        ]
+    else  # return unwrapped single column
+        return _apply(getproperty(columntable, cnames), t; name=cnames, kwargs...)
+    end
 end
 
 """
@@ -125,6 +131,8 @@ If no `cols` are specified, then the [`Transform`](@ref) is applied to all colum
 function apply!(table::T, t::Transform; cols=nothing, kwargs...)::T where T
     # TODO: We could probably handle iterators of tables here
     Tables.istable(table) || throw(MethodError(apply!, (table, t)))
+
+    cols = _to_vec(cols)  # handle single column name
 
     # Extract a columns iterator that we should be able to use to mutate the data.
     # NOTE: Mutation is not guaranteed for all table types, but it avoid copying the data

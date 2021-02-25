@@ -113,12 +113,15 @@
             expected_nt_mutated = merge(nt, nt_mutated)
 
             @test Transforms.apply(nt, p; cols=[c]) == [expected_nt[c]]
+            @test Transforms.apply(nt, p; cols=c) == expected_nt[c]
             @test p(nt; cols=[c]) == [expected_nt[c]]
 
-            _nt = deepcopy(nt)
-            Transforms.apply!(_nt, p; cols=[c])
-            @test _nt == expected_nt_mutated
-            @test _nt isa NamedTuple
+            @testset "mutating" for _c in (c, [c])
+                _nt = deepcopy(nt)
+                Transforms.apply!(_nt, p; cols=_c)
+                @test _nt == expected_nt_mutated
+                @test _nt isa NamedTuple
+            end
         end
     end
 
@@ -127,14 +130,20 @@
         expected_df = DataFrame(:a => [1, 8, 27], :b => [64, 125, 216])
         expected = [expected_df.a, expected_df.b]
 
-        @test Transforms.apply(df, p) == expected
+        @testset "all cols" begin
+            @test Transforms.apply(df, p) == expected
+            @test p(df) == expected
 
-        @test Transforms.apply(df, p; cols=[:a]) == [expected_df.a]
-        @test Transforms.apply(df, p; cols=[:b]) ==[expected_df.b]
+            _df = deepcopy(df)
+            Transforms.apply!(_df, p)
+            @test _df isa DataFrame
+            @test _df == expected_df
+        end
 
-        _df = deepcopy(df)
-        Transforms.apply!(_df, p)
-        @test _df isa DataFrame
-        @test _df == expected_df
+        @testset "cols = $c" for c in (:a, :b)
+            @test Transforms.apply(df, p; cols=[c]) == [expected_df[!, c]]
+            @test Transforms.apply(df, p; cols=c) == expected_df[!, c]
+            @test p(df; cols=[c]) == [expected_df[!, c]]
+        end
     end
 end

@@ -64,6 +64,8 @@ Applies the [`LinearCombination`](@ref) to each of the specified cols in `x`.
 If no `cols` are specified, then the [`LinearCombination`](@ref) is applied to all columns.
 """
 function apply(x, LC::LinearCombination; cols=nothing)
+    cols = _to_vec(cols)  # handle single column name
+
     # Error if dimensions don't match
     num_cols = cols === nothing ? length(Tables.columnnames(x)) : length(cols)
     _check_dimensions_match(LC, num_cols)

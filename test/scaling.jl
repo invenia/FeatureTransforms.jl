@@ -138,6 +138,7 @@
 
             @testset "cols = $c" for c in (:a, :b)
                 @test Transforms.apply(nt, scaling; cols=[c]) ≈ [nt_expected[c]]
+                @test Transforms.apply(nt, scaling; cols=c) ≈ nt_expected[c]
             end
 
             @testset "Inverse" begin
@@ -160,6 +161,7 @@
 
             @testset "cols = $c" for c in (:a, :b)
                 @test Transforms.apply(df, scaling; cols=[c]) ≈ [df_expected[!, c]]
+                @test Transforms.apply(df, scaling; cols=c) ≈ df_expected[!, c]
             end
 
             @testset "Inverse" begin
@@ -467,6 +469,7 @@
                 nt_expected_ = merge(nt, nt_mutated)
 
                 @test Transforms.apply(nt, scaling; cols=[c]) ≈ [collect(nt_expected_[c])] atol=1e-14
+                @test Transforms.apply(nt, scaling; cols=c) ≈ collect(nt_expected_[c]) atol=1e-14
                 @test scaling(nt; cols=[c]) ≈ [collect(nt_expected_[c])] atol=1e-14
 
                 _nt = deepcopy(nt)
@@ -517,8 +520,8 @@
             @testset "cols = $c" for c in (:a, :b)
                 scaling = MeanStdScaling(df; cols=[c])
 
-                transformed = Transforms.apply(df, scaling; cols=[c])
-                @test transformed ≈ [df_expected[!, c]] atol=1e-5
+                @test Transforms.apply(df, scaling; cols=[c]) ≈ [df_expected[!, c]] atol=1e-5
+                @test Transforms.apply(df, scaling; cols=c) ≈ df_expected[!, c] atol=1e-5
 
                 _df = deepcopy(df)
                 _df_expected = deepcopy(df)

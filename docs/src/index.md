@@ -1,12 +1,12 @@
 ```@meta
-CurrentModule = Transforms
+CurrentModule = FeatureTransforms
 ```
 
-# Transforms
+# FeatureTransforms
 
 ```@index
 ```
 
 ```@autodocs
-Modules = [Transforms]
+Modules = [FeatureTransforms]
 ```

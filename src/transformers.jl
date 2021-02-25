@@ -99,7 +99,9 @@ end
 Applies the [`Transform`](@ref) to each of the specified columns in the `table`.
 If no `cols` are specified, then the [`Transform`](@ref) is applied to all columns.
 
-Returns an array containing each transformed column, in the same order as `cols`.
+# Return
+* If `cols` is a single value (not in a list): the transformed column vector.
+* Otherwise: an array containing each transformed column, in the same order as `cols`.
 """
 function apply(table, t::Transform; cols=nothing, kwargs...)
     Tables.istable(table) || throw(MethodError(apply, (table, t)))

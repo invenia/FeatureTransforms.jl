@@ -1,21 +1,22 @@
 """
-    OneHotEncoding <: Transform
+    OneHotEncoding{R<:Real} <: Transform
 
 One-hot encode the categorical value for each target element.
 
 Construct a n-by-p binary matrix, given a `Vector` of target data `x` (of length n) and a
 `Vector` of all unique possible values in x (of length p).
 
-The element [i, j] is `1` if the i^th target in `x` corresponds to the j^th possible
-value and `0` otherwise.
+The element [i, j] is `true` if the i^th target in `x` corresponds to the j^th possible
+value and `false` otherwise. Note that `R`can be specified to determine the return type
+of results. It defaults to a `Matrix` of `Bool`s.
 
 Note that this Transform does not support specifying dims other than `:` (all dims) because
 it is a one-to-many transform (for example a `Vector` input produces a `Matrix` output).
 """
-struct OneHotEncoding <: Transform
-    categories::Dict{Any, Int}
+struct OneHotEncoding{R<:Real} <: Transform
+    categories::Dict
 
-    function OneHotEncoding(possible_values::AbstractVector)
+    function OneHotEncoding{R}(possible_values::AbstractVector) where {R<:Real}
         if length(unique(possible_values)) < length(possible_values)
             throw(ArgumentError("Expected a list of all unique possible values"))
         end
@@ -23,18 +24,21 @@ struct OneHotEncoding <: Transform
         # Create a dictionary that maps unique values in the input array to column positions
         # in the sparse matrix that results from applying the OneHotEncoding transform
         categories = Dict(value => i for (i, value) in enumerate(possible_values))
-        return new(categories)
+        return new{R}(categories)
     end
 end
 
-function _apply(x, encoding::OneHotEncoding; kwargs...)
-    n_categories = length(encoding.categories)
+function OneHotEncoding(possible_values::AbstractVector{T}) where T
+    return OneHotEncoding{Bool}(possible_values)
+end
 
-    results = zeros(Int, length(x), n_categories)
+function _apply(x, encoding::OneHotEncoding{R}; kwargs...) where R <: Real
+    n_categories = length(encoding.categories)
+    results = zeros(R, length(x), n_categories)
 
     @views for (i, value) in enumerate(x)
         col_pos = encoding.categories[value]
-        results[i, col_pos] = 1
+        results[i, col_pos] = true
     end
 
     return results

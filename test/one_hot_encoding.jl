@@ -8,8 +8,15 @@
         x = ["foo", "bar", "baz"]
         expected = [1 0 0; 0 1 0; 0 0 1]
 
-        @test Transforms.apply(x, ohe) == expected
+        transformed = Transforms.apply(x, ohe)
+        @test transformed == expected
+        @test transformed isa AbstractMatrix{Bool}
         @test ohe(x) == expected
+
+        # Test specifying return type
+        transformed = Transforms.apply(x, OneHotEncoding{AbstractFloat}(categories))
+        @test transformed == expected
+        @test transformed isa AbstractMatrix{AbstractFloat}
 
         # Test duplicate values
         x = ["foo", "baz", "bar", "baz"]

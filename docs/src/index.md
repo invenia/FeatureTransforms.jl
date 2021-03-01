@@ -1,7 +1,7 @@
 # FeatureTransforms
 
 FeatureTransforms.jl provides utilities for performing feature engineering in machine learning pipelines.
-FeatureTransforms supports operations on `AbstractArray`s and [`Table`s](https://github.com/JuliaData/Tables.jl).
+FeatureTransforms supports operations on `AbstractArray`s and [`Table`](https://github.com/JuliaData/Tables.jl)s.
 
 There are three key parts of the Transforms.jl API:
 

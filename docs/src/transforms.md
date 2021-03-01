@@ -1,4 +1,4 @@
-# Transforms(@id transforms)
+# [Transforms](@id about-transforms)
 
 A `Transform` defines a transformation of data, for example scaling, periodic functions, linear combination, one-hot encoding, etc.
 
@@ -38,7 +38,7 @@ There are three main ways to apply a `Transform` - suppose it is called `t`:
 
 A single `Transform` can be applied to different data types and in different ways. The two main data types supported are `AbstractArray`s and [`Table`s](https://github.com/JuliaData/Tables.jl).
 
-### `AbstractArray`
+### `AbstractArray` data
 
 For `AbstractArray` data, some `Transform`s support a `dims` keyword argument in their `apply` methods. This will apply the `Transform` to slices of the array along dimensions determined by `dims`. For example, given a `Matrix`, `dims=1` applies to each column, and `dims=2` applies
 to each row. This convention is similar to `Statistics.mean(M; dims=2)` returning the mean of each row in matrix `M`.
@@ -67,7 +67,7 @@ julia> FeatureTransforms.apply(M, scaling; dims=1, inds=1:2:size(M, 1))
  1.0   1.0
 ```
 
-### `Table`
+### `Table` data
 
 For `Table` data, all `Transform`s support a `cols` keyword argument in their `apply` methods. This applies the transform to the specified columns, or all columns if none are specified. Using `cols`, we can apply different transformations to different kinds of data from the same table. For example:
 

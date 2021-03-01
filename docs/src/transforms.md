@@ -7,6 +7,7 @@ DocTestSetup = quote
     using DataFrames
     using Dates
     using FeatureTransforms
+end
 ```
 
 Usually, a `Transform` has one or more parameters. For example, we can define a squaring operation (i.e. raise to the power of 2):
@@ -75,14 +76,7 @@ julia> df = DataFrame(
            :time => DateTime(2021, 2, 27, 12):Hour(1):DateTime(2021, 2, 27, 14),
            :temperature_A => [18.1, 19.5, 21.1],
            :temperature_B => [16.2, 17.2, 17.5],
-       )
-3×3 DataFrame
-│ Row │ time                │ temperature_A │ temperature_B │
-│     │ DateTime            │ Float64       │ Float64       │
-├─────┼─────────────────────┼───────────────┼───────────────┤
-│ 1   │ 2021-02-27T12:00:00 │ 18.1          │ 16.2          │
-│ 2   │ 2021-02-27T13:00:00 │ 19.5          │ 17.2          │
-│ 3   │ 2021-02-27T14:00:00 │ 21.1          │ 17.5          │
+       );
 
 julia> feature_df = DataFrame(
            :hour_of_day => FeatureTransforms.apply(df, HoD(); cols=:time),

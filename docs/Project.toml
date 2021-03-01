@@ -6,6 +6,6 @@ FeatureTransforms = "8fd68953-04b8-4117-ac19-158bf6de9782"
 
 [compat]
 CSV = "0.8"
+DataFrames = "0.21"
 Documenter = "0.26"
-DataFrames = "0.22"
 julia = "1.5"

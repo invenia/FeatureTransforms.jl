@@ -1,5 +1,8 @@
-using FeatureTransforms
+using CSV
+using DataFrames
+using Dates
 using Documenter
+using FeatureTransforms
 
 makedocs(;
     modules=[FeatureTransforms],

@@ -112,3 +112,29 @@ function apply!(table::T, t::Transform; cols=nothing, kwargs...)::T where T
 
     return table
 end
+
+"""
+    apply!!(A::AbstractArray, ::Transform; dims=1, kwargs...)
+
+Applies the [`Transform`](@ref) to each element of `A` and appends the result to `A`, if
+possible, creating a new array.
+"""
+function apply!!(data::AbstractArray, t; dims=1, kwargs...)
+    other_dims = setdiff(1:length(size(data)), dims)
+    output = FeatureTransforms.apply(data, t; dims=1, kwargs...)
+    return cat(data, output; dims=other_dims)
+end
+
+"""
+    apply!!(table::T, ::Transform; col=nothing, new_names)::T where T
+
+Applies the [`Transform`](@ref) to each of the specified columns in the `table` and appends
+the result into a new table, if possible, with the given `new_names`.
+If no `cols` are specified, then the [`Transform`](@ref) is applied to all columns.
+"""
+function apply!!(table::T, t; new_names, kwargs...) where T
+    Tables.istable(table) || throw(MethodError(apply, (table, t)))
+    result = NamedTuple{Tuple(new_names)}(apply(table, t; kwargs...))
+    table = merge(Tables.columntable(table), result)
+    return T <: NamedTuple ? table : T(table)
+end

@@ -2,6 +2,7 @@ using AxisArrays
 using AxisKeys
 using DataFrames: DataFrame
 using Dates
+using Documenter: doctest
 using FeatureTransforms
 using FeatureTransforms: _try_copy, _periodic
 using Test
@@ -14,4 +15,6 @@ using TimeZones
     include("power.jl")
     include("scaling.jl")
     include("temporal.jl")
+
+    doctest(FeatureTransforms)
 end

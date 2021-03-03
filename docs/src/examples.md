@@ -80,7 +80,7 @@ julia> output_cols = [:temperature, :humidity];
 
 For many models it is helpful to normalize the training data.
 We can use `MeanStdScaling` for that purpose.
-Note that the order of columns to normalise does not matter.
+Note that the order of columns to normalize does not matter.
 
 ```jldoctest example
 julia> scaling = MeanStdScaling(train_df; cols=input_cols);

@@ -14,7 +14,10 @@ makedocs(;
         assets=String[],
     ),
     pages=[
-        "Home" => "index.md",
+        "Introduction" => "index.md",
+        "Guide to Transforms" => "transforms.md",
+        "Examples" => "examples.md",
+        "API" => "api.md",
     ],
     strict=true,
     checkdocs=:exports,

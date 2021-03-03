@@ -1,7 +1,7 @@
 # [Transforms](@id about-transforms)
 
 A `Transform` defines a transformation of data for feature engineering purposes.
-Examples are scaling, periodic functions, linear combination, and one-hot encoding.
+Some examples are scaling, periodic functions, linear combination, and one-hot encoding.
 
 ```@meta
 DocTestSetup = quote
@@ -57,7 +57,7 @@ Alternatively, the data can be mutated using the `apply!` method.
 
 !!! note
 
-  not all `Transform` subtypes support mutation.
+    Not all `Transform` subtypes support mutation.
 
 ```jldoctest transforms
 julia> FeatureTransforms.apply!(x, p)
@@ -77,9 +77,9 @@ A single `Transform` instance can be applied to different data types, with suppo
 
 !!! note
 
-  Some `Transform` subtypes have restrictions on how they can be applied once constructed.
-  For instance, `MeanStdScaling` stores the mean and standard deviation of some data for specified dimensions or column names.
-  So `MeanStdScaling` should only be applied to the same data type and for the same dimensions or subset of column names specified in construction.
+    Some `Transform` subtypes have restrictions on how they can be applied once constructed.
+    For instance, `MeanStdScaling` stores the mean and standard deviation of some data for specified dimensions or column names.
+    So `MeanStdScaling` should only be applied to the same data type and for the same dimensions or subset of column names specified in construction.
 
 ## Applying to `AbstractArray`
 
@@ -121,8 +121,8 @@ to each row.
 
 !!! note
 
-  In general, the `dims` argument uses the convention of `mapslices`, which is called behind the scenes when applying transforms to slices of data.
-  In practice, this means that users can expect the `dims` keyword to behave exactly as `mean(A; dims=d)` would; the transformation will be applied to the elements along the dimension `d` and, for operations like `mean` or `sum`, reduce across this dimension.
+    In general, the `dims` argument uses the convention of `mapslices`, which is called behind the scenes when applying transforms to slices of data.
+    In practice, this means that users can expect the `dims` keyword to behave exactly as `mean(A; dims=d)` would; the transformation will be applied to the elements along the dimension `d` and, for operations like `mean` or `sum`, reduce across this dimension.
 
 ```jldoctest transforms
 julia> M
@@ -178,16 +178,16 @@ julia> FeatureTransforms.apply!(nt, scaling)
 
 !!! note
 
-  The non-mutating `apply` method for `Table` data returns a `Vector` of `Vector`s, one for each column, e.g.
+    The non-mutating `apply` method for `Table` data returns a `Vector` of `Vector`s, one for each column, e.g.
 
-  ```julia-repl
-  julia> FeatureTransforms.apply(nt, scaling)
-  2-element Array{Array{Float64,1},1}:
-   [-2.0, -3.0, -1.0]
-   [-6.0, -5.0, -4.0]
-  ```
+    ```julia-repl
+    julia> FeatureTransforms.apply(nt, scaling)
+    2-element Array{Array{Float64,1},1}:
+    [-2.0, -3.0, -1.0]
+    [-6.0, -5.0, -4.0]
+    ```
 
-  This is so users are free to decide what to name the results of the transformation, whether to append to the original table, etc.
+    This is so users are free to decide what to name the results of the transformation, whether to append to the original table, etc.
 
 ### Applying to specific columns with `cols`
 
@@ -203,9 +203,9 @@ julia> df = DataFrame(
            :temperature_B => [16.2, 17.2, 17.5],
        );
 
-julia> hod = HoD()
+julia> hod = HoD();
 
-julia> lc = LinearCombination([0.5, 0.5])
+julia> lc = LinearCombination([0.5, 0.5]);
 
 julia> feature_df = DataFrame(
            :hour_of_day => hod(df; cols=:time),
@@ -231,13 +231,11 @@ julia> nt = (a = [2, 1, 3], b = [4, 5, 6]);
 julia> scaling = MeanStdScaling(nt);
 
 julia> FeatureTransforms.apply!(nt, scaling);
-(a = [0, -1, 1], b = [-1, 0, 1])
 
 julia> nt
 (a = [0, -1, 1], b = [-1, 0, 1])
 
-julia> FeatureTransforms.apply!(nt, scaling; inverse=true)
-(a = [2, 1, 3], b = [4, 5, 6])
+julia> FeatureTransforms.apply!(nt, scaling; inverse=true);
 
 julia> nt
 (a = [2, 1, 3], b = [4, 5, 6])

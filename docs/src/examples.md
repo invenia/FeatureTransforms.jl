@@ -39,7 +39,9 @@ We want to create some data features based on the time of day.
 One way to do this is with the `Periodic` transform, specifying a period of 1 day:
 
 ```jldoctest example
-julia> df.hour_of_day_sin = FeatureTransforms.apply(df, Periodic(sin, Day(1)); cols=:time);
+julia> periodic = Periodic(sin, Day(1));
+
+julia> df.hour_of_day_sin = FeatureTransforms.apply(df, periodic; cols=:time);
 
 julia> feature_df = df
 24×4 DataFrame
@@ -80,7 +82,7 @@ julia> output_cols = [:temperature, :humidity];
 
 For many models it is helpful to normalize the training data.
 We can use `MeanStdScaling` for that purpose.
-Note that the order of columns to normalize does not matter.
+Note that we are mutating the data frame in-place using `apply!`, and the order of columns specified does not matter.
 
 ```jldoctest example
 julia> scaling = MeanStdScaling(train_df; cols=input_cols);
@@ -122,7 +124,7 @@ julia> FeatureTransforms.apply!(test_df, scaling; cols=input_cols)
 ```
 
 Suppose we then train our model, and get a prediction for the test points as a matrix: `[-0.36 0.61; -0.45 0.68]`.
-We can scale this back to the original units of temperature and humidity by converting to a `Table` type (to label the columns) and using inverse scaling:
+We can scale this back to the original units of temperature and humidity by converting to a [`Table`](https://github.com/JuliaData/Tables.jl) type (to label the columns) and using inverse scaling:
 
 ```jldoctest example
 julia> predictions = DataFrame([-0.36 0.61; -0.45 0.68], output_cols);

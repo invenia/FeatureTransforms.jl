@@ -197,6 +197,12 @@ This applies the transform to the specified columns.
 Using `cols`, we can apply different transformations to different kinds of data from the same table:
 
 ```jldoctest transforms
+julia> df = DataFrame(
+           :time => DateTime(2021, 2, 27, 12):Hour(1):DateTime(2021, 2, 27, 14),
+           :temperature_A => [18.1, 19.5, 21.1],
+           :temperature_B => [16.2, 17.2, 17.5],
+       );
+
 julia> hod = HoD()
 
 julia> lc = LinearCombination([0.5, 0.5])
@@ -206,12 +212,12 @@ julia> feature_df = DataFrame(
            :aggregate_temperature => lc(df; cols=[:temperature_A, :temperature_B])
        )
 3×2 DataFrame
-│ Row │ hour_of_day │ aggregate_temperature │
-│     │ Int64       │ Float64               │
-├─────┼─────────────┼───────────────────────┤
-│ 1   │ 12          │ 17.15                 │
-│ 2   │ 13          │ 18.35                 │
-│ 3   │ 14          │ 19.3                  │
+ Row │ hour_of_day  aggregate_temperature 
+     │ Int64        Float64               
+─────┼────────────────────────────────────
+   1 │          12                  17.15
+   2 │          13                  18.35
+   3 │          14                  19.3
 ```
 
 ## Transform-specific keyword arguments

@@ -1,4 +1,3 @@
-using CSV
 using DataFrames
 using Dates
 using Documenter

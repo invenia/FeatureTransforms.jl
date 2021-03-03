@@ -1,6 +1,7 @@
 # [Transforms](@id about-transforms)
 
-A `Transform` defines a transformation of data, for example scaling, periodic functions, linear combination, one-hot encoding, etc.
+A `Transform` defines a transformation of data for feature engineering purposes.
+Examples are scaling, periodic functions, linear combination, and one-hot encoding.
 
 ```@meta
 DocTestSetup = quote
@@ -10,15 +11,23 @@ DocTestSetup = quote
 end
 ```
 
-Usually, a `Transform` has one or more parameters. For example, we can define a squaring operation (i.e. raise to the power of 2):
+## Defining a transform
 
-```jldoctest transforms
+A `Transform` often has one or more parameters.
+For example, the following defines a squaring operation (i.e. raise to the power of 2):
+
+```julia-repl
 julia> p = Power(2);
 ```
 
-This transformation can be applied to data `x` as follows:
+## Methods to apply a transform
+
+Given some data `x`, there are three main methods to apply a transform.
+Firstly, it can be applied in a non-mutating fashion using `apply`:
 
 ```jldoctest transforms
+julia> p = Power(2);
+
 julia> x = [1.0, 2.0, 3.0];
 
 julia> FeatureTransforms.apply(x, p)
@@ -26,61 +35,175 @@ julia> FeatureTransforms.apply(x, p)
  1.0
  4.0
  9.0
+
+julia> x
+3-element Array{Float64,1}:
+ 1.0
+ 2.0
+ 3.0
 ```
 
-## Applying a `Transform`
-
-There are three main ways to apply a `Transform` - suppose it is called `t`:
-
-* `Transforms.apply(data, t; kwargs...)` is non-mutating, returning the transformed data without modifying the original data.
-* `t(data; kwargs...)` is equivalent to `Transforms.apply(data, t; kwargs...)`
-* `Transforms.apply!(data, t; kwargs...)` is mutating, returning the modified `data` with the same type.
-
-A single `Transform` can be applied to different data types and in different ways. The two main data types supported are `AbstractArray`s and [`Table`s](https://github.com/JuliaData/Tables.jl).
-
-### `AbstractArray` data
-
-For `AbstractArray` data, some `Transform`s support a `dims` keyword argument in their `apply` methods. This will apply the `Transform` to slices of the array along dimensions determined by `dims`. For example, given a `Matrix`, `dims=1` applies to each column, and `dims=2` applies
-to each row. This convention is similar to `Statistics.mean(M; dims=2)` returning the mean of each row in matrix `M`.
+Equivalently, the `Transform` object can be called directly on the data:
 
 ```jldoctest transforms
-julia> M = [0.0 0.0; -0.5 1.0; 0.5 2.0];
+julia> p(x)
+3-element Array{Float64,1}:
+ 1.0
+ 4.0
+ 9.0
+```
 
-julia> scaling = MeanStdScaling(M; dims=1);
+Alternatively, the data can be mutated using the `apply!` method.
 
-julia> FeatureTransforms.apply(M, scaling; dims=1)
+!!! note
+
+  not all `Transform` subtypes support mutation.
+
+```jldoctest transforms
+julia> FeatureTransforms.apply!(x, p)
+3-element Array{Float64,1}:
+ 1.0
+ 4.0
+ 9.0
+
+julia> x
+3-element Array{Float64,1}:
+ 1.0
+ 4.0
+ 9.0
+```
+
+A single `Transform` instance can be applied to different data types, with support for `AbstractArray`s and [`Table`s](https://github.com/JuliaData/Tables.jl).
+
+!!! note
+
+  Some `Transform` subtypes have restrictions on how they can be applied once constructed.
+  For instance, `MeanStdScaling` stores the mean and standard deviation of some data for specified dimensions or column names.
+  So `MeanStdScaling` should only be applied to the same data type and for the same dimensions or subset of column names specified in construction.
+
+## Applying to `AbstractArray`
+
+### Default
+
+Without specifying optional arguments, a `Transform` is applied to every element of an `AbstractArray` and in an element-wise fashion:
+
+```jldoctest transforms
+julia> M = [2 4; 1 5; 3 6];
+
+julia> p = Power(2);
+
+julia> FeatureTransforms.apply(M, p)
+3×2 Array{Int64,2}:
+ 4  16
+ 1  25
+ 9  36
+```
+
+### Applying to specific array indices with `inds`
+
+The non-mutating `apply` method has an `inds` keyword argument to apply the `Transform` to certain indices of an array.
+For example, to only square the second column:
+
+```jldoctest transforms
+julia> FeatureTransforms.apply(M, p; inds=[4, 5, 6])
+3-element Array{Int64,1}:
+ 16
+ 25
+ 36
+```
+
+### Applying along dimensions using `dims`
+
+Transforms can be applied to `AbstractArray` data using a `dims` keyword argument.
+This will apply the `Transform` to slices of the array along dimensions determined by `dims`.
+For example, given a `Matrix`, `dims=1` applies to each column, and `dims=2` applies
+to each row.
+
+!!! note
+
+  In general, the `dims` argument uses the convention of `mapslices`, which is called behind the scenes when applying transforms to slices of data.
+  In practice, this means that users can expect the `dims` keyword to behave exactly as `mean(A; dims=d)` would; the transformation will be applied to the elements along the dimension `d` and, for operations like `mean` or `sum`, reduce across this dimension.
+
+```jldoctest transforms
+julia> M
+3×2 Array{Int64,2}:
+ 2  4
+ 1  5
+ 3  6
+
+julia> normalize_cols = MeanStdScaling(M; dims=1);
+
+julia> normalize_cols(M; dims=1)
 3×2 Array{Float64,2}:
   0.0  -1.0
  -1.0   0.0
   1.0   1.0
+
+julia> normalize_rows = MeanStdScaling(M; dims=2);
+
+julia> normalize_rows(M; dims=2)
+3×2 Array{Float64,2}:
+ -0.707107  0.707107
+ -0.707107  0.707107
+ -0.707107  0.707107
 ```
 
-Note that some `Transform`s have restrictions on how they can be applied once constructed. For instance, `MeanStdScaling` stores the mean and standard deviation of some data for specified dimensions (for arrays) or columns (for tables). So `MeanStdScaling` should only be applied to the same data type and along the same dimensions or subset of columns specified in construction.
+### Using `dims` and `inds` together
 
-We can also provide the `inds` keyword to apply the `Transform` to certain indices along the
-array slices. For example, to only scale every odd row:
+When using `dims` with `inds`, the `inds` change from being the global indices of the array to the relative indices of each slice.
+For example, the following is another way to square the second column of an array, applying to  index 2 of each row:
 
 ```jldoctest transforms
-julia> FeatureTransforms.apply(M, scaling; dims=1, inds=1:2:size(M, 1))
-2×2 Array{Float64,2}:
- 0.0  -1.0
- 1.0   1.0
+julia> FeatureTransforms.apply(M, p; dims=2, inds=[2])
+3×1 Array{Int64,2}:
+ 16
+ 25
+ 36
 ```
 
-### `Table` data
+## Applying to `Table`
 
-For `Table` data, all `Transform`s support a `cols` keyword argument in their `apply` methods. This applies the transform to the specified columns, or all columns if none are specified. Using `cols`, we can apply different transformations to different kinds of data from the same table. For example:
+### Default
+
+Without specifying optional arguments, a `Transform` is applied to every column of a `Table` independently:
 
 ```jldoctest transforms
-julia> df = DataFrame(
-           :time => DateTime(2021, 2, 27, 12):Hour(1):DateTime(2021, 2, 27, 14),
-           :temperature_A => [18.1, 19.5, 21.1],
-           :temperature_B => [16.2, 17.2, 17.5],
-       );
+julia> nt = (a = [2, 1, 3], b = [4, 5, 6]);
+
+julia> scaling = MeanStdScaling(nt);
+
+julia> FeatureTransforms.apply!(nt, scaling)
+(a = [0, -1, 1], b = [-1, 0, 1])
+```
+
+!!! note
+
+  The non-mutating `apply` method for `Table` data returns a `Vector` of `Vector`s, one for each column, e.g.
+
+  ```julia-repl
+  julia> FeatureTransforms.apply(nt, scaling)
+  2-element Array{Array{Float64,1},1}:
+   [-2.0, -3.0, -1.0]
+   [-6.0, -5.0, -4.0]
+  ```
+
+  This is so users are free to decide what to name the results of the transformation, whether to append to the original table, etc.
+
+### Applying to specific columns with `cols`
+
+For `Table` data, all `Transform`s support a `cols` keyword argument in their `apply` methods.
+This applies the transform to the specified columns.
+
+Using `cols`, we can apply different transformations to different kinds of data from the same table:
+
+```jldoctest transforms
+julia> hod = HoD()
+
+julia> lc = LinearCombination([0.5, 0.5])
 
 julia> feature_df = DataFrame(
-           :hour_of_day => FeatureTransforms.apply(df, HoD(); cols=:time),
-           :aggregate_temperature => FeatureTransforms.apply(df, LinearCombination([0.5, 0.5]); cols=[:temperature_A, :temperature_B])
+           :hour_of_day => hod(df; cols=:time),
+           :aggregate_temperature => lc(df; cols=[:temperature_A, :temperature_B])
        )
 3×2 DataFrame
 │ Row │ hour_of_day │ aggregate_temperature │
@@ -89,6 +212,29 @@ julia> feature_df = DataFrame(
 │ 1   │ 12          │ 17.15                 │
 │ 2   │ 13          │ 18.35                 │
 │ 3   │ 14          │ 19.3                  │
+```
+
+## Transform-specific keyword arguments
+
+Some transforms have specific keyword arguments that can be passed to `apply`/`apply!`.
+For example, `MeanStdScaling` can invert the original scaling using the `inverse` argument:
+
+```jldoctest transforms
+julia> nt = (a = [2, 1, 3], b = [4, 5, 6]);
+
+julia> scaling = MeanStdScaling(nt);
+
+julia> FeatureTransforms.apply!(nt, scaling);
+(a = [0, -1, 1], b = [-1, 0, 1])
+
+julia> nt
+(a = [0, -1, 1], b = [-1, 0, 1])
+
+julia> FeatureTransforms.apply!(nt, scaling; inverse=true)
+(a = [2, 1, 3], b = [4, 5, 6])
+
+julia> nt
+(a = [2, 1, 3], b = [4, 5, 6])
 ```
 
 ```@meta

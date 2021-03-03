@@ -35,7 +35,8 @@ julia> df = DataFrame(
                                     9 rows omitted
 ```
 
-We want to create some data features based on the time of day. One way to do this is with the `Periodic` transform, specifying a period of 1 day:
+We want to create some data features based on the time of day.
+One way to do this is with the `Periodic` transform, specifying a period of 1 day:
 
 ```jldoctest example
 julia> df.hour_of_day_sin = FeatureTransforms.apply(df, Periodic(sin, Day(1)); cols=:time);
@@ -64,7 +65,8 @@ julia> feature_df = df
                                                      9 rows omitted
 ```
 
-Now suppose we want to use the first 22 hours as training data and the last 2 hours as test data. Our input features are the temperature, humidity, and periodic encodings for the current hour, and the outputs to predict are the temperature and humidity for the next hour. 
+Now suppose we want to use the first 22 hours as training data and the last 2 hours as test data.
+Our input features are the temperature, humidity, and periodic encodings for the current hour, and the outputs to predict are the temperature and humidity for the next hour. 
 
 ```jldoctest example
 julia> train_df = feature_df[1:end-2, :];
@@ -76,7 +78,9 @@ julia> input_cols = [:hour_of_day_sin, :temperature, :humidity];
 julia> output_cols = [:temperature, :humidity];
 ```
 
-For many models it is helpful to normalize the training data. We can use `MeanStdScaling` for that purpose. Note that the order of columns to normalise does not matter.
+For many models it is helpful to normalize the training data.
+We can use `MeanStdScaling` for that purpose.
+Note that the order of columns to normalise does not matter.
 
 ```jldoctest example
 julia> scaling = MeanStdScaling(train_df; cols=input_cols);
@@ -117,7 +121,8 @@ julia> FeatureTransforms.apply!(test_df, scaling; cols=input_cols)
    2 │ 2018-09-10T23:00:00    -0.403818  0.579814        -0.393684
 ```
 
-Suppose we then train our model, and get a prediction for the test points as a matrix: `[-0.36 0.61; -0.45 0.68]`. We can scale this back to the original units of temperature and humidity by converting to a `Table` type (to label the columns) and using inverse scaling:
+Suppose we then train our model, and get a prediction for the test points as a matrix: `[-0.36 0.61; -0.45 0.68]`.
+We can scale this back to the original units of temperature and humidity by converting to a `Table` type (to label the columns) and using inverse scaling:
 
 ```jldoctest example
 julia> predictions = DataFrame([-0.36 0.61; -0.45 0.68], output_cols);

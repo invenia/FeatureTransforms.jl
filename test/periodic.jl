@@ -123,8 +123,7 @@
             end
 
             @testset "Matrix" begin
-                x = collect(0.:5.)
-                M = reshape(x, (3, 2))
+                M = reshape(0.:5., (3, 2))
                 M_expected = reshape(expected, (3, 2))
 
                 @testset "dims = $d" for d in (Colon(), 1, 2)

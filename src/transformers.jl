@@ -109,17 +109,17 @@ function apply(table, t::Transform; cols=nothing, kwargs...)
     # Extract a columns iterator that we should be able to use to mutate the data.
     # NOTE: Mutation is not guaranteed for all table types, but it avoid copying the data
     columntable = Tables.columns(table)
-
     cnames = cols === nothing ? propertynames(columntable) : cols
+    return _apply(columntable, t, cnames; kwargs...)
+end
 
-    if cnames isa Union{Tuple, AbstractArray}
-        return [
-            _apply(getproperty(columntable, cname), t; name=cname, kwargs...)
-            for cname in cnames
-        ]
-    else  # return unwrapped single column
-        return _apply(getproperty(columntable, cnames), t; name=cnames, kwargs...)
-    end
+# 3-arg forms are simply to dispatch on whether cols is a Symbol or a collection
+function _apply(table, t::Transform, col; kwargs...)
+    return _apply(getproperty(table, col), t; name=col, kwargs...)
+end
+
+function _apply(table, t::Transform, cols::Union{Tuple, AbstractArray}; kwargs...)
+    return [_apply(table, t, col; kwargs...) for col in cols]
 end
 
 """

@@ -76,10 +76,8 @@ function apply(A::AbstractArray, t::Transform; dims=:, inds=:, kwargs...)
         end
     end
 
-    slice_index = 0
     return @views mapslices(A, dims=dims) do x
-        slice_index += 1
-        _apply(x[inds], t; name=Symbol(slice_index), kwargs...)
+        _apply(x[inds], t; kwargs...)
     end
 end
 
@@ -115,7 +113,7 @@ end
 
 # 3-arg forms are simply to dispatch on whether cols is a Symbol or a collection
 function _apply(table, t::Transform, col; kwargs...)
-    return _apply(getproperty(table, col), t; name=col, kwargs...)
+    return _apply(getproperty(table, col), t; kwargs...)
 end
 
 function _apply(table, t::Transform, cols::Union{Tuple, AbstractArray}; kwargs...)
@@ -140,7 +138,7 @@ function apply!(table::T, t::Transform; cols=nothing, kwargs...)::T where T
 
     cnames = cols === nothing ? propertynames(columntable) : cols
     for cname in cnames
-        apply!(getproperty(columntable, cname), t; name=cname, kwargs...)
+        apply!(getproperty(columntable, cname), t; kwargs...)
     end
 
     return table

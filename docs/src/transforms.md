@@ -57,7 +57,7 @@ Alternatively, the data can be mutated using the `apply!` method.
 
 !!! note
 
-    Not all `Transform` subtypes support mutation.
+    Some `Transform` subtypes do not support mutation, such as those which change the type or dimension of the input.
 
 ```jldoctest transforms
 julia> FeatureTransforms.apply!(x, p)
@@ -101,7 +101,8 @@ julia> FeatureTransforms.apply(M, p)
 
 ### Applying to specific array indices with `inds`
 
-The non-mutating `apply` method has an `inds` keyword argument to apply the `Transform` to certain indices of an array.
+Transforms can be applied to `AbstractArray` data with an `inds` keyword argument.
+This will apply the `Transform` to certain indices of an array.
 For example, to only square the second column:
 
 ```jldoctest transforms
@@ -114,7 +115,7 @@ julia> FeatureTransforms.apply(M, p; inds=[4, 5, 6])
 
 ### Applying along dimensions using `dims`
 
-Transforms can be applied to `AbstractArray` data using a `dims` keyword argument.
+Transforms can be applied to `AbstractArray` data with a `dims` keyword argument.
 This will apply the `Transform` to slices of the array along dimensions determined by `dims`.
 For example, given a `Matrix`, `dims=1` applies to each column, and `dims=2` applies
 to each row.
@@ -178,7 +179,8 @@ julia> FeatureTransforms.apply!(nt, scaling)
 
 !!! note
 
-    The non-mutating `apply` method for `Table` data returns a `Vector` of `Vector`s, one for each column, e.g.
+    The non-mutating `apply` method for `Table` data returns a `Vector` of `Vector`s, one for each column.
+    This is so users are free to decide what to name the results of the transformation, whether to append to the original table, etc.
 
     ```julia-repl
     julia> FeatureTransforms.apply(nt, scaling)
@@ -186,8 +188,6 @@ julia> FeatureTransforms.apply!(nt, scaling)
     [-2.0, -3.0, -1.0]
     [-6.0, -5.0, -4.0]
     ```
-
-    This is so users are free to decide what to name the results of the transformation, whether to append to the original table, etc.
 
 ### Applying to specific columns with `cols`
 

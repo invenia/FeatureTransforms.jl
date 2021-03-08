@@ -7,7 +7,7 @@ There are three key parts of the Transforms.jl API:
 
 * Subtypes of [`Transform`](@ref about-transforms) define transformations of data, for example normalization or a periodic function.
 * The `apply` and `apply!` methods transform data according to the given [`Transform`](@ref about-transforms), in a manner determined by the data type and specified dimensions, column names, indices, and other `Transform`-specific parameters.
-* The `transform` interface can be used to define a feature engineering pipeline, which comprises a collection of [`Transform`](@ref about-transforms)s to be peformed on some data.
+* The `transform` method should be overloaded to define feature engineering pipelines that include [`Transform`](@ref about-transforms)s.
 
 ## Getting Started
 

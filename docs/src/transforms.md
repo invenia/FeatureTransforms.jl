@@ -78,8 +78,8 @@ A single `Transform` instance can be applied to different data types, with suppo
 !!! note
 
     Some `Transform` subtypes have restrictions on how they can be applied once constructed.
-    For instance, `MeanStdScaling` stores the mean and standard deviation of some data for specified dimensions or column names.
-    So `MeanStdScaling` should only be applied to the same data type and for the same dimensions or subset of column names specified in construction.
+    For instance, `MeanStdScaling` stores the mean and standard deviation of some data, potentially specified via some dimension and column names.
+    So `MeanStdScaling` should only be applied to the same data, and for the same dimension and subset of column names, as those used in construction.
 
 ## Applying to `AbstractArray`
 
@@ -116,9 +116,10 @@ julia> FeatureTransforms.apply(M, p; inds=[4, 5, 6])
 ### Applying along dimensions using `dims`
 
 Transforms can be applied to `AbstractArray` data with a `dims` keyword argument.
-This will apply the `Transform` to slices of the array along dimensions determined by `dims`.
-For example, given a `Matrix`, `dims=1` applies to each column, and `dims=2` applies
-to each row.
+This will apply the `Transform` to slices of the array along this dimension, which can be selected by the `inds` keyword.
+So when `dims` and `inds` are used together, the `inds` change from being the global indices of the array to the relative indices of each slice.
+
+For example, given a `Matrix`, `dims=1` slices the data column-wise and `inds=[2, 3]` selects the 2nd and 3rd rows.
 
 !!! note
 
@@ -132,49 +133,37 @@ julia> M
  1.0  5.0
  3.0  6.0
 
-julia> normalize_cols = MeanStdScaling(M; dims=1);
+julia> normalize_row = MeanStdScaling(M; dims=1, inds=[2])
+MeanStdScaling(3.0, 2.8284271247461903)
 
-julia> normalize_cols(M; dims=1)
-3×2 Array{Float64,2}:
-  0.0  -1.0
- -1.0   0.0
-  1.0   1.0
-
-julia> normalize_rows = MeanStdScaling(M; dims=2);
-
-julia> normalize_rows(M; dims=2)
-3×2 Array{Float64,2}:
+julia> normalize_row(M; dims=1, inds=[2])
+1×2 Array{Float64,2}:
  -0.707107  0.707107
- -0.707107  0.707107
- -0.707107  0.707107
-```
 
-### Using `dims` and `inds` together
+julia> normalize_col = MeanStdScaling(M; dims=2, inds=[2])
+MeanStdScaling(5.0, 1.0)
 
-When using `dims` with `inds`, the `inds` change from being the global indices of the array to the relative indices of each slice.
-For example, the following is another way to square the second column of an array, applying to  index 2 of each row:
-
-```jldoctest transforms
-julia> FeatureTransforms.apply(M, p; dims=2, inds=[2])
+julia> normalize_col(M; dims=2, inds=[2])
 3×1 Array{Float64,2}:
- 16.0
- 25.0
- 36.0
+ -1.0
+  0.0
+  1.0
+
 ```
 
 ## Applying to `Table`
 
 ### Default
 
-Without specifying optional arguments, a `Transform` is applied to every column of a `Table` independently:
+Without specifying optional arguments, a `Transform` is applied to all the data in a `Table`:
 
 ```jldoctest transforms
 julia> nt = (a = [2.0, 1.0, 3.0], b = [4.0, 5.0, 6.0]);
 
-julia> scaling = MeanStdScaling(nt);
+julia> scaling = MeanStdScaling(nt);  # compute statistics using all data
 
 julia> FeatureTransforms.apply!(nt, scaling)
-(a = [0.0, -1.0, 1.0], b = [-1.0, 0.0, 1.0])
+(a = [-0.8017837257372732, -1.3363062095621219, -0.2672612419124244], b = [0.2672612419124244, 0.8017837257372732, 1.3363062095621219])
 ```
 
 !!! note
@@ -185,8 +174,8 @@ julia> FeatureTransforms.apply!(nt, scaling)
     ```julia-repl
     julia> FeatureTransforms.apply(nt, scaling)
     2-element Array{Array{Float64,1},1}:
-    [-2.0, -3.0, -1.0]
-    [-6.0, -5.0, -4.0]
+    [-2.2994001219583993, -2.585114407672685, -2.0136858362441137]
+    [-1.7279715505298279, -1.442257264815542, -1.1565429791012565]
     ```
 
 ### Applying to specific columns with `cols`
@@ -233,7 +222,7 @@ julia> scaling = MeanStdScaling(nt);
 julia> FeatureTransforms.apply!(nt, scaling);
 
 julia> nt
-(a = [0.0, -1.0, 1.0], b = [-1.0, 0.0, 1.0])
+(a = [-0.8017837257372732, -1.3363062095621219, -0.2672612419124244], b = [0.2672612419124244, 0.8017837257372732, 1.3363062095621219])
 
 julia> FeatureTransforms.apply!(nt, scaling; inverse=true);
 

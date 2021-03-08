@@ -83,9 +83,13 @@ We can use `MeanStdScaling` for that purpose.
 Note that we are mutating the data frame in-place using `apply!`, and the order of columns specified does not matter.
 
 ```jldoctest example
-julia> scaling = MeanStdScaling(train_df; cols=output_cols);
+julia> temp_scaling = MeanStdScaling(train_df; cols=[:temperature]);
 
-julia> FeatureTransforms.apply!(train_df, scaling; cols=output_cols)
+julia> hum_scaling = MeanStdScaling(train_df; cols=[:humidity]);
+
+julia> FeatureTransforms.apply!(train_df, temp_scaling; cols=[:temperature]);
+
+julia> FeatureTransforms.apply!(train_df, hum_scaling; cols=[:humidity])
 22×4 DataFrame
  Row │ time                 temperature  humidity     hour_of_day_sin
      │ DateTime             Float64      Float64      Float64
@@ -112,7 +116,9 @@ julia> FeatureTransforms.apply!(train_df, scaling; cols=output_cols)
 We can use the same `scaling` transform to normalize the test data:
 
 ```jldoctest example
-julia> FeatureTransforms.apply!(test_df, scaling; cols=output_cols)
+julia> FeatureTransforms.apply!(test_df, temp_scaling; cols=[:temperature]);
+
+julia> FeatureTransforms.apply!(test_df, hum_scaling; cols=[:humidity])
 2×4 DataFrame
  Row │ time                 temperature  humidity  hour_of_day_sin
      │ DateTime             Float64      Float64   Float64
@@ -127,7 +133,9 @@ We can scale this back to the original units of temperature and humidity by conv
 ```jldoctest example
 julia> predictions = DataFrame([-0.36 0.61; -0.45 0.68], output_cols);
 
-julia> FeatureTransforms.apply!(predictions, scaling; cols=output_cols, inverse=true)
+julia> FeatureTransforms.apply!(predictions, temp_scaling; cols=[:temperature], inverse=true);
+
+julia> FeatureTransforms.apply!(predictions, hum_scaling; cols=[:humidity], inverse=true)
 2×2 DataFrame
  Row │ temperature  humidity 
      │ Float64      Float64  

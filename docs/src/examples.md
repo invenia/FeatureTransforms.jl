@@ -75,8 +75,6 @@ julia> train_df = feature_df[1:end-2, :];
 
 julia> test_df = feature_df[end-1:end, :];
 
-julia> input_cols = [:hour_of_day_sin, :temperature, :humidity];
-
 julia> output_cols = [:temperature, :humidity];
 ```
 
@@ -85,42 +83,42 @@ We can use `MeanStdScaling` for that purpose.
 Note that we are mutating the data frame in-place using `apply!`, and the order of columns specified does not matter.
 
 ```jldoctest example
-julia> scaling = MeanStdScaling(train_df; cols=input_cols);
+julia> scaling = MeanStdScaling(train_df; cols=output_cols);
 
-julia> FeatureTransforms.apply!(train_df, scaling; cols=input_cols)
+julia> FeatureTransforms.apply!(train_df, scaling; cols=output_cols)
 22×4 DataFrame
  Row │ time                 temperature  humidity     hour_of_day_sin
      │ DateTime             Float64      Float64      Float64
 ─────┼────────────────────────────────────────────────────────────────
-   1 │ 2018-09-10T00:00:00   -0.807635    0.98858          -0.0462951
-   2 │ 2018-09-10T01:00:00   -1.01916     1.12684           0.301093
-   3 │ 2018-09-10T02:00:00   -1.13454     1.04869           0.624808
-   4 │ 2018-09-10T03:00:00   -1.13454     0.904422          0.902788
-   5 │ 2018-09-10T04:00:00   -1.23068     0.922456          1.11609
-   6 │ 2018-09-10T05:00:00   -1.23068     1.19897           1.25018
-   7 │ 2018-09-10T06:00:00   -1.36529     1.3733            1.29591
-   8 │ 2018-09-10T07:00:00   -1.13454     1.13285           1.25018
+   1 │ 2018-09-10T00:00:00   -0.807635    0.98858         0.0
+   2 │ 2018-09-10T01:00:00   -1.01916     1.12684         0.258819
+   3 │ 2018-09-10T02:00:00   -1.13454     1.04869         0.5
+   4 │ 2018-09-10T03:00:00   -1.13454     0.904422        0.707107
+   5 │ 2018-09-10T04:00:00   -1.23068     0.922456        0.866025
+   6 │ 2018-09-10T05:00:00   -1.23068     1.19897         0.965926
+   7 │ 2018-09-10T06:00:00   -1.36529     1.3733          1.0
+   8 │ 2018-09-10T07:00:00   -1.13454     1.13285         0.965926
   ⋮  │          ⋮                ⋮            ⋮              ⋮
-  16 │ 2018-09-10T15:00:00    1.32683    -1.3498           -0.995378
-  17 │ 2018-09-10T16:00:00    1.32683    -1.37385          -1.20868
-  18 │ 2018-09-10T17:00:00    1.23068    -1.23559          -1.34277
-  19 │ 2018-09-10T18:00:00    0.99993    -1.02519          -1.3885
-  20 │ 2018-09-10T19:00:00    0.692259   -0.754687         -1.34277
-  21 │ 2018-09-10T20:00:00    0.365359   -0.394011         -1.20868
-  22 │ 2018-09-10T21:00:00    0.0384588  -0.00327887       -0.995378
+  16 │ 2018-09-10T15:00:00    1.32683    -1.3498         -0.707107
+  17 │ 2018-09-10T16:00:00    1.32683    -1.37385        -0.866025
+  18 │ 2018-09-10T17:00:00    1.23068    -1.23559        -0.965926
+  19 │ 2018-09-10T18:00:00    0.99993    -1.02519        -1.0
+  20 │ 2018-09-10T19:00:00    0.692259   -0.754687       -0.965926
+  21 │ 2018-09-10T20:00:00    0.365359   -0.394011       -0.866025
+  22 │ 2018-09-10T21:00:00    0.0384588  -0.00327887     -0.707107
                                                         7 rows omitted
 ```
 
 We can use the same `scaling` transform to normalize the test data:
 
 ```jldoctest example
-julia> FeatureTransforms.apply!(test_df, scaling; cols=input_cols)
+julia> FeatureTransforms.apply!(test_df, scaling; cols=output_cols)
 2×4 DataFrame
- Row │ time                 temperature  humidity  hour_of_day_sin 
-     │ DateTime             Float64      Float64   Float64         
+ Row │ time                 temperature  humidity  hour_of_day_sin
+     │ DateTime             Float64      Float64   Float64
 ─────┼─────────────────────────────────────────────────────────────
-   1 │ 2018-09-10T22:00:00    -0.173065  0.345374        -0.717398
-   2 │ 2018-09-10T23:00:00    -0.403818  0.579814        -0.393684
+   1 │ 2018-09-10T22:00:00    -0.173065  0.345374        -0.5
+   2 │ 2018-09-10T23:00:00    -0.403818  0.579814        -0.258819
 ```
 
 Suppose we then train our model, and get a prediction for the test points as a matrix: `[-0.36 0.61; -0.45 0.68]`.

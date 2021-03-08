@@ -88,15 +88,15 @@ A single `Transform` instance can be applied to different data types, with suppo
 Without specifying optional arguments, a `Transform` is applied to every element of an `AbstractArray` and in an element-wise fashion:
 
 ```jldoctest transforms
-julia> M = [2 4; 1 5; 3 6];
+julia> M = [2.0 4.0; 1.0 5.0; 3.0 6.0];
 
 julia> p = Power(2);
 
 julia> FeatureTransforms.apply(M, p)
-3×2 Array{Int64,2}:
- 4  16
- 1  25
- 9  36
+3×2 Array{Float64,2}:
+ 4.0  16.0
+ 1.0  25.0
+ 9.0  36.0
 ```
 
 ### Applying to specific array indices with `inds`
@@ -107,10 +107,10 @@ For example, to only square the second column:
 
 ```jldoctest transforms
 julia> FeatureTransforms.apply(M, p; inds=[4, 5, 6])
-3-element Array{Int64,1}:
- 16
- 25
- 36
+3-element Array{Float64,1}:
+ 16.0
+ 25.0
+ 36.0
 ```
 
 ### Applying along dimensions using `dims`
@@ -127,10 +127,10 @@ to each row.
 
 ```jldoctest transforms
 julia> M
-3×2 Array{Int64,2}:
- 2  4
- 1  5
- 3  6
+3×2 Array{Float64,2}:
+ 2.0  4.0
+ 1.0  5.0
+ 3.0  6.0
 
 julia> normalize_cols = MeanStdScaling(M; dims=1);
 
@@ -156,10 +156,10 @@ For example, the following is another way to square the second column of an arra
 
 ```jldoctest transforms
 julia> FeatureTransforms.apply(M, p; dims=2, inds=[2])
-3×1 Array{Int64,2}:
- 16
- 25
- 36
+3×1 Array{Float64,2}:
+ 16.0
+ 25.0
+ 36.0
 ```
 
 ## Applying to `Table`
@@ -169,12 +169,12 @@ julia> FeatureTransforms.apply(M, p; dims=2, inds=[2])
 Without specifying optional arguments, a `Transform` is applied to every column of a `Table` independently:
 
 ```jldoctest transforms
-julia> nt = (a = [2, 1, 3], b = [4, 5, 6]);
+julia> nt = (a = [2.0, 1.0, 3.0], b = [4.0, 5.0, 6.0]);
 
 julia> scaling = MeanStdScaling(nt);
 
 julia> FeatureTransforms.apply!(nt, scaling)
-(a = [0, -1, 1], b = [-1, 0, 1])
+(a = [0.0, -1.0, 1.0], b = [-1.0, 0.0, 1.0])
 ```
 
 !!! note
@@ -226,19 +226,19 @@ Some transforms have specific keyword arguments that can be passed to `apply`/`a
 For example, `MeanStdScaling` can invert the original scaling using the `inverse` argument:
 
 ```jldoctest transforms
-julia> nt = (a = [2, 1, 3], b = [4, 5, 6]);
+julia> nt = (a = [2.0, 1.0, 3.0], b = [4.0, 5.0, 6.0]);
 
 julia> scaling = MeanStdScaling(nt);
 
 julia> FeatureTransforms.apply!(nt, scaling);
 
 julia> nt
-(a = [0, -1, 1], b = [-1, 0, 1])
+(a = [0.0, -1.0, 1.0], b = [-1.0, 0.0, 1.0])
 
 julia> FeatureTransforms.apply!(nt, scaling; inverse=true);
 
 julia> nt
-(a = [2, 1, 3], b = [4, 5, 6])
+(a = [2.0, 1.0, 3.0], b = [4.0, 5.0, 6.0])
 ```
 
 ```@meta

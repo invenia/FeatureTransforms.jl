@@ -17,7 +17,7 @@ julia&gt; x
 3-element Array{Float64,1}:
  1.0
  4.0
- 9.0</code></pre><p>Alternatively, the data can be mutated using the <code>apply!</code> method.</p><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>Not all <code>Transform</code> subtypes support mutation.</p></div></div><pre><code class="language-julia-repl">julia&gt; FeatureTransforms.apply!(x, p)
+ 9.0</code></pre><p>Alternatively, the data can be mutated using the <code>apply!</code> method.</p><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>Some <code>Transform</code> subtypes do not support mutation, such as those which change the type or dimension of the input.</p></div></div><pre><code class="language-julia-repl">julia&gt; FeatureTransforms.apply!(x, p)
 3-element Array{Float64,1}:
  1.0
  4.0
@@ -27,23 +27,23 @@ julia&gt; x
 3-element Array{Float64,1}:
  1.0
  4.0
- 9.0</code></pre><p>A single <code>Transform</code> instance can be applied to different data types, with support for <code>AbstractArray</code>s and <a href="https://github.com/JuliaData/Tables.jl"><code>Table</code>s</a>.</p><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>Some <code>Transform</code> subtypes have restrictions on how they can be applied once constructed. For instance, <code>MeanStdScaling</code> stores the mean and standard deviation of some data for specified dimensions or column names. So <code>MeanStdScaling</code> should only be applied to the same data type and for the same dimensions or subset of column names specified in construction.</p></div></div><h2 id="Applying-to-AbstractArray"><a class="docs-heading-anchor" href="#Applying-to-AbstractArray">Applying to <code>AbstractArray</code></a><a id="Applying-to-AbstractArray-1"></a><a class="docs-heading-anchor-permalink" href="#Applying-to-AbstractArray" title="Permalink"></a></h2><h3 id="Default"><a class="docs-heading-anchor" href="#Default">Default</a><a id="Default-1"></a><a class="docs-heading-anchor-permalink" href="#Default" title="Permalink"></a></h3><p>Without specifying optional arguments, a <code>Transform</code> is applied to every element of an <code>AbstractArray</code> and in an element-wise fashion:</p><pre><code class="language-julia-repl">julia&gt; M = [2 4; 1 5; 3 6];
+ 9.0</code></pre><p>A single <code>Transform</code> instance can be applied to different data types, with support for <code>AbstractArray</code>s and <a href="https://github.com/JuliaData/Tables.jl"><code>Table</code>s</a>.</p><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>Some <code>Transform</code> subtypes have restrictions on how they can be applied once constructed. For instance, <code>MeanStdScaling</code> stores the mean and standard deviation of some data for specified dimensions or column names. So <code>MeanStdScaling</code> should only be applied to the same data type and for the same dimensions or subset of column names specified in construction.</p></div></div><h2 id="Applying-to-AbstractArray"><a class="docs-heading-anchor" href="#Applying-to-AbstractArray">Applying to <code>AbstractArray</code></a><a id="Applying-to-AbstractArray-1"></a><a class="docs-heading-anchor-permalink" href="#Applying-to-AbstractArray" title="Permalink"></a></h2><h3 id="Default"><a class="docs-heading-anchor" href="#Default">Default</a><a id="Default-1"></a><a class="docs-heading-anchor-permalink" href="#Default" title="Permalink"></a></h3><p>Without specifying optional arguments, a <code>Transform</code> is applied to every element of an <code>AbstractArray</code> and in an element-wise fashion:</p><pre><code class="language-julia-repl">julia&gt; M = [2.0 4.0; 1.0 5.0; 3.0 6.0];
 
 julia&gt; p = Power(2);
 
 julia&gt; FeatureTransforms.apply(M, p)
-3×2 Array{Int64,2}:
- 4  16
- 1  25
- 9  36</code></pre><h3 id="Applying-to-specific-array-indices-with-inds"><a class="docs-heading-anchor" href="#Applying-to-specific-array-indices-with-inds">Applying to specific array indices with <code>inds</code></a><a id="Applying-to-specific-array-indices-with-inds-1"></a><a class="docs-heading-anchor-permalink" href="#Applying-to-specific-array-indices-with-inds" title="Permalink"></a></h3><p>The non-mutating <code>apply</code> method has an <code>inds</code> keyword argument to apply the <code>Transform</code> to certain indices of an array. For example, to only square the second column:</p><pre><code class="language-julia-repl">julia&gt; FeatureTransforms.apply(M, p; inds=[4, 5, 6])
-3-element Array{Int64,1}:
- 16
- 25
- 36</code></pre><h3 id="Applying-along-dimensions-using-dims"><a class="docs-heading-anchor" href="#Applying-along-dimensions-using-dims">Applying along dimensions using <code>dims</code></a><a id="Applying-along-dimensions-using-dims-1"></a><a class="docs-heading-anchor-permalink" href="#Applying-along-dimensions-using-dims" title="Permalink"></a></h3><p>Transforms can be applied to <code>AbstractArray</code> data using a <code>dims</code> keyword argument. This will apply the <code>Transform</code> to slices of the array along dimensions determined by <code>dims</code>. For example, given a <code>Matrix</code>, <code>dims=1</code> applies to each column, and <code>dims=2</code> applies to each row.</p><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>In general, the <code>dims</code> argument uses the convention of <code>mapslices</code>, which is called behind the scenes when applying transforms to slices of data. In practice, this means that users can expect the <code>dims</code> keyword to behave exactly as <code>mean(A; dims=d)</code> would; the transformation will be applied to the elements along the dimension <code>d</code> and, for operations like <code>mean</code> or <code>sum</code>, reduce across this dimension.</p></div></div><pre><code class="language-julia-repl">julia&gt; M
-3×2 Array{Int64,2}:
- 2  4
- 1  5
- 3  6
+3×2 Array{Float64,2}:
+ 4.0  16.0
+ 1.0  25.0
+ 9.0  36.0</code></pre><h3 id="Applying-to-specific-array-indices-with-inds"><a class="docs-heading-anchor" href="#Applying-to-specific-array-indices-with-inds">Applying to specific array indices with <code>inds</code></a><a id="Applying-to-specific-array-indices-with-inds-1"></a><a class="docs-heading-anchor-permalink" href="#Applying-to-specific-array-indices-with-inds" title="Permalink"></a></h3><p>Transforms can be applied to <code>AbstractArray</code> data with an <code>inds</code> keyword argument. This will apply the <code>Transform</code> to certain indices of an array. For example, to only square the second column:</p><pre><code class="language-julia-repl">julia&gt; FeatureTransforms.apply(M, p; inds=[4, 5, 6])
+3-element Array{Float64,1}:
+ 16.0
+ 25.0
+ 36.0</code></pre><h3 id="Applying-along-dimensions-using-dims"><a class="docs-heading-anchor" href="#Applying-along-dimensions-using-dims">Applying along dimensions using <code>dims</code></a><a id="Applying-along-dimensions-using-dims-1"></a><a class="docs-heading-anchor-permalink" href="#Applying-along-dimensions-using-dims" title="Permalink"></a></h3><p>Transforms can be applied to <code>AbstractArray</code> data with a <code>dims</code> keyword argument. This will apply the <code>Transform</code> to slices of the array along dimensions determined by <code>dims</code>. For example, given a <code>Matrix</code>, <code>dims=1</code> applies to each column, and <code>dims=2</code> applies to each row.</p><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>In general, the <code>dims</code> argument uses the convention of <code>mapslices</code>, which is called behind the scenes when applying transforms to slices of data. In practice, this means that users can expect the <code>dims</code> keyword to behave exactly as <code>mean(A; dims=d)</code> would; the transformation will be applied to the elements along the dimension <code>d</code> and, for operations like <code>mean</code> or <code>sum</code>, reduce across this dimension.</p></div></div><pre><code class="language-julia-repl">julia&gt; M
+3×2 Array{Float64,2}:
+ 2.0  4.0
+ 1.0  5.0
+ 3.0  6.0
 
 julia&gt; normalize_cols = MeanStdScaling(M; dims=1);
 
@@ -60,18 +60,18 @@ julia&gt; normalize_rows(M; dims=2)
  -0.707107  0.707107
  -0.707107  0.707107
  -0.707107  0.707107</code></pre><h3 id="Using-dims-and-inds-together"><a class="docs-heading-anchor" href="#Using-dims-and-inds-together">Using <code>dims</code> and <code>inds</code> together</a><a id="Using-dims-and-inds-together-1"></a><a class="docs-heading-anchor-permalink" href="#Using-dims-and-inds-together" title="Permalink"></a></h3><p>When using <code>dims</code> with <code>inds</code>, the <code>inds</code> change from being the global indices of the array to the relative indices of each slice. For example, the following is another way to square the second column of an array, applying to  index 2 of each row:</p><pre><code class="language-julia-repl">julia&gt; FeatureTransforms.apply(M, p; dims=2, inds=[2])
-3×1 Array{Int64,2}:
- 16
- 25
- 36</code></pre><h2 id="Applying-to-Table"><a class="docs-heading-anchor" href="#Applying-to-Table">Applying to <code>Table</code></a><a id="Applying-to-Table-1"></a><a class="docs-heading-anchor-permalink" href="#Applying-to-Table" title="Permalink"></a></h2><h3 id="Default-2"><a class="docs-heading-anchor" href="#Default-2">Default</a><a class="docs-heading-anchor-permalink" href="#Default-2" title="Permalink"></a></h3><p>Without specifying optional arguments, a <code>Transform</code> is applied to every column of a <code>Table</code> independently:</p><pre><code class="language-julia-repl">julia&gt; nt = (a = [2, 1, 3], b = [4, 5, 6]);
+3×1 Array{Float64,2}:
+ 16.0
+ 25.0
+ 36.0</code></pre><h2 id="Applying-to-Table"><a class="docs-heading-anchor" href="#Applying-to-Table">Applying to <code>Table</code></a><a id="Applying-to-Table-1"></a><a class="docs-heading-anchor-permalink" href="#Applying-to-Table" title="Permalink"></a></h2><h3 id="Default-2"><a class="docs-heading-anchor" href="#Default-2">Default</a><a class="docs-heading-anchor-permalink" href="#Default-2" title="Permalink"></a></h3><p>Without specifying optional arguments, a <code>Transform</code> is applied to every column of a <code>Table</code> independently:</p><pre><code class="language-julia-repl">julia&gt; nt = (a = [2.0, 1.0, 3.0], b = [4.0, 5.0, 6.0]);
 
 julia&gt; scaling = MeanStdScaling(nt);
 
 julia&gt; FeatureTransforms.apply!(nt, scaling)
-(a = [0, -1, 1], b = [-1, 0, 1])</code></pre><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>The non-mutating <code>apply</code> method for <code>Table</code> data returns a <code>Vector</code> of <code>Vector</code>s, one for each column, e.g.</p><pre><code class="language-julia-repl">julia&gt; FeatureTransforms.apply(nt, scaling)
+(a = [0.0, -1.0, 1.0], b = [-1.0, 0.0, 1.0])</code></pre><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>The non-mutating <code>apply</code> method for <code>Table</code> data returns a <code>Vector</code> of <code>Vector</code>s, one for each column. This is so users are free to decide what to name the results of the transformation, whether to append to the original table, etc.</p><pre><code class="language-julia-repl">julia&gt; FeatureTransforms.apply(nt, scaling)
 2-element Array{Array{Float64,1},1}:
 [-2.0, -3.0, -1.0]
-[-6.0, -5.0, -4.0]</code></pre><p>This is so users are free to decide what to name the results of the transformation, whether to append to the original table, etc.</p></div></div><h3 id="Applying-to-specific-columns-with-cols"><a class="docs-heading-anchor" href="#Applying-to-specific-columns-with-cols">Applying to specific columns with <code>cols</code></a><a id="Applying-to-specific-columns-with-cols-1"></a><a class="docs-heading-anchor-permalink" href="#Applying-to-specific-columns-with-cols" title="Permalink"></a></h3><p>For <code>Table</code> data, all <code>Transform</code>s support a <code>cols</code> keyword argument in their <code>apply</code> methods. This applies the transform to the specified columns.</p><p>Using <code>cols</code>, we can apply different transformations to different kinds of data from the same table:</p><pre><code class="language-julia-repl">julia&gt; df = DataFrame(
+[-6.0, -5.0, -4.0]</code></pre></div></div><h3 id="Applying-to-specific-columns-with-cols"><a class="docs-heading-anchor" href="#Applying-to-specific-columns-with-cols">Applying to specific columns with <code>cols</code></a><a id="Applying-to-specific-columns-with-cols-1"></a><a class="docs-heading-anchor-permalink" href="#Applying-to-specific-columns-with-cols" title="Permalink"></a></h3><p>For <code>Table</code> data, all <code>Transform</code>s support a <code>cols</code> keyword argument in their <code>apply</code> methods. This applies the transform to the specified columns.</p><p>Using <code>cols</code>, we can apply different transformations to different kinds of data from the same table:</p><pre><code class="language-julia-repl">julia&gt; df = DataFrame(
            :time =&gt; DateTime(2021, 2, 27, 12):Hour(1):DateTime(2021, 2, 27, 14),
            :temperature_A =&gt; [18.1, 19.5, 21.1],
            :temperature_B =&gt; [16.2, 17.2, 17.5],
@@ -91,16 +91,16 @@ julia&gt; feature_df = DataFrame(
 ─────┼────────────────────────────────────
    1 │          12                  17.15
    2 │          13                  18.35
-   3 │          14                  19.3</code></pre><h2 id="Transform-specific-keyword-arguments"><a class="docs-heading-anchor" href="#Transform-specific-keyword-arguments">Transform-specific keyword arguments</a><a id="Transform-specific-keyword-arguments-1"></a><a class="docs-heading-anchor-permalink" href="#Transform-specific-keyword-arguments" title="Permalink"></a></h2><p>Some transforms have specific keyword arguments that can be passed to <code>apply</code>/<code>apply!</code>. For example, <code>MeanStdScaling</code> can invert the original scaling using the <code>inverse</code> argument:</p><pre><code class="language-julia-repl">julia&gt; nt = (a = [2, 1, 3], b = [4, 5, 6]);
+   3 │          14                  19.3</code></pre><h2 id="Transform-specific-keyword-arguments"><a class="docs-heading-anchor" href="#Transform-specific-keyword-arguments">Transform-specific keyword arguments</a><a id="Transform-specific-keyword-arguments-1"></a><a class="docs-heading-anchor-permalink" href="#Transform-specific-keyword-arguments" title="Permalink"></a></h2><p>Some transforms have specific keyword arguments that can be passed to <code>apply</code>/<code>apply!</code>. For example, <code>MeanStdScaling</code> can invert the original scaling using the <code>inverse</code> argument:</p><pre><code class="language-julia-repl">julia&gt; nt = (a = [2.0, 1.0, 3.0], b = [4.0, 5.0, 6.0]);
 
 julia&gt; scaling = MeanStdScaling(nt);
 
 julia&gt; FeatureTransforms.apply!(nt, scaling);
 
 julia&gt; nt
-(a = [0, -1, 1], b = [-1, 0, 1])
+(a = [0.0, -1.0, 1.0], b = [-1.0, 0.0, 1.0])
 
 julia&gt; FeatureTransforms.apply!(nt, scaling; inverse=true);
 
 julia&gt; nt
-(a = [2, 1, 3], b = [4, 5, 6])</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Introduction</a><a class="docs-footer-nextpage" href="../examples/">Examples »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Wednesday 3 March 2021 17:48">Wednesday 3 March 2021</span>. Using Julia version 1.5.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+(a = [2.0, 1.0, 3.0], b = [4.0, 5.0, 6.0])</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Introduction</a><a class="docs-footer-nextpage" href="../examples/">Examples »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 8 March 2021 17:13">Monday 8 March 2021</span>. Using Julia version 1.5.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

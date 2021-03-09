@@ -76,9 +76,7 @@ function apply(A::AbstractArray, t::Transform; dims=:, inds=:, kwargs...)
         end
     end
 
-    return @views mapslices(A, dims=dims) do x
-        _apply(x[inds], t; kwargs...)
-    end
+    return _apply(selectdim(A, dims, inds), t; kwargs...)
 end
 
 """

@@ -35,8 +35,8 @@
             @test FeatureTransforms.apply(x, ohe; inds=2:4) == [0 0 1; 0 1 0; 0 0 1]
             @test FeatureTransforms.apply(x, ohe; dims=:) == expected
 
-            @test_throws DimensionMismatch FeatureTransforms.apply(x, ohe; dims=1)
-            @test_throws DimensionMismatch FeatureTransforms.apply(x, ohe; dims=1, inds=[2, 4])
+            @test FeatureTransforms.apply(x, ohe; dims=1) == expected
+            @test FeatureTransforms.apply(x, ohe; dims=1, inds=[2, 4]) == [0 0 1; 0 0 1]
 
             @test_throws BoundsError FeatureTransforms.apply(x, ohe; dims=2)
         end
@@ -51,10 +51,8 @@
 
         @test FeatureTransforms.apply(M, ohe) == expected
 
-        @testset "dims" begin
-            @test FeatureTransforms.apply(M, ohe; dims=:) == expected
-            @test_throws DimensionMismatch FeatureTransforms.apply(M, ohe; dims=1)
-            @test_throws DimensionMismatch FeatureTransforms.apply(M, ohe; dims=2)
+        @testset "dims=:$d" for d in (1, 2, Colon())
+            @test FeatureTransforms.apply(M, ohe; dims=d) == expected
         end
 
         @testset "inds" begin
@@ -68,14 +66,11 @@
         A = AxisArray(M, foo=["a", "b"], bar=["x", "y"])
         expected = [1 0 0 0 0; 0 0 0 1 0; 0 1 0 0 0; 0 0 0 0 1]
 
-        @testset "dims" begin
-            transformed = FeatureTransforms.apply(A, ohe; dims=:)
+        @testset "dims = $d" for d in (1, 2, Colon())
+            transformed = FeatureTransforms.apply(A, ohe; dims=d)
             # AxisArray doesn't preserve the type it operates on
             @test transformed isa AbstractArray
             @test transformed == expected
-
-            @test_throws DimensionMismatch FeatureTransforms.apply(A, ohe; dims=1)
-            @test_throws DimensionMismatch FeatureTransforms.apply(A, ohe; dims=2)
         end
 
         @testset "inds" begin
@@ -89,14 +84,11 @@
         A = KeyedArray(M, foo=["a", "b"], bar=["x", "y"])
         expected = [1 0 0 0 0; 0 0 0 1 0; 0 1 0 0 0; 0 0 0 0 1]
 
-        @testset "dims" begin
-            transformed = FeatureTransforms.apply(A, ohe; dims=:)
+        @testset "dims = $d" for d in (1, 2, Colon())
+            transformed = FeatureTransforms.apply(A, ohe; dims=d)
             # This transform doesn't preserve the type it operates on
             @test transformed isa AbstractArray
             @test transformed == expected
-
-            @test_throws DimensionMismatch FeatureTransforms.apply(A, ohe; dims=1)
-            @test_throws DimensionMismatch FeatureTransforms.apply(A, ohe; dims=2)
         end
 
         @testset "inds" begin

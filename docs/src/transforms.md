@@ -123,8 +123,7 @@ For example, given a `Matrix`, `dims=1` slices the data column-wise and `inds=[2
 
 !!! note
 
-    In general, the `dims` argument uses the convention of `mapslices`, which is called behind the scenes when applying transforms to slices of data.
-    In practice, this means that users can expect the `dims` keyword to behave exactly as `mean(A; dims=d)` would; the transformation will be applied to the elements along the dimension `d` and, for operations like `mean` or `sum`, reduce across this dimension.
+    In general, users can expect the `dims` keyword to behave exactly as `mean(A; dims=d)` would; the transformation will be applied to the elements along the dimension `d` and, for operations like `mean` or `sum`, reduce across this dimension.
 
 ```jldoctest transforms
 julia> M

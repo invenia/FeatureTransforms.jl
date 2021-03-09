@@ -7,14 +7,15 @@
         @testset "all inds" begin
             x = [1, 2]
             lc = LinearCombination([1, -1])
-            @test FeatureTransforms.apply(x, lc) == [-1]
-            @test lc(x) == [-1]
+            @test FeatureTransforms.apply(x, lc) == fill(-1)
+            @test lc(x) == fill(-1)
         end
 
-        @testset "dims not supported" begin
+        @testset "dims behaviour" begin
             x = [1, 2]
             lc = LinearCombination([1, -1])
-            @test_throws  MethodError FeatureTransforms.apply(x, lc; dims=1)
+            @test FeatureTransforms.apply(x, lc; dims=1) == fill(-1)
+            @test_throws DimensionMismatch FeatureTransforms.apply(x, lc; dims=2)
         end
 
         @testset "dimension mismatch" begin
@@ -26,8 +27,8 @@
         @testset "specified inds" begin
             x = [1, 2, 3]
             lc = LinearCombination([1, -1])
-            @test FeatureTransforms.apply(x, lc; inds=[2, 3]) == [-1]
-            @test lc(x; inds=[2, 3]) == [-1]
+            @test FeatureTransforms.apply(x, lc; inds=[2, 3]) == fill(-1)
+            @test lc(x; inds=[2, 3]) == fill(-1)
         end
     end
 

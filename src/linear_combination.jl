@@ -19,27 +19,14 @@ end
 _sum_row(row, coefficients) = sum(map(*, row, coefficients))
 
 """
-    apply(x::AbstractVector, LC::LinearCombination; inds=:)
-
-Applies the [`LinearCombination`](@ref) to each of the specified indices in `x`.
-
-If no `inds` are specified, then the [`LinearCombination`](@ref) is applied to all elements.
-"""
-function apply(x::AbstractVector, LC::LinearCombination; inds=:)
-    # Treat each element as it's own column - error if not equal to number of coefficients
-    num_elems = inds === Colon() ? length(x) : length(inds)
-    _check_dimensions_match(LC, num_elems)
-
-    return [_sum_row(x[inds], LC.coefficients)]
-end
-
-"""
     apply(A::AbstractArray, LC::LinearCombination; dims=1, inds=:)
 
-Applies the [`LinearCombination`](@ref) to each of the specified indices in `A` along the
-dimension specified, which defaults to applying it row-wise for each column of `A`.
+Applies the [`LinearCombination`](@ref) to each of the specified indices in `A`, reducing
+along the `dim` provided. The result is an (N-1)-dimensional array.
 
-If no `inds` are specified, then the [`LinearCombination`](@ref) is applied to all columns.
+The default behaviour reduces along the column dimension.
+
+If no `inds` are specified, then the transform is applied to all elements.
 """
 function apply(A::AbstractArray, LC::LinearCombination; dims=1, inds=:)
     dims === Colon() && throw(ArgumentError("dims=: is not supported, use 1 or 2 instead"))
@@ -50,6 +37,7 @@ function apply(A::AbstractArray, LC::LinearCombination; dims=1, inds=:)
 
     return _sum_row(eachslice(selectdim(A, dims, inds); dims=dims), LC.coefficients)
 end
+
 
 """
     apply(table, LC::LinearCombination; cols=nothing)

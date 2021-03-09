@@ -1,7 +1,7 @@
 """
     AbstractScaling <: Transform
 
-Linearly scale the data as `ax + b`, according to some statistics `a` and `b`.
+Linearly scale the data according to some statistics.
 """
 abstract type AbstractScaling <: Transform end
 
@@ -12,93 +12,65 @@ Represents the no-op scaling which simply returns the `data` it is applied on.
 """
 struct IdentityScaling <: AbstractScaling end
 
-_apply(x, scaling::IdentityScaling; kwargs...) = x
-_apply!(x, scaling::IdentityScaling; kwargs...) = _apply(x, scaling; kwargs...)
-
+@inline _apply(x, ::IdentityScaling; kwargs...) = x
 
 """
-    MeanStdScaling(mean, std) <: AbstractScaling
+    MeanStdScaling(μ, σ) <: AbstractScaling
 
-Linearly scale the data by a statistical `mean` and standard deviation `std`.
+Linearly scale the data by the statistical mean `μ` and standard deviation `σ`.
 This is also known as standardization, or the Z score transform.
-Once computed, the statistics of a `MeanStdScaling` are immutable.
-
-Can take a precomputed `mean` and `std` as arguments, or compute them from data.
-
-# Arguments
-* `mean::NamedTuple`: tuple of mean values, named by the scope of values it applies to.
-  `(all=μ, )` will apply to all data; `(1=μ1, 2=μ2)` for `AbstractArray` data will apply μ1
-  to the first slice and μ2 to the second slice; `(a=μ1, b=μ2)` for `Table` data will apply
-  μ1 to column `a` and μ2 to column `b`.
-* `std::NamedTuple`: similar to `mean` but for standard deviation values.
 
 # Keyword arguments to `apply`
-* `inverse=true`: inverts the scaling (e.g. to reconstruct the unscaled data)
-* `eps=1e-3`: replaces all 0 values in `std` before scaling (if `inverse=false`)
+* `inverse=true`: inverts the scaling (e.g. to reconstruct the unscaled data).
+* `eps=1e-3`: used in place of all 0 values in `σ` before scaling (if `inverse=false`).
 """
 struct MeanStdScaling <: AbstractScaling
-    mean::NamedTuple
-    std::NamedTuple
-end
+    μ::Real
+    σ::Real
 
-"""
-    MeanStdScaling(data; kwargs...) <: Scaling
+    """
+        MeanStdScaling(A::AbstractArray; dims=:, inds=:) -> MeanStdScaling
+        MeanStdScaling(table, cols=nothing) -> MeanStdScaling
 
-Construct a [`MeanStdScaling`](@ref) using the mean and standard deviation of the data.
+    Construct a [`MeanStdScaling`](@ref) transform from the statistics of the given data.
+    By default _all the data_ is considered when computing the mean and standard deviation.
+    This can be restricted to certain slices via the keyword arguments (see below).
 
-!!! note
-    `dims` and `cols` keyword arguments must be specified the same way when constructing
-    and applying the transform.
-    Otherwise, the results will be inconsistent, or an error may occur.
+    # `AbstractArray` keyword arguments
+    * `dims=:`: the dimension along which to take the `inds` slices. Default uses all dims.
+    * `inds=:`: the indices to use in computing the statistics. Default uses all indices.
 
-# Keyword arguments
-* `dims=:`: for `AbstractArray` data, the dimension(s) to compute statistics along.
-* `cols=nothing`: for `Table` data, the column names to compute statistics for.
-"""
-function MeanStdScaling(data; kwargs...)
-    μ, σ = compute_stats(data; kwargs...)
-    return MeanStdScaling(μ, σ)
-end
+    # `Table` keyword arguments
+    * `cols=nothing`: the columns to use in computing the statistics. Default uses all columns.
 
-function compute_stats(A::AbstractArray; dims=:)
-    if dims == Colon()
-        μ = (all = mean(A), )
-        σ = (all = std(A), )
-    else
-        μ_pairs = [(Symbol(i), x) for (i, x) in enumerate(mean(A; dims=dims))]
-        σ_pairs = [(Symbol(i), x) for (i, x) in enumerate(std(A; dims=dims))]
-
-        μ = (; μ_pairs...)
-        σ = (; σ_pairs...)
+    !!! note
+        If you want the `MeanStdScaling` to transform your data consistently you should use
+        the same `inds`, `dims`, or `cols` keywords when calling `apply`. Otherwise, `apply`
+        might rescale the wrong data or throw an error.
+    """
+    function MeanStdScaling(A::AbstractArray; dims=:, inds=:)
+        dims == Colon() && return new(compute_stats(A)...)
+        return new(compute_stats(selectdim(A, dims, inds))...)
     end
 
-    return μ, σ
-end
+    function MeanStdScaling(table; cols=nothing)
+        Tables.istable(table) || throw(MethodError(MeanStdScaling, table))
+        columntable = Tables.columns(table)
 
-function compute_stats(table; cols=nothing)
-    columntable = Tables.columns(table)
-    cnames = cols === nothing ? propertynames(columntable) : cols
-
-    μ_pairs = [(cname, mean(getproperty(columntable, cname))) for cname in cnames]
-    σ_pairs = [(cname, std(getproperty(columntable, cname))) for cname in cnames]
-
-    return (; μ_pairs...), (; σ_pairs...)
-end
-
-function _apply(
-    A::AbstractArray, scaling::MeanStdScaling;
-    name=nothing, inverse=false, eps=1e-3, kwargs...
-)
-    name = name === nothing ? :all : name
-    μ = scaling.mean[name]
-    σ = scaling.std[name]
-    if inverse
-        return μ .+ σ .* A
-    else
-        # Avoid division by 0
-        # If std is 0 then data was uniform, so the scaled value would end up ≈ 0
-        # Therefore the particular `eps` value should not matter much.
-        σ_safe = σ == 0 ? eps : σ
-        return (A .- μ) ./ σ_safe
+        cols = _to_vec(cols)  # handle single column name
+        cnames = cols === nothing ? propertynames(columntable) : cols
+        data = reduce(vcat, [getproperty(columntable, c) for c in cnames])
+        return new(compute_stats(data)...)
     end
+end
+
+compute_stats(x) = (mean(x), std(x))
+
+function _apply(A::AbstractArray, scaling::MeanStdScaling; inverse=false, eps=1e-3)
+    inverse && return scaling.μ .+ scaling.σ .* A
+    # Avoid division by 0
+    # If std is 0 then data was uniform, so the scaled value would end up ≈ 0
+    # Therefore the particular `eps` value should not matter much.
+    σ_safe = maximum([scaling.σ, eps])
+    return (A .- scaling.μ) ./ σ_safe
 end

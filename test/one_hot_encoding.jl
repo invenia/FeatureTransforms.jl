@@ -5,33 +5,43 @@
     @test ohe isa Transform
 
     @testset "Vector" begin
-        x = ["foo", "bar", "baz"]
-        expected = [1 0 0; 0 1 0; 0 0 1]
 
-        transformed = FeatureTransforms.apply(x, ohe)
-        @test transformed == expected
-        @test transformed isa AbstractMatrix{Bool}
-        @test ohe(x) == expected
+        @testset "simple" begin
+            x = ["foo", "bar", "baz"]
+            expected = [1 0 0; 0 1 0; 0 0 1]
 
-        # Test specifying return type
-        transformed = FeatureTransforms.apply(x, OneHotEncoding{AbstractFloat}(categories))
-        @test transformed == expected
-        @test transformed isa AbstractMatrix{AbstractFloat}
+            transformed = FeatureTransforms.apply(x, ohe)
+            @test transformed == expected
+            @test transformed isa AbstractMatrix{Bool}
+            @test ohe(x) == expected
+        end
 
-        # Test duplicate values
-        x = ["foo", "baz", "bar", "baz"]
-        expected = [1 0 0; 0 0 1; 0 1 0; 0 0 1]
-        @test FeatureTransforms.apply(x, ohe) == expected
+        @testset "specify return type" begin
+            x = ["foo", "bar", "baz"]
+            expected = [1 0 0; 0 1 0; 0 0 1]
+            transformed = FeatureTransforms.apply(x, OneHotEncoding{AbstractFloat}(categories))
+            @test transformed == expected
+            @test transformed isa AbstractMatrix{AbstractFloat}
+        end
 
-        # Test cannot pass duplicate values as the categories
-        @test_throws ArgumentError OneHotEncoding(x)
+        @testset "duplicate values" begin
+            x = ["foo", "baz", "bar", "baz"]
+            expected = [1 0 0; 0 0 1; 0 1 0; 0 0 1]
+            @test FeatureTransforms.apply(x, ohe) == expected
 
-        # Test a value does not exist as a category
-        x = ["foo", "baz", "bar", "dne"]
-        @test_throws KeyError FeatureTransforms.apply(x, ohe)
+            # Cannot pass duplicate values as the categories for the OHE constructor
+            @test_throws ArgumentError OneHotEncoding(x)
+        end
+
+        @testset "value does not exist as a category" begin
+            x = ["foo", "baz", "bar", "dne"]
+            @test_throws KeyError FeatureTransforms.apply(x, ohe)
+        end
 
         @testset "inds" begin
-             x = ["foo", "baz", "bar", "baz"]
+            x = ["foo", "baz", "bar", "baz"]
+            expected = [1 0 0; 0 0 1; 0 1 0; 0 0 1]
+
             @test FeatureTransforms.apply(x, ohe; inds=2:4) == [0 0 1; 0 1 0; 0 0 1]
             @test FeatureTransforms.apply(x, ohe; dims=:) == expected
 
@@ -42,10 +52,11 @@
         end
     end
 
-    categories = ["foo", "bar", "baz", "foo2", "bar2"]
-    ohe = OneHotEncoding(categories)
 
     @testset "Matrix" begin
+        categories = ["foo", "bar", "baz", "foo2", "bar2"]
+        ohe = OneHotEncoding(categories)
+
         M = ["foo" "bar"; "foo2" "bar2"]
         expected = [1 0 0 0 0; 0 0 0 1 0; 0 1 0 0 0; 0 0 0 0 1]
 
@@ -62,6 +73,9 @@
     end
 
     @testset "AxisArray" begin
+        categories = ["foo", "bar", "baz", "foo2", "bar2"]
+        ohe = OneHotEncoding(categories)
+
         M = ["foo" "bar"; "foo2" "bar2"]
         A = AxisArray(M, foo=["a", "b"], bar=["x", "y"])
         expected = [1 0 0 0 0; 0 0 0 1 0; 0 1 0 0 0; 0 0 0 0 1]
@@ -80,6 +94,9 @@
     end
 
     @testset "AxisKey" begin
+        categories = ["foo", "bar", "baz", "foo2", "bar2"]
+        ohe = OneHotEncoding(categories)
+
         M = ["foo" "bar"; "foo2" "bar2"]
         A = KeyedArray(M, foo=["a", "b"], bar=["x", "y"])
         expected = [1 0 0 0 0; 0 0 0 1 0; 0 1 0 0 0; 0 0 0 0 1]
@@ -98,6 +115,9 @@
     end
 
     @testset "NamedTuple" begin
+        categories = ["foo", "bar", "baz", "foo2", "bar2"]
+        ohe = OneHotEncoding(categories)
+
         nt = (a = ["foo" "bar"], b = ["foo2" "bar2"])
         expected_nt = (a = [1 0 0 0 0; 0 1 0 0 0], b = [0 0 0 1 0; 0 0 0 0 1])
         expected = [expected_nt.a, expected_nt.b]
@@ -115,6 +135,9 @@
     end
 
     @testset "DataFrame" begin
+        categories = ["foo", "bar", "baz", "foo2", "bar2"]
+        ohe = OneHotEncoding(categories)
+
         df = DataFrame(:a => ["foo", "bar"], :b => ["foo2", "bar2"])
         expected = [[1 0 0 0 0; 0 1 0 0 0], [0 0 0 1 0; 0 0 0 0 1]]
 

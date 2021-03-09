@@ -47,13 +47,11 @@ function apply(x::AbstractMatrix, LC::LinearCombination; dims=1, inds=Colon())
         throw(ArgumentError("Colon() dims is not supported, use 1 or 2 instead"))
     end
 
-    # Get the number of vectors in the dimension not specified
-    other_dim = dims ==  1 ? 2 : 1
-    num_inds = inds isa Colon ? size(x, other_dim) : length(inds)
-    # Error if dimensions don't match
+    # Get the number of slices - error if doesn't match the number of coefficients
+    num_inds = inds isa Colon ? size(x, dims) : length(inds)
     _check_dimensions_match(LC, num_inds)
-
-    return [_sum_row(row[inds], LC.coefficients) for row in eachslice(x; dims=dims)]
+    A = selectdim(x, dims, inds)
+    return _sum_row(eachslice(A; dims=dims), LC.coefficients)
 end
 
 """

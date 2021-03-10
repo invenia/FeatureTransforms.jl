@@ -76,6 +76,13 @@
         end
     end
 
+    @testset "N-dim Array" begin
+        A = reshape(1:27, 3, 3, 3)
+        lc = LinearCombination([1, -1, 1])
+        @test FeatureTransforms.apply(A, lc) == [2 11 20; 5 14 23; 8 17 26]
+        @test lc(A) == [2 11 20; 5 14 23; 8 17 26]
+    end
+
     @testset "AxisArray" begin
         A = AxisArray([1 2; 4 5], foo=["a", "b"], bar=["x", "y"])
         lc = LinearCombination([1, -1])

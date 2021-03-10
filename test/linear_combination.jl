@@ -30,6 +30,13 @@
             @test FeatureTransforms.apply(x, lc; inds=[2, 3]) == fill(-1)
             @test lc(x; inds=[2, 3]) == fill(-1)
         end
+
+        @testset "output is different type" begin
+            x = [1, 2]
+            lc = LinearCombination([.1, -.1])
+            @test FeatureTransforms.apply(x, lc) == fill(-.1)
+            @test lc(x) == fill(-.1)
+        end
     end
 
     @testset "Matrix" begin

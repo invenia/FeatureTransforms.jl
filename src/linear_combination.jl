@@ -19,17 +19,22 @@ end
 _sum_row(row, coefficients) = sum(map(*, row, coefficients))
 
 """
-    apply(A::AbstractArray, LC::LinearCombination; dims=1, inds=:)
+    apply(
+        ::AbstractArray{<:Real, N}, ::LinearCombination; dims=1, inds=:
+    ) -> AbstractArray{<:Real, N-1}
 
-Applies the [`LinearCombination`](@ref) to each of the specified indices in `A`, reducing
-along the `dim` provided. The result is an (N-1)-dimensional array.
+Applies the [`LinearCombination`](@ref) to each of the specified indices in the N-dimensional
+array `A`, reducing along the `dim` provided. The result is an (N-1)-dimensional array.
 
 The default behaviour reduces along the column dimension.
 
 If no `inds` are specified, then the transform is applied to all elements.
 """
-function apply(A::AbstractArray, LC::LinearCombination; dims=1, inds=:)
-    dims === Colon() && throw(ArgumentError("dims=: is not supported, use 1 or 2 instead"))
+function apply(
+    A::AbstractArray{<:Real, N}, LC::LinearCombination; dims=1, inds=:
+)::AbstractArray{<:Real, N-1} where N
+
+    dims === Colon() && throw(ArgumentError("dims=: not supported, choose dims ∈ [1, $N]"))
 
     # Get the number of slices - error if doesn't match the number of coefficients
     num_slices = inds === Colon() ? size(A, dims) : length(inds)
@@ -42,9 +47,8 @@ end
 """
     apply(table, LC::LinearCombination; cols=nothing)
 
-Applies the [`LinearCombination`](@ref) to each of the specified cols in `table`.
-
-If no `cols` are specified, then the [`LinearCombination`](@ref) is applied to all columns.
+Applies the [`LinearCombination`](@ref) across the specified cols in `table`. If no `cols`
+are specified, then the [`LinearCombination`](@ref) is applied to all columns.
 """
 function apply(table, LC::LinearCombination; cols=nothing)
     Tables.istable(table) || throw(MethodError(apply, (table, LC)))

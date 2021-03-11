@@ -4,7 +4,7 @@ using DataFrames: DataFrame
 using Dates
 using Documenter: doctest
 using FeatureTransforms
-using FeatureTransforms: _try_copy, _periodic
+using FeatureTransforms: _periodic
 using Test
 using TimeZones
 

@@ -19,65 +19,52 @@ end
 _sum_row(row, coefficients) = sum(map(*, row, coefficients))
 
 """
-    apply(x::AbstractVector, LC::LinearCombination; inds=Colon())
+    apply(
+        ::AbstractArray{<:Real, N}, ::LinearCombination; dims=1, inds=:
+    ) -> AbstractArray{<:Real, N-1}
 
-Applies the [`LinearCombination`](@ref) to each of the specified indices in `x`.
+Applies the [`LinearCombination`](@ref) to each of the specified indices in the N-dimensional
+array `A`, reducing along the `dim` provided. The result is an (N-1)-dimensional array.
 
-If no `inds` are specified, then the [`LinearCombination`](@ref) is applied to all elements.
+The default behaviour reduces along the column dimension.
+
+If no `inds` are specified, then the transform is applied to all elements.
 """
-function apply(x::AbstractVector, LC::LinearCombination; inds=Colon())
-    # Treat each element as it's own column
-    # Error if dimensions don't match
-    num_inds = inds isa Colon ? length(x) : length(inds)
-    _check_dimensions_match(LC, num_inds)
+function apply(
+    A::AbstractArray{<:Real, N}, LC::LinearCombination; dims=1, inds=:
+)::AbstractArray{<:Real, N-1} where N
 
-    return [_sum_row(x[inds], LC.coefficients)]
+    dims === Colon() && throw(ArgumentError("dims=: not supported, choose dims ∈ [1, $N]"))
+
+    # Get the number of slices - error if doesn't match the number of coefficients
+    num_slices = inds === Colon() ? size(A, dims) : length(inds)
+    _check_dimensions_match(LC, num_slices)
+
+    return _sum_row(eachslice(selectdim(A, dims, inds); dims=dims), LC.coefficients)
 end
 
-"""
-    apply(x::AbstractMatrix, LC::LinearCombination; dims=1, inds=Colon())
-
-Applies the [`LinearCombination`](@ref) to each of the specified indices in `x` along the
-dimension specified, which defaults to applying it row-wise for each column of x.
-
-If no `inds` are specified, then the [`LinearCombination`](@ref) is applied to all columns.
-"""
-function apply(x::AbstractMatrix, LC::LinearCombination; dims=1, inds=Colon())
-    if dims === Colon()
-        throw(ArgumentError("Colon() dims is not supported, use 1 or 2 instead"))
-    end
-
-    # Get the number of vectors in the dimension not specified
-    other_dim = dims ==  1 ? 2 : 1
-    num_inds = inds isa Colon ? size(x, other_dim) : length(inds)
-    # Error if dimensions don't match
-    _check_dimensions_match(LC, num_inds)
-
-    return [_sum_row(row[inds], LC.coefficients) for row in eachslice(x; dims=dims)]
-end
 
 """
-    apply(x::Table, LC::LinearCombination; cols=nothing)
+    apply(table, LC::LinearCombination; cols=nothing)
 
-Applies the [`LinearCombination`](@ref) to each of the specified cols in `x`.
-
-If no `cols` are specified, then the [`LinearCombination`](@ref) is applied to all columns.
+Applies the [`LinearCombination`](@ref) across the specified cols in `table`. If no `cols`
+are specified, then the [`LinearCombination`](@ref) is applied to all columns.
 """
-function apply(x, LC::LinearCombination; cols=nothing)
+function apply(table, LC::LinearCombination; cols=nothing)
+    Tables.istable(table) || throw(MethodError(apply, (table, LC)))
+
     cols = _to_vec(cols)  # handle single column name
 
     # Error if dimensions don't match
-    num_cols = cols === nothing ? length(Tables.columnnames(x)) : length(cols)
+    num_cols = cols === nothing ? length(Tables.columnnames(table)) : length(cols)
     _check_dimensions_match(LC, num_cols)
 
     # Keep the generic form when not specifying column names
     # because that is much more performant than selecting each col by name
-    if cols === nothing
-        return [_sum_row(row, LC.coefficients) for row in Tables.rows(x)]
-    else
-        return [
-            _sum_row([row[cname] for cname in cols], LC.coefficients)
-            for row in Tables.rows(x)
-        ]
-    end
+    cols === nothing && return [_sum_row(row, LC.coefficients) for row in Tables.rows(table)]
+
+    return [
+        _sum_row([row[cname] for cname in cols], LC.coefficients)
+        for row in Tables.rows(table)
+    ]
 end

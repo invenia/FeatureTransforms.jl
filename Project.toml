@@ -1,7 +1,7 @@
 name = "FeatureTransforms"
 uuid = "8fd68953-04b8-4117-ac19-158bf6de9782"
 authors = ["Invenia Technical Computing Corporation"]
-version = "0.2.1"
+version = "0.2.2"
 
 [deps]
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"

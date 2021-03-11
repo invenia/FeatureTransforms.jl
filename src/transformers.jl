@@ -9,6 +9,15 @@ abstract type Transform end
 # Make Transforms callable types
 (t::Transform)(x; kwargs...) = apply(x, t; kwargs...)
 
+"""
+    is_transformable(x)
+
+
+Determine if `x` is transformable, which means that you can apply any `transform` to `x `.
+Currently Tables and AbstractArrays are transformable.
+"""
+is_transformable(::AbstractArray)  = true
+is_transformable(x) = Tables.istable(x)
 
 """
     transform!(::T, data)

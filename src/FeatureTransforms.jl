@@ -7,7 +7,7 @@ using Tables
 export HoD, LinearCombination, OneHotEncoding, Periodic, Power
 export IdentityScaling, MeanStdScaling, AbstractScaling
 export Transform
-export transform, transform!
+export is_transformable, transform, transform!
 
 include("utils.jl")
 include("transformers.jl")

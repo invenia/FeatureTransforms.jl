@@ -36,7 +36,7 @@ function _apply(x, encoding::OneHotEncoding{R}; kwargs...) where R <: Real
     n_categories = length(encoding.categories)
     results = zeros(R, length(x), n_categories)
 
-    @views for (i, value) in enumerate(x)
+    for (i, value) in enumerate(x)
         col_pos = encoding.categories[value]
         results[i, col_pos] = true
     end

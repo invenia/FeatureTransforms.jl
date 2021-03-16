@@ -2,7 +2,8 @@
 
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://invenia.github.io/FeatureTransforms.jl/stable)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://invenia.github.io/FeatureTransforms.jl/dev)
-[![Build Status](https://travis-ci.com/invenia/FeatureTransforms.jl.svg?branch=main)](https://travis-ci.com/invenia/FeatureTransforms.jl)
+[![CI](https://github.com/Invenia/FeatureTransforms.jl/workflows/CI/badge.svg)](https://github.com/Invenia/FeatureTransforms.jl/actions?query=workflow%3ACI)
+[![Codecov](https://codecov.io/gh/invenia/FeatureTransforms.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/invenia/FeatureTransforms.jl)
 [![Code Style: Blue](https://img.shields.io/badge/code%20style-blue-4495d1.svg)](https://github.com/invenia/BlueStyle)
 [![ColPrac: Contributor's Guide on Collaborative Practices for Community Packages](https://img.shields.io/badge/ColPrac-Contributor's%20Guide-blueviolet)](https://github.com/SciML/ColPrac)
 
@@ -21,8 +22,8 @@ julia> using DataFrames, FeatureTransforms
 
 julia> df = DataFrame(:a=>[1, 2, 3, 4, 5], :b=>[5, 4, 3, 2, 1], :c=>[0, 1, 0, 1, 0])
 5×3 DataFrame
- Row │ a      b      c     
-     │ Int64  Int64  Int64 
+ Row │ a      b      c
+     │ Int64  Int64  Int64
 ─────┼─────────────────────
    1 │     1      5      0
    2 │     2      4      1
@@ -42,8 +43,8 @@ julia> FeatureTransforms.apply(df, p; cols=[:a])
 
 julia> FeatureTransforms.apply!(df, p; cols=[:a])
 5×3 DataFrame
- Row │ a      b      c     
-     │ Int64  Int64  Int64 
+ Row │ a      b      c
+     │ Int64  Int64  Int64
 ─────┼─────────────────────
    1 │     1      5      0
    2 │     8      4      1

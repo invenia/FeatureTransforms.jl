@@ -10,7 +10,8 @@ export Transform
 export is_transformable, transform, transform!
 
 include("utils.jl")
-include("transformers.jl")
+include("transforms.jl")
+include("apply.jl")
 
 # Transform implementations
 include("linear_combination.jl")

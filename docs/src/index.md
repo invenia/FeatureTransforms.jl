@@ -15,3 +15,4 @@ Here are some resources for getting started with FeatureTransforms.jl:
 
 * Refer to the page on [Transforms](@ref about-transforms) to learn how they are defined and used.
 * Consult the [examples](@ref) section for a quick guide to some typical use cases.
+* The [API](@ref) page has the list of all currently supported `Transform`s.

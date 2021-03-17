@@ -19,6 +19,7 @@ OneHotEncoding
 ```@docs
 FeatureTransforms.apply
 FeatureTransforms.apply!
+FeatureTransforms.is_transformable
 FeatureTransforms.transform!
 FeatureTransforms.transform
 ```

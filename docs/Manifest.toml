@@ -70,7 +70,7 @@ version = "0.26.1"
 deps = ["Dates", "Statistics", "Tables"]
 path = ".."
 uuid = "8fd68953-04b8-4117-ac19-158bf6de9782"
-version = "0.1.0"
+version = "0.2.3"
 
 [[Formatting]]
 deps = ["Printf"]

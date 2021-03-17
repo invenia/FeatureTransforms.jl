@@ -7,10 +7,11 @@ using Tables
 export HoD, LinearCombination, OneHotEncoding, Periodic, Power
 export IdentityScaling, MeanStdScaling, AbstractScaling
 export Transform
-export transform, transform!
+export is_transformable, transform, transform!
 
 include("utils.jl")
-include("transformers.jl")
+include("transform.jl")
+include("apply.jl")
 
 # Transform implementations
 include("linear_combination.jl")

@@ -12,7 +12,7 @@ abstract type Transform end
 """
     is_transformable(x)
 
-Determine if `x` is both a valid input and output of any [`Transform`](@ref), i. e. that it
+Determine if `x` is both a valid input and output of any [`Transform`](@ref), i.e. that it
 follows the [`transform`](@ref) interface.
 Currently, all subtypes of `Table`s and `AbstractArray`s are transformable.
 """
@@ -32,7 +32,7 @@ Feature engineering pipelines should obey the same principle and it should be tr
 add/remove `Transform` steps that compose the pipeline without it breaking.
 
 `transform` should be overloaded for custom types `T` that require feature engineering.
-The only requirement is that the return of `transform `is itself "transformable", i. e.
+The only requirement is that the return of `transform `is itself "transformable", i.e.
 calling [`is_transformable`](@ref) on the output returns true.
 """
 function transform end

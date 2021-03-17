@@ -15,7 +15,7 @@ using TimeZones
     include("power.jl")
     include("scaling.jl")
     include("temporal.jl")
-    include("transformers.jl")
+    include("transform.jl")
 
     doctest(FeatureTransforms)
 end

@@ -74,7 +74,7 @@
         A = KeyedArray([1 2 3; 4 5 6], foo=["a", "b"], bar=["x", "y", "z"])
         expected = KeyedArray([1 8 27; 64 125 216], foo=["a", "b"], bar=["x", "y", "z"])
 
-        @testset "dims = $d" for d in (Colon(), :foo, :bar)
+        @testset "dims = $d" for d in (Colon(), :foo, :bar, 1, 2)
             transformed = FeatureTransforms.apply(A, p; dims=d)
             @test transformed isa KeyedArray
             @test transformed == expected

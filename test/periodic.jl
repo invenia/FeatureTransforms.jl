@@ -351,7 +351,7 @@
                     bar=["x", "y"]
                 )
 
-                @testset "dims = $d" for d in (Colon(), :foo, :bar)
+                @testset "dims = $d" for d in (Colon(), :foo, :bar, 1, 2)
                     transformed = FeatureTransforms.apply(A, p; dims=d)
                     @test transformed isa KeyedArray
                     @test transformed ≈ expected atol=1e-14

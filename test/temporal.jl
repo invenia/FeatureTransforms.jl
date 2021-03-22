@@ -114,7 +114,7 @@
         @test FeatureTransforms.apply(A, hod) == expected
         @test hod(A) == expected
 
-        @testset "dims = $d" for d in (Colon(), 1, 2)
+        @testset "dims = $d" for d in (Colon(), 1, 2, :foo, :bar)
             transformed = FeatureTransforms.apply(A, hod; dims=d)
             @test transformed isa KeyedArray
             @test transformed == expected
@@ -125,6 +125,8 @@
             @test FeatureTransforms.apply(A, hod; dims=:, inds=[2, 3]) == [2, 9]
             @test FeatureTransforms.apply(A, hod; dims=1, inds=[2]) == [2 10 12]
             @test FeatureTransforms.apply(A, hod; dims=2, inds=[2]) == reshape([9, 10], 2, 1)
+            @test FeatureTransforms.apply(A, hod; dims=:foo, inds=[2]) == [2 10 12]
+            @test FeatureTransforms.apply(A, hod; dims=:bar, inds=[2]) == reshape([9, 10], 2, 1)
         end
     end
 

@@ -143,11 +143,13 @@
 
             @testset "dims = 1" begin
                 @test FeatureTransforms.apply(A, lc; dims=1) == [-3, -3]
+                @test FeatureTransforms.apply(A, lc; dims=:foo) == [-3, -3]
                 @test lc(A; dims=1) == [-3, -3]
             end
 
             @testset "dims = 2" begin
                 @test FeatureTransforms.apply(A, lc; dims=2) == [-1, -1]
+                @test FeatureTransforms.apply(A, lc; dims=:bar) == [-1, -1]
                 @test lc(A; dims=2) == [-1, -1]
             end
         end

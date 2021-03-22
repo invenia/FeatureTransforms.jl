@@ -412,19 +412,9 @@
                 @test _A ≈ A_expected atol=1e-5
             end
 
-            @testset "dims = :" begin
-                scaling = MeanStdScaling(A, dims=:)
-                @test FeatureTransforms.apply(A, scaling; dims=:) ≈ A_expected atol=1e-5
-            end
-
-            @testset "dims = 1" begin
-                scaling = MeanStdScaling(A; dims=1)
-                @test FeatureTransforms.apply(A, scaling; dims=1) ≈ A_expected atol=1e-5
-            end
-
-            @testset "dims = 2" begin
-                scaling = MeanStdScaling(A; dims=2)
-                @test FeatureTransforms.apply(A, scaling; dims=2) ≈ A_expected atol=1e-5
+            @testset "dims = $d" for d in (Colon(), 1, 2, :foo, :bar)
+                scaling = MeanStdScaling(A, dims=d)
+                @test FeatureTransforms.apply(A, scaling; dims=d) ≈ A_expected atol=1e-5
             end
 
             @testset "inds" begin
@@ -432,11 +422,23 @@
                 @test FeatureTransforms.apply(A, scaling; inds=[2, 3]) ≈ [-0.559017, -1.11803] atol=1e-5
                 @test FeatureTransforms.apply(A, scaling; dims=:, inds=[2, 3]) ≈ [-0.559017, -1.11803] atol=1e-5
 
-                scaling = MeanStdScaling(A; dims=1, inds=[2])
-                @test FeatureTransforms.apply(A, scaling; dims=1, inds=[2]) ≈ [-1.0 0.0 1.0] atol=1e-5
+                @testset "dims=$d" for d in (1, :foo)
+                    scaling = MeanStdScaling(A; dims=d, inds=[2])
+                    @test isapprox(
+                        FeatureTransforms.apply(A, scaling; dims=d, inds=[2]),
+                        [-1.0 0.0 1.0],
+                        atol=1e-5
+                    )
+                end
 
-                scaling = MeanStdScaling(A; dims=2, inds=[2])
-                @test FeatureTransforms.apply(A, scaling; dims=2, inds=[2]) ≈ [-0.70711 0.70711]' atol=1e-5
+                @testset "dims=$d" for d in (2, :bar)
+                    scaling = MeanStdScaling(A; dims=2, inds=[2])
+                    @test isapprox(
+                        FeatureTransforms.apply(A, scaling; dims=2, inds=[2]),
+                        [-0.70711 0.70711]',
+                        atol=1e-5
+                    )
+                end
             end
 
             @testset "Re-apply" begin

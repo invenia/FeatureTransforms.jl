@@ -9,6 +9,7 @@ using Test
 using TimeZones
 
 @testset "FeatureTransforms.jl" begin
+    include("appending_apply.jl")  # TODO: break up
     include("linear_combination.jl")
     include("one_hot_encoding.jl")
     include("periodic.jl")

@@ -61,7 +61,7 @@ function apply!(A::AbstractArray, t::Transform; kwargs...)
 end
 
 """
-    apply(table, ::Transform; cols=nothing, kwargs...) -> Vector
+    apply(table, ::Transform; cols=nothing, kwargs...) -> Table
 
 Applies the [`Transform`](@ref) to each of the specified columns in the `table`.
 If no `cols` are specified, then the [`Transform`](@ref) is applied to all columns.
@@ -82,11 +82,12 @@ end
 
 # 3-arg forms are simply to dispatch on whether cols is a Symbol or a collection
 function _apply(table, t::Transform, col; kwargs...)
-    return _apply(getproperty(table, col), t; kwargs...)
+    return hcat(_apply(getproperty(table, col), t; kwargs...))
 end
 
 function _apply(table, t::Transform, cols::Union{Tuple, AbstractArray}; kwargs...)
-    return [_apply(table, t, col; kwargs...) for col in cols]
+    T = Tables.materializer(table)
+    return T(Tables.table(reduce(hcat, _apply(table, t, col; kwargs...) for col in cols)))
 end
 
 """

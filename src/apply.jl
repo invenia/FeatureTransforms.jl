@@ -119,22 +119,23 @@ end
 Applies the [`Transform`](@ref) to each element of `A` and appends the result to `A`, if
 possible, creating a new array.
 """
-function apply!!(data::AbstractArray, t; dims=1, kwargs...)
-    other_dims = setdiff(1:length(size(data)), dims)
-    output = FeatureTransforms.apply(data, t; dims=1, kwargs...)
-    return cat(data, output; dims=other_dims)
+function apply!!(data::AbstractArray, t; dims, kwargs...)::AbstractArray
+    output = apply(data, t; dims=dims, kwargs...)
+    new_size = collect(size(data))
+    setindex!(new_size, 1, dims)
+    return cat(data, reshape(output, new_size...); dims=dims)
 end
 
 """
-    apply!!(table::T, ::Transform; col=nothing, new_names)::T where T
+    apply!!(table, ::Transform; col=nothing, new_names)
 
 Applies the [`Transform`](@ref) to each of the specified columns in the `table` and appends
 the result into a new table, if possible, with the given `new_names`.
 If no `cols` are specified, then the [`Transform`](@ref) is applied to all columns.
 """
-function apply!!(table::T, t; new_names, kwargs...) where T
+function apply!!(table, t; new_names, kwargs...)
     Tables.istable(table) || throw(MethodError(apply, (table, t)))
-    result = NamedTuple{Tuple(new_names)}(apply(table, t; kwargs...))
-    table = merge(Tables.columntable(table), result)
-    return T <: NamedTuple ? table : T(table)
+    result = (; zip(new_names, apply(table, t; kwargs...))...)
+    new_table = merge(Tables.columntable(table), result)
+    return Tables.materializer(table)(new_table)
 end

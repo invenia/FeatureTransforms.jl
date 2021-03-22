@@ -119,23 +119,27 @@ end
 Applies the [`Transform`](@ref) to each element of `A` and appends the result to `A`, if
 possible, creating a new array.
 """
-function apply!!(data::AbstractArray, t; dims, kwargs...)::AbstractArray
-    output = apply(data, t; dims=dims, kwargs...)
+#TODO: syntax would imply this is mutating. Should we make it so a new array isn't constructed?
+function apply!!(data::AbstractArray, t; dims, inds=Colon(), kwargs...)::AbstractArray
+    output = apply(data, t; dims=dims, inds=inds, kwargs...)
     new_size = collect(size(data))
-    setindex!(new_size, 1, dims)
+    inds == Colon() || setindex!(new_size, 1, dims)  # no need to reshape if all inds are used
     return cat(data, reshape(output, new_size...); dims=dims)
 end
 
 """
-    apply!!(table, ::Transform; col=nothing, new_names)
+    apply!!(table, ::Transform; col=nothing, new_cols)
 
 Applies the [`Transform`](@ref) to each of the specified columns in the `table` and appends
-the result into a new table, if possible, with the given `new_names`.
+the result into a new table, if possible, with the given `new_cols`.
 If no `cols` are specified, then the [`Transform`](@ref) is applied to all columns.
 """
-function apply!!(table, t; new_names, kwargs...)
-    Tables.istable(table) || throw(MethodError(apply, (table, t)))
-    result = (; zip(new_names, apply(table, t; kwargs...))...)
-    new_table = merge(Tables.columntable(table), result)
+function apply!!(table, t; new_cols, kwargs...)
+    result = _to_mat(apply(table, t; kwargs...))
+    result = Tables.table(result, header=_to_vec(new_cols))
+    new_table = merge(Tables.columntable(table), Tables.columntable(result))
     return Tables.materializer(table)(new_table)
 end
+
+_to_mat(x::Vector) = hcat(x)
+_to_mat(x::Vector{<:Vector}) = reduce(hcat, x)

@@ -101,7 +101,7 @@
         A = KeyedArray(M, foo=["a", "b"], bar=["x", "y"])
         expected = [1 0 0 0 0; 0 0 0 1 0; 0 1 0 0 0; 0 0 0 0 1]
 
-        @testset "dims = $d" for d in (1, 2, Colon())
+        @testset "dims = $d" for d in (1, 2, Colon(), :foo, :bar)
             transformed = FeatureTransforms.apply(A, ohe; dims=d)
             # This transform doesn't preserve the type it operates on
             @test transformed isa AbstractArray

@@ -195,10 +195,11 @@ julia> hod = HoD();
 
 julia> lc = LinearCombination([0.5, 0.5]);
 
-julia> feature_df = DataFrame(
-           :hour_of_day => hod(df; cols=:time),
-           :aggregate_temperature => lc(df; cols=[:temperature_A, :temperature_B])
-       )
+julia> hod_df = hod(df; cols=:time, header=[:hour_of_day]);
+
+julia> lc_df = lc(df; cols=[:temperature_A, :temperature_B], header=[:aggregate_temperature]);
+
+julia> feature_df = hcat(hod_df, lc_df)
 3×2 DataFrame
  Row │ hour_of_day  aggregate_temperature 
      │ Int64        Float64               

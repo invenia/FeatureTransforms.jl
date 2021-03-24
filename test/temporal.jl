@@ -133,10 +133,9 @@
             a = DateTime(2020, 1, 1, 0, 0):Hour(1):DateTime(2020, 1, 1, 2, 0),
             b = DateTime(2020, 1, 1, 3, 0):Hour(1):DateTime(2020, 1, 1, 5, 0)
         )
-        expected_nt = (a = [0, 1, 2], b = [3, 4, 5])
-        expected = [[0, 1, 2], [3, 4, 5]]
 
         @testset "all cols" begin
+            expected = (Column1 = [0, 1, 2], Column2 = [3, 4, 5])
             @test FeatureTransforms.apply(nt, hod) == expected
             @test hod(nt) == expected
 
@@ -144,10 +143,11 @@
             @test nt != expected
         end
 
-        @testset "cols = $c" for c in (:a, :b)
-            @test FeatureTransforms.apply(nt, hod; cols=[c]) == [expected_nt[c]]
-            @test FeatureTransforms.apply(nt, hod; cols=c) == expected_nt[c]
-            @test hod(nt; cols=[c]) == [expected_nt[c]]
+        @testset "cols = :a" begin
+            expected = (Column1 = [0, 1, 2],)
+            @test FeatureTransforms.apply(nt, hod; cols=[:a]) == expected
+            @test FeatureTransforms.apply(nt, hod; cols=:a) == expected
+            @test hod(nt; cols=:a) == expected
         end
     end
 
@@ -157,10 +157,9 @@
             :a => DateTime(2020, 1, 1, 0, 0):Hour(1):DateTime(2020, 1, 1, 2, 0),
             :b => DateTime(2020, 1, 1, 3, 0):Hour(1):DateTime(2020, 1, 1, 5, 0)
         )
-        expected_df = DataFrame(:a => [0, 1, 2], :b => [3, 4, 5])
-        expected = [expected_df.a, expected_df.b]
 
         @testset "all cols" begin
+            expected = DataFrame(:Column1 => [0, 1, 2], :Column2 => [3, 4, 5])
             @test FeatureTransforms.apply(df, hod) == expected
             @test hod(df) == expected
 
@@ -168,8 +167,8 @@
             @test df != expected
         end
 
-        @test FeatureTransforms.apply(df, hod; cols=[:a]) == [expected_df.a]
-        @test FeatureTransforms.apply(df, hod; cols=:a) == expected_df.a
-        @test FeatureTransforms.apply(df, hod; cols=[:b]) ==[expected_df.b]
+        @test FeatureTransforms.apply(df, hod; cols=[:a]) == DataFrame(:Column1 => [0, 1, 2])
+        @test FeatureTransforms.apply(df, hod; cols=:a) == DataFrame(:Column1 => [0, 1, 2])
+        @test FeatureTransforms.apply(df, hod; cols=[:b]) == DataFrame(:Column1 => [3, 4, 5])
     end
 end

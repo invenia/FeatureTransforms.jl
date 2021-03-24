@@ -117,20 +117,23 @@
     @testset "NamedTuple" begin
         categories = ["foo", "bar", "baz", "foo2", "bar2"]
         ohe = OneHotEncoding(categories)
-
         nt = (a = ["foo" "bar"], b = ["foo2" "bar2"])
-        expected_nt = (a = [1 0 0 0 0; 0 1 0 0 0], b = [0 0 0 1 0; 0 0 0 0 1])
-        expected = [expected_nt.a, expected_nt.b]
 
         @testset "all cols" begin
+            expected = NamedTuple{Tuple(Symbol.(:Column, x) for x in 1:10)}(
+               ([1, 0], [0, 1], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [1, 0], [0, 1])
+            )
             @test FeatureTransforms.apply(nt, ohe) == expected
             @test ohe(nt) == expected
         end
 
-        @testset "cols = $c" for c in (:a, :b)
-            @test FeatureTransforms.apply(nt, ohe; cols=[c]) == [expected_nt[c]]
-            @test FeatureTransforms.apply(nt, ohe; cols=c) == expected_nt[c]
-            @test ohe(nt; cols=[c]) == [expected_nt[c]]
+        @testset "cols = :a" begin
+            expected = NamedTuple{Tuple(Symbol.(:Column, x) for x in 1:5)}(
+                ([1, 0], [0, 1], [0, 0], [0, 0], [0, 0])
+            )
+            @test FeatureTransforms.apply(nt, ohe; cols=[:a]) == expected
+            @test FeatureTransforms.apply(nt, ohe; cols=:a) == expected
+            @test ohe(nt; cols=:a) == expected
         end
     end
 
@@ -139,12 +142,20 @@
         ohe = OneHotEncoding(categories)
 
         df = DataFrame(:a => ["foo", "bar"], :b => ["foo2", "bar2"])
-        expected = [[1 0 0 0 0; 0 1 0 0 0], [0 0 0 1 0; 0 0 0 0 1]]
+        expected = DataFrame(
+            [[1, 0], [0, 1], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [1, 0], [0, 1]],
+            [Symbol.(:Column, x) for x in 1:10],
+        )
 
         @test FeatureTransforms.apply(df, ohe) == expected
 
-        @test FeatureTransforms.apply(df, ohe; cols=[:a]) == [[1 0 0 0 0; 0 1 0 0 0]]
-        @test FeatureTransforms.apply(df, ohe; cols=:a) == [1 0 0 0 0; 0 1 0 0 0]
-        @test FeatureTransforms.apply(df, ohe; cols=[:b]) ==[[0 0 0 1 0; 0 0 0 0 1]]
+        @test FeatureTransforms.apply(df, ohe; cols=[:a]) == expected[:, 1:5]
+        @test FeatureTransforms.apply(df, ohe; cols=:a) == expected[:, 1:5]
+
+        expected = DataFrame(
+            [[0, 0], [0, 0], [0, 0], [1, 0], [0, 1]],
+            [Symbol.(:Column, x) for x in 1:5],
+        )
+        @test FeatureTransforms.apply(df, ohe; cols=[:b]) == expected
     end
 end

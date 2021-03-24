@@ -203,12 +203,13 @@
 
             @testset "NamedTuple" begin
                 nt = (a = collect(0.:2.), b = collect(3.:5.))
-                nt_expected = (a = expected[1:3], b = expected[4:6])
+                nt_expected = (Column1 = expected[1:3], Column2 = expected[4:6])
 
                 @testset "all cols" begin
                     transformed = FeatureTransforms.apply(nt, p)
-                    @test transformed ≈ collect(nt_expected) atol=1e-14
-                    @test p(nt) ≈ collect(nt_expected) atol=1e-14
+                    @test transformed isa NamedTuple{(:Column1, :Column2)}
+                    @test collect(transformed) ≈ collect(nt_expected) atol=1e-14
+                    @test collect(p(nt)) ≈ collect(nt_expected) atol=1e-14
 
                     _nt = deepcopy(nt)
                     FeatureTransforms.apply!(_nt, p)
@@ -216,41 +217,38 @@
                     @test collect(_nt) ≈ collect(nt_expected) atol=1e-14
                 end
 
-                @testset "cols = $c" for c in (:a, :b)
-                    nt_mutated = NamedTuple{(Symbol("$c"), )}((nt_expected[c], ))
-                    nt_expected_ = merge(nt, nt_mutated)
+                @testset "cols = :a" begin
+                    transformed = FeatureTransforms.apply(nt, p; cols=[:a])
+                    @test collect(transformed) ≈ [nt_expected.Column1] atol=1e-14
+                    @test collect(p(nt; cols=:a)) ≈ [nt_expected.Column1] atol=1e-14
 
-                    @test FeatureTransforms.apply(nt, p; cols=[c]) ≈ [collect(nt_expected_[c])] atol=1e-14
-                    @test FeatureTransforms.apply(nt, p; cols=c) ≈ collect(nt_expected_[c]) atol=1e-14
-                    @test p(nt; cols=[c]) ≈ [collect(nt_expected_[c])] atol=1e-14
-
-                    @testset "mutating" for _c in (c, [c])
+                    @testset "mutating" for _c in (:a, [:a])
                         _nt = deepcopy(nt)
                         FeatureTransforms.apply!(_nt, p; cols=_c)
                         @test _nt isa NamedTuple{(:a, :b)}  # before applying `collect`
-                        @test collect(_nt) ≈ collect(nt_expected_) atol=1e-14
+                        @test collect(_nt) ≈ [nt_expected.Column1, nt.b] atol=1e-14
                     end
                 end
             end
 
             @testset "DataFrame" begin
                 df = DataFrame(:a => collect(0.:2.), :b => collect(3.:5.))
-                df_expected = DataFrame(:a => expected[1:3], :b => expected[4:6])
+                df_expected = DataFrame(:Column1 => expected[1:3], :Column2 => expected[4:6])
 
                 @testset "all cols" begin
-                    @test FeatureTransforms.apply(df, p) ≈ [df_expected.a, df_expected.b] atol=1e-14
-                    @test p(df) ≈ [df_expected.a, df_expected.b] atol=1e-14
+                    @test FeatureTransforms.apply(df, p) ≈ df_expected atol=1e-14
+                    @test p(df) ≈ df_expected atol=1e-14
 
                     _df = deepcopy(df)
                     FeatureTransforms.apply!(_df, p)
                     @test _df isa DataFrame
-                    @test _df ≈ df_expected atol=1e-14
+                    @test _df ≈ DataFrame(:a=>df_expected.Column1, :b=>df_expected.Column2) atol=1e-14
                 end
 
-                @testset "cols = $c" for c in (:a, :b)
-                    @test FeatureTransforms.apply(df, p; cols=[c]) ≈ [df_expected[!, c]] atol=1e-14
-                    @test FeatureTransforms.apply(df, p; cols=c) ≈ df_expected[!, c] atol=1e-14
-                    @test p(df; cols=[c]) ≈ [df_expected[!, c]]
+                @testset "cols = :a" begin
+                    @test FeatureTransforms.apply(df, p; cols=[:a]) ≈ df_expected[!, [:Column1]] atol=1e-14
+                    @test FeatureTransforms.apply(df, p; cols=:a) ≈ df_expected[!, [:Column1]] atol=1e-14
+                    @test p(df; cols=:a) ≈ df_expected[!, [:Column1]]
                 end
             end
         end
@@ -361,22 +359,21 @@
             @testset "NamedTuple" begin
                 x = ZonedDateTime(2020, 1, 1, tz"EST") .+ (Day(0):Day(1):Day(5))
                 nt = (a = x[1:3], b = x[4:6])
-                expected = [
-                    _periodic.(f, x[1:3], Day(5), Day(2)),
-                    _periodic.(f, x[4:6], Day(5), Day(2))
-                ]
+                expected = (
+                    Column1 = _periodic.(f, x[1:3], Day(5), Day(2)),
+                    Column2 = _periodic.(f, x[4:6], Day(5), Day(2))
+                )
 
                 @testset "all cols" begin
                     transformed = FeatureTransforms.apply(nt, p)
-                    @test transformed ≈ expected atol=1e-14
-                    @test p(nt) ≈ expected atol=1e-14
+                    @test collect(transformed) ≈ collect(expected) atol=1e-14
+                    @test collect(p(nt)) ≈ collect(expected) atol=1e-14
                 end
 
-                nt_expected = (a = expected[1], b = expected[2])
-                @testset "cols = $c" for c in (:a, :b)
-                    @test FeatureTransforms.apply(nt, p; cols=[c]) ≈ [nt_expected[c]] atol=1e-14
-                    @test FeatureTransforms.apply(nt, p; cols=c) ≈ nt_expected[c] atol=1e-14
-                    @test p(nt; cols=[c]) ≈ [nt_expected[c]] atol=1e-14
+                @testset "cols = :a" begin
+                    @test collect(FeatureTransforms.apply(nt, p; cols=[:a])) ≈ [expected.Column1] atol=1e-14
+                    @test collect(FeatureTransforms.apply(nt, p; cols=:a)) ≈ [expected.Column1] atol=1e-14
+                    @test collect(p(nt; cols=:a)) ≈ [expected.Column1] atol=1e-14
                 end
             end
 
@@ -384,17 +381,17 @@
                 x = ZonedDateTime(2020, 1, 1, tz"EST") .+ (Day(0):Day(1):Day(5))
                 df = DataFrame(:a => x[1:3], :b => x[4:6])
                 df_expected = DataFrame(
-                    :a => _periodic.(f, x[1:3], Day(5), Day(2)),
-                    :b => _periodic.(f, x[4:6], Day(5), Day(2))
+                    :Column1 => _periodic.(f, x[1:3], Day(5), Day(2)),
+                    :Column2 => _periodic.(f, x[4:6], Day(5), Day(2))
                 )
 
                 transformed = FeatureTransforms.apply(df, p)
-                @test transformed ≈ [df_expected.a, df_expected.b] atol=1e-14
+                @test transformed ≈ df_expected atol=1e-14
 
-                @testset "cols = $c" for c in (:a, :b)
-                    @test FeatureTransforms.apply(df, p; cols=[c]) ≈ [df_expected[!, c]] atol=1e-14
-                    @test FeatureTransforms.apply(df, p; cols=c) ≈ df_expected[!, c] atol=1e-14
-                    @test p(df; cols=[c]) ≈ [df_expected[!, c]] atol=1e-14
+                @testset "cols = :a" begin
+                    @test FeatureTransforms.apply(df, p; cols=[:a]) ≈ df_expected[!, [:Column1]] atol=1e-14
+                    @test FeatureTransforms.apply(df, p; cols=:a) ≈ df_expected[!, [:Column1]] atol=1e-14
+                    @test p(df; cols=[:a]) ≈ df_expected[!, [:Column1]] atol=1e-14
                 end
             end
         end

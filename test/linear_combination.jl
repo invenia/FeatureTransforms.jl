@@ -173,12 +173,6 @@
             @test lc(nt) == expected
         end
 
-        @testset "dims not supported" begin
-            nt = (a = [1, 2, 3], b = [4, 5, 6])
-            lc = LinearCombination([1, -1])
-            @test_throws MethodError FeatureTransforms.apply(nt, lc; dims=1)
-        end
-
         @testset "dimension mismatch" begin
             nt = (a = [1, 2, 3], b = [4, 5, 6], c = [1, 1, 1])
             lc = LinearCombination([1, -1])
@@ -210,12 +204,6 @@
             lc = LinearCombination([1, -1])
             @test FeatureTransforms.apply(df, lc) == DataFrame(:Column1 => [-3, -3, -3])
             @test lc(df) == DataFrame(:Column1 => [-3, -3, -3])
-        end
-
-        @testset "dims not supported" begin
-            df = DataFrame(:a => [1, 2, 3], :b => [4, 5, 6])
-            lc = LinearCombination([1, -1])
-            @test_throws MethodError FeatureTransforms.apply(df, lc; dims=1)
         end
 
         @testset "dimension mismatch" begin

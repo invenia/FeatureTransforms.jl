@@ -77,8 +77,15 @@ function apply(table, t::Transform; cols=nothing, kwargs...)
     # NOTE: Mutation is not guaranteed for all table types, but it avoid copying the data
     columntable = Tables.columns(table)
     cnames = cols === nothing ? propertynames(columntable) : cols
-    return Tables.materializer(table)(Tables.table(_apply(columntable, t, cnames; kwargs...)))
+
+    result = _apply(columntable, t, cnames; kwargs...)
+    header = get(kwargs, :header, _default_header(result))
+    return Tables.materializer(table)(Tables.table(result, header=header))
 end
+
+# TODO: any way to not have to copy this from Tables.jl?
+# https://github.com/JuliaData/Tables.jl/blob/34be1bc063e0e1b01c8920fdeee9c70387f023bb/src/matrix.jl#L54
+_default_header(x) = [Symbol(:Column, i) for i in 1:size(Tables.matrix(Tables.table(x)), 2)]
 
 # 3-arg forms are simply to dispatch on whether cols is a Symbol or a collection
 function _apply(table, t::Transform, col; kwargs...)

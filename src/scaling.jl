@@ -66,7 +66,7 @@ end
 
 compute_stats(x) = (mean(x), std(x))
 
-function _apply(A::AbstractArray, scaling::MeanStdScaling; inverse=false, eps=1e-3)
+function _apply(A::AbstractArray, scaling::MeanStdScaling; inverse=false, eps=1e-3, kwargs...)
     inverse && return scaling.μ .+ scaling.σ .* A
     # Avoid division by 0
     # If std is 0 then data was uniform, so the scaled value would end up ≈ 0

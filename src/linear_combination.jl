@@ -45,15 +45,16 @@ end
 
 
 """
-    apply(table, LC::LinearCombination; cols=nothing)
+    apply(table, LC::LinearCombination; cols=nothing, [header]) -> Table
 
 Applies the [`LinearCombination`](@ref) across the specified cols in `table`. If no `cols`
 are specified, then the [`LinearCombination`](@ref) is applied to all columns.
-"""
-function apply(table, LC::LinearCombination; cols=nothing)
-    Tables.istable(table) || throw(MethodError(apply, (table, LC)))
 
-    T = Tables.materializer(table)
+Optionally provide a `header` for the output table. If none is provided the default in
+`Tables.table` is used.
+"""
+function apply(table, LC::LinearCombination; cols=nothing, kwargs...)
+    Tables.istable(table) || throw(MethodError(apply, (table, LC)))
 
     cols = _to_vec(cols)  # handle single column name
 
@@ -63,14 +64,15 @@ function apply(table, LC::LinearCombination; cols=nothing)
 
     # Keep the generic form when not specifying column names
     # because that is much more performant than selecting each col by name
-    if cols === nothing
-        return T(Tables.table(_to_mat([
-            _sum_row(row, LC.coefficients) for row in Tables.rows(table)
-        ])))
+    result = if cols === nothing
+        _to_mat([_sum_row(row, LC.coefficients) for row in Tables.rows(table)])
     else
-        return T(Tables.table(_to_mat([
+        _to_mat([
             _sum_row([row[cname] for cname in cols], LC.coefficients)
             for row in Tables.rows(table)
-        ])))
+        ])
     end
+
+    header = get(kwargs, :header, nothing)
+    return Tables.materializer(table)(_to_table(result, header))
 end

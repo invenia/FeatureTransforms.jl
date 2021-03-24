@@ -61,14 +61,13 @@ function apply!(A::AbstractArray, t::Transform; kwargs...)
 end
 
 """
-    apply(table, ::Transform; cols=nothing, kwargs...) -> Table
+    apply(table, ::Transform; cols=nothing, [header], kwargs...) -> Table
 
 Applies the [`Transform`](@ref) to each of the specified columns in the `table`.
 If no `cols` are specified, then the [`Transform`](@ref) is applied to all columns.
 
-# Return
-* If `cols` is a single value (not in a list): the transformed column vector.
-* Otherwise: an array containing each transformed column, in the same order as `cols`.
+Optionally provide a `header` for the output table. If none is provided the default in
+`Tables.table` is used.
 """
 function apply(table, t::Transform; cols=nothing, kwargs...)
     Tables.istable(table) || throw(MethodError(apply, (table, t)))
@@ -77,7 +76,10 @@ function apply(table, t::Transform; cols=nothing, kwargs...)
     # NOTE: Mutation is not guaranteed for all table types, but it avoid copying the data
     columntable = Tables.columns(table)
     cnames = cols === nothing ? propertynames(columntable) : cols
-    return Tables.materializer(table)(Tables.table(_apply(columntable, t, cnames; kwargs...)))
+
+    result = _apply(columntable, t, cnames; kwargs...)
+    header = get(kwargs, :header, nothing)
+    return Tables.materializer(table)(_to_table(result, header))
 end
 
 # 3-arg forms are simply to dispatch on whether cols is a Symbol or a collection
@@ -88,6 +90,9 @@ end
 function _apply(table, t::Transform, cols::Union{Tuple, AbstractArray}; kwargs...)
     return reduce(hcat, _apply(table, t, col; kwargs...) for col in cols)
 end
+
+_to_table(x, ::Nothing) = Tables.table(x)
+_to_table(x, header) = Tables.table(x, header=header)
 
 """
     apply!(table::T, ::Transform; cols=nothing)::T where T

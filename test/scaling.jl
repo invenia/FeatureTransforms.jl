@@ -125,47 +125,49 @@
 
         @testset "NamedTuple" begin
             nt = (a = [0.0, -0.5, 0.5], b = [1.0, 0.0, 2.0])
-            nt_expected = (a = [0.0, -0.5, 0.5], b = [1.0, 0.0, 2.0])
+            expected = (Column1 = [0.0, -0.5, 0.5], Column2 = [1.0, 0.0, 2.0])
 
-           @test FeatureTransforms.apply(nt, scaling) == [nt_expected.a, nt_expected.b]
+           @test FeatureTransforms.apply(nt, scaling) == expected
 
             @testset "Mutating" begin
                 _nt = deepcopy(nt)
                 FeatureTransforms.apply!(_nt, scaling)
                 @test _nt isa NamedTuple{(:a, :b)}
-                @test _nt == nt_expected
+                @test _nt == nt
             end
 
-            @testset "cols = $c" for c in (:a, :b)
-                @test FeatureTransforms.apply(nt, scaling; cols=[c]) ≈ [nt_expected[c]]
-                @test FeatureTransforms.apply(nt, scaling; cols=c) ≈ nt_expected[c]
+            @testset "cols = :a" begin
+                exp = (Column1=nt.a, )
+                @test FeatureTransforms.apply(nt, scaling; cols=[:a]) == exp
+                @test FeatureTransforms.apply(nt, scaling; cols=:a) == exp
             end
 
             @testset "Inverse" begin
-                @test FeatureTransforms.apply(nt, scaling; inverse=true) == [nt_expected.a, nt_expected.b]
+                @test FeatureTransforms.apply(nt, scaling; inverse=true) == expected
             end
         end
 
         @testset "DataFrame" begin
             df = DataFrame(:a => [0.0, -0.5, 0.5], :b => [1.0, 0.0, 2.0])
-            df_expected = DataFrame(:a => [0.0, -0.5, 0.5], :b => [1.0, 0.0, 2.0])
+            df_expected = DataFrame(:Column1 => [0.0, -0.5, 0.5], :Column2 => [1.0, 0.0, 2.0])
 
-            @test FeatureTransforms.apply(df, scaling) == [df_expected.a, df_expected.b]
+            @test FeatureTransforms.apply(df, scaling) == df_expected
 
             @testset "Mutating" begin
                 _df = deepcopy(df)
                 FeatureTransforms.apply!(_df, scaling)
                 @test _df isa DataFrame
-                @test _df == df_expected
+                @test _df == df
             end
 
-            @testset "cols = $c" for c in (:a, :b)
-                @test FeatureTransforms.apply(df, scaling; cols=[c]) ≈ [df_expected[!, c]]
-                @test FeatureTransforms.apply(df, scaling; cols=c) ≈ df_expected[!, c]
+            @testset "cols = :a" begin
+                expected = DataFrame(:Column1=>df.a)
+                @test FeatureTransforms.apply(df, scaling; cols=[:a]) == expected
+                @test FeatureTransforms.apply(df, scaling; cols=:a) == expected
             end
 
             @testset "Inverse" begin
-                @test FeatureTransforms.apply(df, scaling; inverse=true) == [df_expected.a, df_expected.b]
+                @test FeatureTransforms.apply(df, scaling; inverse=true) == df_expected
             end
         end
     end
@@ -464,69 +466,73 @@
         @testset "NamedTuple" begin
             nt = (a = [0.0, -0.5, 0.5], b = [1.0, 0.0, 2.0])
 
-            arr_expected = [[-0.55902, -1.11803, 0.0], [0.55902, -0.55902, 1.67705]]
-            nt_expected = (a = [0.0, -1.0, 1.0], b = [0.0, -1.0, 1.0])
-
             @testset "Non-mutating" begin
+                expected = [[-0.55902, -1.11803, 0.0], [0.55902, -0.55902, 1.67705]]
+
                 scaling = MeanStdScaling(nt)
-                @test FeatureTransforms.apply(nt, scaling) ≈ arr_expected atol=1e-5
-                @test scaling(nt) ≈ arr_expected atol=1e-5
+                result = FeatureTransforms.apply(nt, scaling)
+                @test result isa NamedTuple{(:Column1, :Column2)}
+                @test collect(result) ≈ expected atol=1e-5
+
+                result = scaling(nt)
+                @test result isa NamedTuple{(:Column1, :Column2)}
+                @test collect(result) ≈ expected atol=1e-5
             end
 
             @testset "Mutating" begin
+                expected = [[-0.55902, -1.11803, 0.0], [0.55902, -0.55902, 1.67705]]
                 scaling = MeanStdScaling(nt)
                 _nt = deepcopy(nt)
                 FeatureTransforms.apply!(_nt, scaling)
                 @test _nt isa NamedTuple{(:a, :b)}
-                @test collect(_nt) ≈ collect(arr_expected) atol=1e-5
+                @test collect(_nt) ≈ expected atol=1e-5
             end
 
-            @testset "cols = $c" for c in (:a, :b)
-                scaling = MeanStdScaling(nt; cols=[c])
-                nt_mutated = NamedTuple{(Symbol("$c"), )}((nt_expected[c], ))
-                nt_expected_ = merge(nt, nt_mutated)
+            @testset "cols = :a" begin
+                scaling = MeanStdScaling(nt; cols=:a)
 
-                @test FeatureTransforms.apply(nt, scaling; cols=[c]) ≈ [collect(nt_expected_[c])] atol=1e-14
-                @test FeatureTransforms.apply(nt, scaling; cols=c) ≈ collect(nt_expected_[c]) atol=1e-14
-                @test scaling(nt; cols=[c]) ≈ [collect(nt_expected_[c])] atol=1e-14
+                expected = (Column1 = [0.0, -1.0, 1.0], )
+                @test FeatureTransforms.apply(nt, scaling; cols=:a) == expected
+                @test FeatureTransforms.apply(nt, scaling; cols=[:a]) == expected
+                @test scaling(nt; cols=:a) == expected
 
                 _nt = deepcopy(nt)
-                FeatureTransforms.apply!(_nt, scaling; cols=[c])
+                FeatureTransforms.apply!(_nt, scaling; cols=:a)
                 @test _nt isa NamedTuple{(:a, :b)}  # before applying `collect`
-                @test collect(_nt) ≈ collect(nt_expected_) atol=1e-14
+                @test _nt == (a=[0.0, -1.0, 1.0], b=[1.0, 0.0, 2.0])
             end
 
             @testset "Re-apply" begin
                 scaling = MeanStdScaling(nt)
-                FeatureTransforms.apply(nt, scaling)
 
                 # Expect scaling parameters to be fixed to the first data applied to
                 nt2 = (a = [-1.0, 0.5, 0.0], b = [2.0, 2.0, 1.0])
                 @test nt !== nt2
-                arr_expected2 = [[-1.67705, 0.0, -0.55902], [1.67705, 1.67705, 0.55902]]
-                @test FeatureTransforms.apply(nt2, scaling) ≈ arr_expected2 atol=1e-5
+                expected2 = [[-1.67705, 0.0, -0.55902], [1.67705, 1.67705, 0.55902]]
+                @test collect(FeatureTransforms.apply(nt2, scaling)) ≈ expected2 atol=1e-5
             end
 
             @testset "Inverse" begin
                 scaling = MeanStdScaling(nt)
                 transformed = FeatureTransforms.apply(nt, scaling)
-                transformed = (a = transformed[1], b = transformed[2])
-
-                @test collect(transformed) ≈ arr_expected atol=1e-5
-                @test FeatureTransforms.apply(transformed, scaling; inverse=true) ≈ [nt.a, nt.b] atol=1e-5
+                expected_inverse = (Column1 = [0.0, -0.5, 0.5], Column2 = [1.0, 0.0, 2.0])
+                inverted = FeatureTransforms.apply(transformed, scaling; inverse=true)
+                @test expected_inverse == inverted
             end
         end
 
         @testset "DataFrame" begin
             df = DataFrame(:a => [0.0, -0.5, 0.5], :b => [1.0, 0.0, 2.0])
-            df_expected = DataFrame(:a => [0.0, -1.0, 1.0], :b => [0.0, -1.0, 1.0])
-            arr_expected = [[-0.55902, -1.11803, 0.0], [0.55902, -0.55902, 1.67705]]
+
+            df_expected = DataFrame(
+                :Column1 => [-0.55902, -1.11803, 0.0],
+                :Column2 => [0.55902, -0.55902, 1.67705],
+            )
 
             @testset "Non-mutating" begin
                 scaling = MeanStdScaling(df)
-                transformed = FeatureTransforms.apply(df, scaling)
-                @test transformed ≈ arr_expected atol=1e-5
-                @test scaling(df) ≈ arr_expected atol=1e-5
+                @test FeatureTransforms.apply(df, scaling) ≈ df_expected atol=1e-5
+                @test scaling(df) ≈ df_expected atol=1e-5
             end
 
             @testset "Mutating" begin
@@ -534,42 +540,48 @@
                 _df = deepcopy(df)
                 FeatureTransforms.apply!(_df, scaling)
                 @test _df isa DataFrame
-                @test _df ≈ DataFrame(arr_expected, [:a, :b]) atol=1e-5
+                @test isapprox(
+                    _df,
+                    DataFrame(:a => [-0.55902, -1.11803, 0.0], :b => [0.55902, -0.55902, 1.67705]),
+                    atol=1e-5
+                )
             end
 
-            @testset "cols = $c" for c in (:a, :b)
-                scaling = MeanStdScaling(df; cols=[c])
+            @testset "cols = :a" begin
+                scaling = MeanStdScaling(df; cols=:a)
 
-                @test FeatureTransforms.apply(df, scaling; cols=[c]) ≈ [df_expected[!, c]] atol=1e-5
-                @test FeatureTransforms.apply(df, scaling; cols=c) ≈ df_expected[!, c] atol=1e-5
+                @test isequal(
+                    FeatureTransforms.apply(df, scaling; cols=:a),
+                    DataFrame(:Column1 => [0.0, -1.0, 1.0]),
+                )
 
                 _df = deepcopy(df)
-                _df_expected = deepcopy(df)
-                _df_expected[!, c] = df_expected[!, c]
-                FeatureTransforms.apply!(_df, scaling; cols=[c])
+                FeatureTransforms.apply!(_df, scaling; cols=:a)
                 @test _df isa DataFrame
-                @test _df ≈ _df_expected atol=1e-5
+                @test _df == DataFrame(:a => [0.0, -1.0, 1.0], :b => [1.0, 0.0, 2.0])
             end
 
             @testset "Re-apply" begin
-                scaling = MeanStdScaling(df)
-                FeatureTransforms.apply(df, scaling)
-
                 # Expect scaling parameters to be fixed to the first data applied to
                 df2 = DataFrame(:a => [-1.0, 0.5, 0.0], :b => [2.0, 2.0, 1.0])
                 @test df !== df2
 
-                arr_expected2 = [[-1.67705, 0.0, -0.55902], [1.67705, 1.67705, 0.55902]]
-                @test FeatureTransforms.apply(df2, scaling) ≈ arr_expected2 atol=1e-5
+                scaling = MeanStdScaling(df)
+
+                df_expected2 = DataFrame(
+                    :Column1 => [-1.67705, 0.0, -0.55902],
+                    :Column2 => [1.67705, 1.67705, 0.55902],
+                )
+                @test FeatureTransforms.apply(df2, scaling) ≈ df_expected2 atol=1e-5
             end
 
             @testset "Inverse" begin
                 scaling = MeanStdScaling(df)
                 transformed = FeatureTransforms.apply(df, scaling)
-                transformed = DataFrame(transformed, [:a, :b])
 
-                @test transformed ≈ DataFrame(arr_expected, [:a, :b]) atol=1e-5
-                @test FeatureTransforms.apply(transformed, scaling; inverse=true) ≈ [df.a, df.b] atol=1e-5
+                expected_inverse = DataFrame(:Column1=>df.a, :Column2=>df.b)
+                inverted = FeatureTransforms.apply(transformed, scaling; inverse=true)
+                @test inverted == expected_inverse
             end
         end
 

@@ -168,8 +168,9 @@
         @testset "all cols" begin
             nt = (a = [1, 2, 3], b = [4, 5, 6])
             lc = LinearCombination([1, -1])
-            @test FeatureTransforms.apply(nt, lc) == [-3, -3, -3]
-            @test lc(nt) == [-3, -3, -3]
+            expected = (Column1 = [-3, -3, -3],)
+            @test FeatureTransforms.apply(nt, lc) == expected
+            @test lc(nt) == expected
         end
 
         @testset "dims not supported" begin
@@ -187,16 +188,18 @@
         @testset "specified cols" begin
             nt = (a = [1, 2, 3], b = [4, 5, 6], c = [1, 1, 1])
             lc = LinearCombination([1, -1])
-            @test FeatureTransforms.apply(nt, lc; cols=[:a, :b]) == [-3, -3, -3]
-            @test lc(nt; cols=[:a, :b]) == [-3, -3, -3]
+            expected = (Column1 = [-3, -3, -3],)
+            @test FeatureTransforms.apply(nt, lc; cols=[:a, :b]) == expected
+            @test lc(nt; cols=[:a, :b]) == expected
         end
 
         @testset "single col" begin
             nt = (a = [1, 2, 3], b = [4, 5, 6])
             lc_single = LinearCombination([-1])
-            @test FeatureTransforms.apply(nt, lc_single; cols=:a) == [-1, -2, -3]
-            @test FeatureTransforms.apply(nt, lc_single; cols=[:a]) == [-1, -2, -3]
-            @test lc_single(nt; cols=:a) == [-1, -2, -3]
+            expected = (Column1 = [-1, -2, -3],)
+            @test FeatureTransforms.apply(nt, lc_single; cols=:a) == expected
+            @test FeatureTransforms.apply(nt, lc_single; cols=[:a]) == expected
+            @test lc_single(nt; cols=:a) == expected
         end
     end
 
@@ -205,8 +208,8 @@
         @testset "all cols" begin
             df = DataFrame(:a => [1, 2, 3], :b => [4, 5, 6])
             lc = LinearCombination([1, -1])
-            @test FeatureTransforms.apply(df, lc) == [-3, -3, -3]
-            @test lc(df) == [-3, -3, -3]
+            @test FeatureTransforms.apply(df, lc) == DataFrame(:Column1 => [-3, -3, -3])
+            @test lc(df) == DataFrame(:Column1 => [-3, -3, -3])
         end
 
         @testset "dims not supported" begin
@@ -224,16 +227,19 @@
         @testset "specified cols" begin
             df = DataFrame(:a => [1, 2, 3], :b => [4, 5, 6], :c => [1, 1, 1])
             lc = LinearCombination([1, -1])
-            @test FeatureTransforms.apply(df, lc; cols=[:b, :c]) == [3, 4, 5]
-            @test lc(df; cols=[:b, :c]) == [3, 4, 5]
+            expected = DataFrame(:Column1 => [3, 4, 5])
+
+            @test FeatureTransforms.apply(df, lc; cols=[:b, :c]) == expected
+            @test lc(df; cols=[:b, :c]) == expected
         end
 
         @testset "single col" begin
             df = DataFrame(:a => [1, 2, 3], :b => [4, 5, 6])
             lc_single = LinearCombination([-1])
-            @test FeatureTransforms.apply(df, lc_single; cols=:a) == [-1, -2, -3]
-            @test FeatureTransforms.apply(df, lc_single; cols=[:a]) == [-1, -2, -3]
-            @test lc_single(df; cols=:a) == [-1, -2, -3]
+            expected = DataFrame(:Column1 => [-1, -2, -3])
+            @test FeatureTransforms.apply(df, lc_single; cols=:a) == expected
+            @test FeatureTransforms.apply(df, lc_single; cols=[:a]) == expected
+            @test lc_single(df; cols=:a) == expected
         end
     end
 end

@@ -154,28 +154,23 @@ julia> normalize_col(M; dims=2, inds=[2])
 
 ### Default
 
-Without specifying optional arguments, a `Transform` is applied to all the data in a `Table`:
-
+Without specifying optional arguments, a `Transform` will be applied to all the data in a `Table` and return a `Table` of the same type.
+One can specify the `header` for the output by passing it as a keyword argument.
+If no `header` is given, the default from [`Tables.table`](https://tables.juliadata.org/stable/#Tables.table) is used.
 ```jldoctest transforms
 julia> nt = (a = [2.0, 1.0, 3.0], b = [4.0, 5.0, 6.0]);
 
 julia> scaling = MeanStdScaling(nt);  # compute statistics using all data
 
+julia> FeatureTransforms.apply(nt, scaling; header=[:a_norm, :b_norm])
+(a_norm = [-0.8017837257372732, -1.3363062095621219, -0.2672612419124244], b_norm = [0.2672612419124244, 0.8017837257372732, 1.3363062095621219])
+```
+
+However, calling the mutating `apply!` will keep the original column names:
+```jldoctest transforms
 julia> FeatureTransforms.apply!(nt, scaling)
 (a = [-0.8017837257372732, -1.3363062095621219, -0.2672612419124244], b = [0.2672612419124244, 0.8017837257372732, 1.3363062095621219])
 ```
-
-!!! note
-
-    The non-mutating `apply` method for `Table` data returns a `Vector` of `Vector`s, one for each column.
-    This is so users are free to decide what to name the results of the transformation, whether to append to the original table, etc.
-
-    ```julia-repl
-    julia> FeatureTransforms.apply(nt, scaling)
-    2-element Array{Array{Float64,1},1}:
-    [-2.2994001219583993, -2.585114407672685, -2.0136858362441137]
-    [-1.7279715505298279, -1.442257264815542, -1.1565429791012565]
-    ```
 
 ### Applying to specific columns with `cols`
 
@@ -195,10 +190,11 @@ julia> hod = HoD();
 
 julia> lc = LinearCombination([0.5, 0.5]);
 
-julia> feature_df = DataFrame(
-           :hour_of_day => hod(df; cols=:time),
-           :aggregate_temperature => lc(df; cols=[:temperature_A, :temperature_B])
-       )
+julia> hod_df = hod(df; cols=:time, header=[:hour_of_day]);
+
+julia> lc_df = lc(df; cols=[:temperature_A, :temperature_B], header=[:aggregate_temperature]);
+
+julia> feature_df = hcat(hod_df, lc_df)
 3×2 DataFrame
  Row │ hour_of_day  aggregate_temperature 
      │ Int64        Float64               

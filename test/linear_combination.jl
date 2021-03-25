@@ -173,6 +173,14 @@
             @test lc(nt) == expected
         end
 
+        @testset "custom header" begin
+            nt = (a = [1, 2, 3], b = [4, 5, 6])
+            lc = LinearCombination([1, -1])
+            expected = (x = [-3, -3, -3],)
+            @test FeatureTransforms.apply(nt, lc; header=[:x]) == expected
+            @test lc(nt; header=[:x]) == expected
+        end
+
         @testset "dimension mismatch" begin
             nt = (a = [1, 2, 3], b = [4, 5, 6], c = [1, 1, 1])
             lc = LinearCombination([1, -1])
@@ -204,6 +212,14 @@
             lc = LinearCombination([1, -1])
             @test FeatureTransforms.apply(df, lc) == DataFrame(:Column1 => [-3, -3, -3])
             @test lc(df) == DataFrame(:Column1 => [-3, -3, -3])
+        end
+
+        @testset "custom header" begin
+            df = DataFrame(:a => [1, 2, 3], :b => [4, 5, 6])
+            lc = LinearCombination([1, -1])
+            expected = DataFrame(:x => [-3, -3, -3])
+            @test FeatureTransforms.apply(df, lc; header=[:x]) == expected
+            @test lc(df; header=[:x]) == expected
         end
 
         @testset "dimension mismatch" begin

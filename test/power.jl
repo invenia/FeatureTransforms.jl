@@ -108,6 +108,12 @@
             @test _nt == (a = [1, 8, 27], b = [64, 125, 216])
         end
 
+        @testset "custom header" begin
+            expected_nt = (x = [1, 8, 27], y = [64, 125, 216])
+            @test FeatureTransforms.apply(nt, p; header=[:x, :y]) == expected_nt
+            @test p(nt; header=[:x, :y]) == expected_nt
+        end
+
         @testset "cols = $c" for c in (:a, :b)
             expected = getproperty(nt, c) .^3
 
@@ -135,6 +141,12 @@
             FeatureTransforms.apply!(_df, p)
             @test _df isa DataFrame
             @test _df == DataFrame(:a => [1, 8, 27], :b => [64, 125, 216])
+        end
+
+        @testset "custom header" begin
+            expected_df = DataFrame(:x => [1, 8, 27], :y => [64, 125, 216])
+            @test FeatureTransforms.apply(df, p; header=[:x, :y]) == expected_df
+            @test p(df; header=[:x, :y]) == expected_df
         end
 
         @testset "cols = $c" for c in (:a, :b)

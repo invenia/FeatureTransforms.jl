@@ -61,10 +61,12 @@ function apply!(A::AbstractArray, t::Transform; kwargs...)
 end
 
 """
-    apply(table, ::Transform; cols=nothing, kwargs...) -> Table
+    apply(table, ::Transform; cols=nothing, [header], kwargs...) -> Table
 
 Applies the [`Transform`](@ref) to each of the specified columns in the `table`.
 If no `cols` are specified, then the [`Transform`](@ref) is applied to all columns.
+
+Optionally provide a `header` for the output table. The default is that used in `Tables.table`.
 
 # Return
 * If `cols` is a single value (not in a list): the transformed column vector.

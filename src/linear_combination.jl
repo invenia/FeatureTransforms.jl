@@ -49,6 +49,8 @@ end
 
 Applies the [`LinearCombination`](@ref) across the specified cols in `table`. If no `cols`
 are specified, then the [`LinearCombination`](@ref) is applied to all columns.
+
+Optionally provide a `header` for the output table. The default is that used in `Tables.table`.
 """
 function apply(table, LC::LinearCombination; cols=nothing, header=[:Column1])
     Tables.istable(table) || throw(MethodError(apply, (table, LC)))

@@ -45,12 +45,12 @@ end
 
 
 """
-    apply(table, LC::LinearCombination; cols=nothing)
+    apply(table, LC::LinearCombination; cols=nothing, [header])
 
 Applies the [`LinearCombination`](@ref) across the specified cols in `table`. If no `cols`
 are specified, then the [`LinearCombination`](@ref) is applied to all columns.
 """
-function apply(table, LC::LinearCombination; cols=nothing, kwargs...)
+function apply(table, LC::LinearCombination; cols=nothing, header=[:Column1])
     Tables.istable(table) || throw(MethodError(apply, (table, LC)))
 
     cols = _to_vec(cols)  # handle single column name
@@ -70,6 +70,5 @@ function apply(table, LC::LinearCombination; cols=nothing, kwargs...)
         ])
     end
 
-    header = get(kwargs, :header, _default_header(result))
     return Tables.materializer(table)(Tables.table(result, header=header))
 end

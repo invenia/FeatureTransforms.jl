@@ -132,7 +132,6 @@
             @testset "Mutating" begin
                 _nt = deepcopy(nt)
                 FeatureTransforms.apply!(_nt, scaling)
-                @test _nt isa NamedTuple{(:a, :b)}
                 @test _nt == nt
             end
 
@@ -498,7 +497,6 @@
 
                 _nt = deepcopy(nt)
                 FeatureTransforms.apply!(_nt, scaling; cols=:a)
-                @test _nt isa NamedTuple{(:a, :b)}  # before applying `collect`
                 @test _nt == (a=[0.0, -1.0, 1.0], b=[1.0, 0.0, 2.0])
             end
 

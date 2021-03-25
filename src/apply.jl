@@ -66,7 +66,8 @@ end
 Applies the [`Transform`](@ref) to each of the specified columns in the `table`.
 If no `cols` are specified, then the [`Transform`](@ref) is applied to all columns.
 
-Optionally provide a `header` for the output table. The default is that used in `Tables.table`.
+Optionally provide a `header` for the output table. If none is provided the default in
+`Tables.table` is used.
 
 # Return
 * If `cols` is a single value (not in a list): the transformed column vector.
@@ -81,13 +82,9 @@ function apply(table, t::Transform; cols=nothing, kwargs...)
     cnames = cols === nothing ? propertynames(columntable) : cols
 
     result = _apply(columntable, t, cnames; kwargs...)
-    header = get(kwargs, :header, _default_header(result))
-    return Tables.materializer(table)(Tables.table(result, header=header))
+    header = get(kwargs, :header, nothing)
+    return Tables.materializer(table)(_to_table(result, header))
 end
-
-# TODO: any way to not have to copy this from Tables.jl?
-# https://github.com/JuliaData/Tables.jl/blob/34be1bc063e0e1b01c8920fdeee9c70387f023bb/src/matrix.jl#L54
-_default_header(x) = [Symbol(:Column, i) for i in 1:size(Tables.matrix(Tables.table(x)), 2)]
 
 # 3-arg forms are simply to dispatch on whether cols is a Symbol or a collection
 function _apply(table, t::Transform, col; kwargs...)
@@ -97,6 +94,9 @@ end
 function _apply(table, t::Transform, cols::Union{Tuple, AbstractArray}; kwargs...)
     return reduce(hcat, _apply(table, t, col; kwargs...) for col in cols)
 end
+
+_to_table(x, ::Nothing) = Tables.table(x)
+_to_table(x, header) = Tables.table(x, header=header)
 
 """
     apply!(table::T, ::Transform; cols=nothing)::T where T

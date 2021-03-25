@@ -15,7 +15,7 @@
             x = [1, 2]
             lc = LinearCombination([1, -1])
             @test FeatureTransforms.apply(x, lc; dims=1) == fill(-1)
-            @test_throws DimensionMismatch FeatureTransforms.apply(x, lc; dims=2)
+            @test_throws BoundsError FeatureTransforms.apply(x, lc; dims=2)
         end
 
         @testset "dimension mismatch" begin

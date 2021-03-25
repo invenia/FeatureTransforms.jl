@@ -61,7 +61,7 @@ function apply!(A::AbstractArray, t::Transform; kwargs...)
 end
 
 """
-    apply(table, ::Transform; cols=nothing, [header], kwargs...) -> Table
+    apply(table, ::Transform; [cols], [header], kwargs...) -> Table
 
 Applies the [`Transform`](@ref) to each of the specified columns in the `table`.
 If no `cols` are specified, then the [`Transform`](@ref) is applied to all columns.
@@ -69,51 +69,41 @@ If no `cols` are specified, then the [`Transform`](@ref) is applied to all colum
 Optionally provide a `header` for the output table. If none is provided the default in
 `Tables.table` is used.
 """
-function apply(table, t::Transform; cols=nothing, kwargs...)
+function apply(table, t::Transform; cols=_get_cols(table), kwargs...)
     Tables.istable(table) || throw(MethodError(apply, (table, t)))
 
     # Extract a columns iterator that we should be able to use to mutate the data.
     # NOTE: Mutation is not guaranteed for all table types, but it avoid copying the data
-    columntable = Tables.columns(table)
-    cnames = cols === nothing ? propertynames(columntable) : cols
+    coltable = Tables.columntable(table)
+    cols = _to_vec(cols)
 
-    result = _apply(columntable, t, cnames; kwargs...)
+    result = reduce(hcat, [_apply(getproperty(coltable, col), t; kwargs...) for col in cols])
     header = get(kwargs, :header, nothing)
     return Tables.materializer(table)(_to_table(result, header))
-end
-
-# 3-arg forms are simply to dispatch on whether cols is a Symbol or a collection
-function _apply(table, t::Transform, col; kwargs...)
-    return hcat(_apply(getproperty(table, col), t; kwargs...))
-end
-
-function _apply(table, t::Transform, cols::Union{Tuple, AbstractArray}; kwargs...)
-    return reduce(hcat, _apply(table, t, col; kwargs...) for col in cols)
 end
 
 _to_table(x, ::Nothing) = Tables.table(x)
 _to_table(x, header) = Tables.table(x, header=header)
 
 """
-    apply!(table::T, ::Transform; cols=nothing)::T where T
+    apply!(table::T, ::Transform; [cols])::T where T
 
 Applies the [`Transform`](@ref) to each of the specified columns in the `table`.
 If no `cols` are specified, then the [`Transform`](@ref) is applied to all columns.
 """
-function apply!(table::T, t::Transform; cols=nothing, kwargs...)::T where T
-    # TODO: We could probably handle iterators of tables here
+function apply!(table::T, t::Transform; cols=_get_cols(table), kwargs...)::T where T
     Tables.istable(table) || throw(MethodError(apply!, (table, t)))
-
-    cols = _to_vec(cols)  # handle single column name
 
     # Extract a columns iterator that we should be able to use to mutate the data.
     # NOTE: Mutation is not guaranteed for all table types, but it avoid copying the data
-    columntable = Tables.columns(table)
+    coltable = Tables.columntable(table)
+    cols = _to_vec(cols)  # handle single column name
 
-    cnames = cols === nothing ? propertynames(columntable) : cols
-    for cname in cnames
-        apply!(getproperty(columntable, cname), t; kwargs...)
+    for cname in cols
+        apply!(getproperty(coltable, cname), t; kwargs...)
     end
 
     return table
 end
+
+_get_cols(table) = propertynames(Tables.columns(table))

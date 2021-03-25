@@ -7,15 +7,6 @@ struct LinearCombination <: Transform
     coefficients::Vector{Real}
 end
 
-function _sum_row(row, coefficients)
-    if length(row) != length(coefficients)
-        throw(DimensionMismatch(
-            "Size $length(row) doesn't match number of coefficients $(length(coefficients))"
-        ))
-    end
-   return sum(map(*, row, coefficients))
-end
-
 """
     apply(
         ::AbstractArray{<:Real, N}, ::LinearCombination; dims=1, inds=:
@@ -34,7 +25,7 @@ function apply(
 
     dims === Colon() && throw(ArgumentError("dims=: not supported, choose dims ∈ [1, $N]"))
 
-    return _sum_row(eachslice(selectdim(A, dims, inds); dims=dims), LC.coefficients)
+    return _sum_terms(eachslice(selectdim(A, dims, inds); dims=dims), LC.coefficients)
 end
 
 
@@ -55,13 +46,17 @@ function apply(table, LC::LinearCombination; cols=_get_cols(table), kwargs...)
     coltable = Tables.columntable(table)
     cols = _to_vec(cols)
 
-    # Keep the generic form when not specifying column names
-    # because that is much more performant than selecting each col by name
-    result = hcat([
-        _sum_row([row[cname] for cname in cols], LC.coefficients)
-        for row in Tables.rows(table)
-    ])
-
+    result = hcat(_sum_terms([getproperty(coltable, col) for col in cols], LC.coefficients))
     header = get(kwargs, :header, nothing)
     return Tables.materializer(table)(_to_table(result, header))
+end
+
+function _sum_terms(terms, coeffs)
+    if length(terms) != length(coeffs)
+        throw(DimensionMismatch(
+            "Number of terms $(length(terms)) does not match "*
+            "number of coefficients $(length(coeffs))."
+        ))
+    end
+   return sum(map(*, terms, coeffs))
 end

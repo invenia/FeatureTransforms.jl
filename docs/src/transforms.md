@@ -31,13 +31,13 @@ julia> p = Power(2);
 julia> x = [1.0, 2.0, 3.0];
 
 julia> FeatureTransforms.apply(x, p)
-3-element Array{Float64,1}:
+3-element Vector{Float64}:
  1.0
  4.0
  9.0
 
 julia> x
-3-element Array{Float64,1}:
+3-element Vector{Float64}:
  1.0
  2.0
  3.0
@@ -47,7 +47,7 @@ Equivalently, the `Transform` object can be called directly on the data:
 
 ```jldoctest transforms
 julia> p(x)
-3-element Array{Float64,1}:
+3-element Vector{Float64}:
  1.0
  4.0
  9.0
@@ -61,13 +61,13 @@ Alternatively, the data can be mutated using the `apply!` method.
 
 ```jldoctest transforms
 julia> FeatureTransforms.apply!(x, p)
-3-element Array{Float64,1}:
+3-element Vector{Float64}:
  1.0
  4.0
  9.0
 
 julia> x
-3-element Array{Float64,1}:
+3-element Vector{Float64}:
  1.0
  4.0
  9.0
@@ -93,7 +93,7 @@ julia> M = [2.0 4.0; 1.0 5.0; 3.0 6.0];
 julia> p = Power(2);
 
 julia> FeatureTransforms.apply(M, p)
-3×2 Array{Float64,2}:
+3×2 Matrix{Float64}:
  4.0  16.0
  1.0  25.0
  9.0  36.0
@@ -107,7 +107,7 @@ For example, to only square the second column:
 
 ```jldoctest transforms
 julia> FeatureTransforms.apply(M, p; inds=[4, 5, 6])
-3-element Array{Float64,1}:
+3-element Vector{Float64}:
  16.0
  25.0
  36.0
@@ -127,7 +127,7 @@ For example, given a `Matrix`, `dims=1` slices the data column-wise and `inds=[2
 
 ```jldoctest transforms
 julia> M
-3×2 Array{Float64,2}:
+3×2 Matrix{Float64}:
  2.0  4.0
  1.0  5.0
  3.0  6.0
@@ -136,14 +136,14 @@ julia> normalize_row = MeanStdScaling(M; dims=1, inds=[2])
 MeanStdScaling(3.0, 2.8284271247461903)
 
 julia> normalize_row(M; dims=1, inds=[2])
-1×2 Array{Float64,2}:
+1×2 Matrix{Float64}:
  -0.707107  0.707107
 
 julia> normalize_col = MeanStdScaling(M; dims=2, inds=[2])
 MeanStdScaling(5.0, 1.0)
 
 julia> normalize_col(M; dims=2, inds=[2])
-3×1 Array{Float64,2}:
+3×1 Matrix{Float64}:
  -1.0
   0.0
   1.0

@@ -65,9 +65,9 @@ function apply(table, LC::LinearCombination; cols=nothing, kwargs...)
     # Keep the generic form when not specifying column names
     # because that is much more performant than selecting each col by name
     result = if cols === nothing
-        _to_mat([_sum_row(row, LC.coefficients) for row in Tables.rows(table)])
+        hcat([_sum_row(row, LC.coefficients) for row in Tables.rows(table)])
     else
-        _to_mat([
+        hcat([
             _sum_row([row[cname] for cname in cols], LC.coefficients)
             for row in Tables.rows(table)
         ])

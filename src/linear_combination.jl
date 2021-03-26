@@ -52,6 +52,7 @@ function apply(table, LC::LinearCombination; cols=_get_cols(table), kwargs...)
 end
 
 function _sum_terms(terms, coeffs)
+    # Need this check because map will work even if there are more/less terms than coeffs
     if length(terms) != length(coeffs)
         throw(DimensionMismatch(
             "Number of terms $(length(terms)) does not match "*

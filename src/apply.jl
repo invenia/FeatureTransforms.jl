@@ -82,9 +82,6 @@ function apply(table, t::Transform; cols=_get_cols(table), kwargs...)
     return Tables.materializer(table)(_to_table(result, header))
 end
 
-_to_table(x, ::Nothing) = Tables.table(x)
-_to_table(x, header) = Tables.table(x, header=header)
-
 """
     apply!(table::T, ::Transform; [cols])::T where T
 
@@ -105,5 +102,3 @@ function apply!(table::T, t::Transform; cols=_get_cols(table), kwargs...)::T whe
 
     return table
 end
-
-_get_cols(table) = propertynames(Tables.columns(table))

@@ -69,7 +69,7 @@ If no `cols` are specified, then the [`Transform`](@ref) is applied to all colum
 Optionally provide a `header` for the output table. If none is provided the default in
 `Tables.table` is used.
 """
-function apply(table, t::Transform; cols=_get_cols(table), kwargs...)
+function apply(table, t::Transform; cols=_get_cols(table), header=nothing, kwargs...)
     Tables.istable(table) || throw(MethodError(apply, (table, t)))
 
     # Extract a columns iterator that we should be able to use to mutate the data.
@@ -78,7 +78,6 @@ function apply(table, t::Transform; cols=_get_cols(table), kwargs...)
     cols = _to_vec(cols)
 
     result = reduce(hcat, [_apply(getproperty(coltable, col), t; kwargs...) for col in cols])
-    header = get(kwargs, :header, nothing)
     return Tables.materializer(table)(_to_table(result, header))
 end
 

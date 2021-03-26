@@ -5,5 +5,5 @@ _to_vec(x) = [x]
 
 _get_cols(table) = propertynames(Tables.columns(table))
 
-_to_table(x, ::Nothing) = Tables.table(x)
+_to_table(x, ::Nothing) = Tables.table(x)  # so that we use the defaults in Tables.table
 _to_table(x, header) = Tables.table(x, header=header)

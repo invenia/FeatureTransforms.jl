@@ -38,7 +38,7 @@ are specified, then the [`LinearCombination`](@ref) is applied to all columns.
 Optionally provide a `header` for the output table. If none is provided the default in
 `Tables.table` is used.
 """
-function apply(table, LC::LinearCombination; cols=_get_cols(table), kwargs...)
+function apply(table, LC::LinearCombination; cols=_get_cols(table), header=nothing, kwargs...)
     Tables.istable(table) || throw(MethodError(apply, (table, LC)))
 
     # Extract a columns iterator that we should be able to use to mutate the data.
@@ -47,7 +47,6 @@ function apply(table, LC::LinearCombination; cols=_get_cols(table), kwargs...)
     cols = _to_vec(cols)
 
     result = hcat(_sum_terms([getproperty(coltable, col) for col in cols], LC.coefficients))
-    header = get(kwargs, :header, nothing)
     return Tables.materializer(table)(_to_table(result, header))
 end
 

@@ -41,7 +41,7 @@ One way to do this is with the `Periodic` transform, specifying a period of 1 da
 ```jldoctest example
 julia> periodic = Periodic(sin, Day(1));
 
-julia> df.hour_of_day_sin = FeatureTransforms.apply(df, periodic; cols=:time);
+julia> df.hour_of_day_sin = FeatureTransforms.apply(df.time, periodic);
 
 julia> feature_df = df
 24×4 DataFrame

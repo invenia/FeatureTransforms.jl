@@ -7,17 +7,6 @@ struct LinearCombination <: Transform
     coefficients::Vector{Real}
 end
 
-function _check_dimensions_match(LC::LinearCombination, num_inds)
-    num_coefficients = length(LC.coefficients)
-    if num_inds != num_coefficients
-        throw(DimensionMismatch(
-            "Size $num_inds doesn't match number of coefficients ($num_coefficients)"
-        ))
-    end
-end
-
-_sum_row(row, coefficients) = sum(map(*, row, coefficients))
-
 """
     apply(
         ::AbstractArray{<:Real, N}, ::LinearCombination; dims=1, inds=:
@@ -36,16 +25,12 @@ function apply(
 
     dims === Colon() && throw(ArgumentError("dims=: not supported, choose dims ∈ [1, $N]"))
 
-    # Get the number of slices - error if doesn't match the number of coefficients
-    num_slices = inds === Colon() ? size(A, dims) : length(inds)
-    _check_dimensions_match(LC, num_slices)
-
-    return _sum_row(eachslice(selectdim(A, dims, inds); dims=dims), LC.coefficients)
+    return _sum_terms(eachslice(selectdim(A, dims, inds); dims=dims), LC.coefficients)
 end
 
 
 """
-    apply(table, LC::LinearCombination; cols=nothing, [header]) -> Table
+    apply(table, LC::LinearCombination; [cols], [header]) -> Table
 
 Applies the [`LinearCombination`](@ref) across the specified cols in `table`. If no `cols`
 are specified, then the [`LinearCombination`](@ref) is applied to all columns.
@@ -53,26 +38,25 @@ are specified, then the [`LinearCombination`](@ref) is applied to all columns.
 Optionally provide a `header` for the output table. If none is provided the default in
 `Tables.table` is used.
 """
-function apply(table, LC::LinearCombination; cols=nothing, kwargs...)
+function apply(table, LC::LinearCombination; cols=_get_cols(table), header=nothing, kwargs...)
     Tables.istable(table) || throw(MethodError(apply, (table, LC)))
 
-    cols = _to_vec(cols)  # handle single column name
+    # Extract a columns iterator that we should be able to use to mutate the data.
+    # NOTE: Mutation is not guaranteed for all table types, but it avoid copying the data
+    coltable = Tables.columntable(table)
+    cols = _to_vec(cols)
 
-    # Error if dimensions don't match
-    num_cols = cols === nothing ? length(Tables.columnnames(table)) : length(cols)
-    _check_dimensions_match(LC, num_cols)
-
-    # Keep the generic form when not specifying column names
-    # because that is much more performant than selecting each col by name
-    result = if cols === nothing
-        hcat([_sum_row(row, LC.coefficients) for row in Tables.rows(table)])
-    else
-        hcat([
-            _sum_row([row[cname] for cname in cols], LC.coefficients)
-            for row in Tables.rows(table)
-        ])
-    end
-
-    header = get(kwargs, :header, nothing)
+    result = hcat(_sum_terms([getproperty(coltable, col) for col in cols], LC.coefficients))
     return Tables.materializer(table)(_to_table(result, header))
+end
+
+function _sum_terms(terms, coeffs)
+    # Need this check because map will work even if there are more/less terms than coeffs
+    if length(terms) != length(coeffs)
+        throw(DimensionMismatch(
+            "Number of terms $(length(terms)) does not match "*
+            "number of coefficients $(length(coeffs))."
+        ))
+    end
+   return sum(map(*, terms, coeffs))
 end

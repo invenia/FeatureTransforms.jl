@@ -53,7 +53,7 @@ julia> p(x)
  9.0
 ```
 
-Alternatively, the data can be mutated using the `apply!` method.
+Secondly, the data can be mutated using the `apply!` method.
 
 !!! note
 
@@ -71,6 +71,18 @@ julia> x
  1.0
  4.0
  9.0
+```
+
+Finally, the result can be appended to the input using the `apply_append` method.
+
+```jldoctest transforms
+julia> x = [1.0, 2.0, 3.0];
+
+julia> FeatureTransforms.apply_append(x, p, append_dim=2)
+3×2 Matrix{Float64}:
+ 1.0  1.0
+ 2.0  4.0
+ 3.0  9.0
 ```
 
 A single `Transform` instance can be applied to different data types, with support for `AbstractArray`s and [`Table`s](https://github.com/JuliaData/Tables.jl).

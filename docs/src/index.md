@@ -6,8 +6,8 @@ FeatureTransforms supports operations on `AbstractArray`s and [`Table`](https://
 There are three key parts of the Transforms.jl API:
 
 * Subtypes of [`Transform`](@ref about-transforms) define transformations of data, for example normalization or a periodic function.
-* The `apply` and `apply!` methods transform data according to the given [`Transform`](@ref about-transforms), in a manner determined by the data type and specified dimensions, column names, indices, and other `Transform`-specific parameters.
-* The `transform`(@ref transform-interface) method should be overloaded to define feature engineering pipelines that include [`Transform`](@ref about-transforms)s.
+* The [`apply`](@ref), [`apply!`](@ref) and [`apply_append`](@ref) methods transform data according to the given [`Transform`](@ref about-transforms), in a manner determined by the data type and specified dimensions, column names, indices, and other `Transform`-specific parameters.
+* The [`transform`](@ref transform-interface) method should be overloaded to define feature engineering pipelines that include [`Transform`](@ref about-transforms)s.
 
 ## Getting Started
 

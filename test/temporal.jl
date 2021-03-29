@@ -44,6 +44,12 @@
             @test FeatureTransforms.apply(x, hod) == expected_dst
             @test hod(x) == expected_dst
         end
+
+        @testset "apply_append" begin
+            x = collect(DateTime(2020, 1, 1, 9, 0):Hour(1):DateTime(2020, 5, 7, 9, 0))
+            expected = [9:23..., repeat(0:23, 126)..., 0:9...]
+            @test FeatureTransforms.apply_append(x, hod, append_dim=1) == vcat(x, expected)
+        end
     end
 
     @testset "Matrix" begin
@@ -70,6 +76,12 @@
             @test FeatureTransforms.apply(M, hod; dims=:, inds=[2, 3]) == [2, 3]
             @test FeatureTransforms.apply(M, hod; dims=1, inds=[2]) == [2 10]
             @test FeatureTransforms.apply(M, hod; dims=2, inds=[2]) == reshape([9; 10; 11], 3, 1)
+        end
+
+        @testset "apply_append" begin
+            @test FeatureTransforms.apply_append(M, hod, append_dim=1) == vcat(M, expected)
+            @test FeatureTransforms.apply_append(M, hod, append_dim=2) == hcat(M, expected)
+            @test FeatureTransforms.apply_append(M, hod, append_dim=3) == cat(M, expected, dims=3)
         end
     end
 
@@ -98,6 +110,12 @@
             @test FeatureTransforms.apply(A, hod; dims=:, inds=[2, 3]) == [2, 9]
             @test FeatureTransforms.apply(A, hod; dims=1, inds=[2]) == [2 10 12]
             @test FeatureTransforms.apply(A, hod; dims=2, inds=[2]) == reshape([9, 10], 2, 1)
+        end
+
+        @testset "apply_append" begin
+            @test FeatureTransforms.apply_append(A, hod, append_dim=1) == vcat(A, expected)
+            @test FeatureTransforms.apply_append(A, hod, append_dim=2) == hcat(A, expected)
+            @test FeatureTransforms.apply_append(A, hod, append_dim=3) == cat(M, expected, dims=3)
         end
     end
 
@@ -128,6 +146,23 @@
             @test FeatureTransforms.apply(A, hod; dims=:foo, inds=[2]) == [2 10 12]
             @test FeatureTransforms.apply(A, hod; dims=:bar, inds=[2]) == reshape([9, 10], 2, 1)
         end
+
+        @testset "apply_append" begin
+            expected1 = KeyedArray(
+                vcat(M, expected), foo=["a", "b", "a", "b"], bar=["x", "y", "z"]
+            )
+            @test FeatureTransforms.apply_append(A, hod, append_dim=:foo) == expected1
+
+            expected2 = KeyedArray(
+                hcat(M, expected), foo=["a", "b"], bar=["x", "y", "z", "x", "y", "z"]
+            )
+            @test FeatureTransforms.apply_append(A, hod, append_dim=:bar) == expected2
+
+            expected3 = KeyedArray(
+                cat(M, expected, dims=3), foo=["a", "b"], bar=["x", "y", "z"], baz=Base.OneTo(2)
+            )
+            @test FeatureTransforms.apply_append(A, hod, append_dim=:baz) == expected3
+        end
     end
 
     @testset "NamedTuple" begin
@@ -151,6 +186,11 @@
             @test FeatureTransforms.apply(nt, hod; cols=:a) == expected
             @test hod(nt; cols=:a) == expected
         end
+
+        @testset "apply_append" begin
+            expected = merge(nt, (Column1 = [0, 1, 2], Column2 = [3, 4, 5]))
+            @test FeatureTransforms.apply_append(nt, hod) == expected
+        end
     end
 
 
@@ -172,5 +212,12 @@
         @test FeatureTransforms.apply(df, hod; cols=[:a]) == DataFrame(:Column1 => [0, 1, 2])
         @test FeatureTransforms.apply(df, hod; cols=:a) == DataFrame(:Column1 => [0, 1, 2])
         @test FeatureTransforms.apply(df, hod; cols=[:b]) == DataFrame(:Column1 => [3, 4, 5])
+
+        @testset "apply_append" begin
+            expected = DataFrame(
+                :a=>df.a, :b=>df.b, :Column1 => [0, 1, 2], :Column2 => [3, 4, 5]
+            )
+            @test FeatureTransforms.apply_append(df, hod) == expected
+        end
     end
 end

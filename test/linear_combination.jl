@@ -37,6 +37,12 @@
             @test FeatureTransforms.apply(x, lc) == fill(-.1)
             @test lc(x) == fill(-.1)
         end
+
+        @testset "apply_append" begin
+            x = [1, 2]
+            lc = LinearCombination([1, -1])
+            @test FeatureTransforms.apply_append(x, lc; append_dim=1) == [1, 2, -1]
+        end
     end
 
     @testset "Matrix" begin
@@ -80,6 +86,17 @@
             lc = LinearCombination([1, -1])
             @test FeatureTransforms.apply(M, lc; inds=[2, 3]) == [3, -2]
             @test lc(M; inds=[2, 3]) == [3, -2]
+        end
+
+        @testset "apply_append" begin
+            M = [1 1 1; 2 2 2; 3 3 3]
+            lc = LinearCombination([1, 1, 1])
+
+            expected1 = [1 1 1; 2 2 2; 3 3 3; 6 6 6]
+            @test FeatureTransforms.apply_append(M, lc; dims=1, append_dim=1) == expected1
+
+            expected2 = [1 1 1 3; 2 2 2 6; 3 3 3 9]
+            @test FeatureTransforms.apply_append(M, lc; dims=2, append_dim=2) == expected2
         end
     end
 
@@ -125,6 +142,16 @@
             @test FeatureTransforms.apply(A, lc; inds=[1, 2]) == [-3, -3, -2]
             @test lc(A; inds=[1, 2]) == [-3, -3, -2]
         end
+
+        @testset "apply_append" begin
+            A = AxisArray([1 2; 4 5], foo=["a", "b"], bar=["x", "y"])
+
+            expected1 = [1 2; 4 5; -3 -3]
+            @test FeatureTransforms.apply_append(A, lc; dims=1, append_dim=1) == expected1
+
+            expected2 = [1 2 -1; 4 5 -1]
+            @test FeatureTransforms.apply_append(A, lc; dims=2, append_dim=2) == expected2
+        end
     end
 
     @testset "AxisKey" begin
@@ -163,6 +190,16 @@
             A = KeyedArray([1 2 3; 4 5 5], foo=["a", "b"], bar=["x", "y", "z"])
             @test FeatureTransforms.apply(A, lc; inds=[1, 2]) == [-3, -3, -2]
             @test lc(A; inds=[1, 2]) == [-3, -3, -2]
+        end
+
+        @testset "apply_append" begin
+            A = KeyedArray([1 2; 4 5], foo=["a", "b"], bar=["x", "y"])
+
+            expected1 = [1 2; 4 5; -3 -3]
+            @test FeatureTransforms.apply_append(A, lc; dims=:foo, append_dim=:foo) == expected1
+
+            expected2 = [1 2 -1; 4 5 -1]
+            @test FeatureTransforms.apply_append(A, lc; dims=:bar, append_dim=:bar) == expected2
         end
     end
 
@@ -205,6 +242,13 @@
             @test FeatureTransforms.apply(nt, lc_single; cols=[:a]) == expected
             @test lc_single(nt; cols=:a) == expected
         end
+
+        @testset "apply_append" begin
+            nt = (a = [1, 2, 3], b = [4, 5, 6])
+            lc = LinearCombination([1, -1])
+            expected = (a = [1, 2, 3], b = [4, 5, 6], Column1 = [-3, -3, -3])
+            @test FeatureTransforms.apply_append(nt, lc) == expected
+        end
     end
 
     @testset "DataFrame" begin
@@ -246,6 +290,13 @@
             @test FeatureTransforms.apply(df, lc_single; cols=:a) == expected
             @test FeatureTransforms.apply(df, lc_single; cols=[:a]) == expected
             @test lc_single(df; cols=:a) == expected
+        end
+
+        @testset "apply_append" begin
+            df = DataFrame(:a => [1, 2, 3], :b => [4, 5, 6])
+            lc = LinearCombination([1, -1])
+            expected = DataFrame(:a => [1, 2, 3], :b => [4, 5, 6], :Column1 => [-3, -3, -3])
+            @test FeatureTransforms.apply_append(df, lc) == expected
         end
     end
 end

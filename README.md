@@ -32,10 +32,15 @@ julia> df = DataFrame(:a=>[1, 2, 3, 4, 5], :b=>[5, 4, 3, 2, 1], :c=>[2, 1, 3, 1,
    5 │     5      1      3
 ```
 
-Next, we construct the `Transform` that we want to `apply` to the data, which can either be non-mutating (`apply`) or mutating (`apply!`).
-All `Transforms` support the non-mutating `apply` method but any `Transform` that changes the type or dimension of the input does not support mutation.
+Next, we construct the `Transform` that we want to perform on the data.
+This can be done one of three ways:
+1. `apply` which does not mutate the underlying data,
+1. `apply!` which _does_ mutate the underlying data,
+1. `apply_append` which will `apply` transform then `append` the result to a copy of the input.
 
-In either case, the return will be the same type as the input, so if you provide an `Array` you get back an `Array`, and if you provide a `Table` you get back a `Table`.
+All `Transforms` support the non-mutating `apply` and `apply_append` methods, but any `Transform` that changes the type or dimension of the input does not support the mutating `apply!`.
+
+In any case, the return type will be the same as the input, so if you provide an `Array` you get back an `Array`, and if you provide a `Table` you get back a `Table`.
 Here we are working with a `DataFrame`, so the return will always be a `DataFrame`:
 ```julia
 julia> p = Power(3);
@@ -61,11 +66,21 @@ julia> FeatureTransforms.apply!(df, p; cols=[:a])
    3 │    27      3      3
    4 │    64      2      1
    5 │   125      1      3
+
+julia> FeatureTransforms.apply_append(df, p; cols=[:a], header=[:a3])
+5×4 DataFrame
+ Row │ a      b      c      a3    
+     │ Int64  Int64  Int64  Int64 
+─────┼────────────────────────────
+   1 │     1      5      2      1
+   2 │     2      4      1      8
+   3 │     3      3      3     27
+   4 │     4      2      1     64
+   5 │     5      1      3    125
+
 ```
 
-
-`Transform`s that don't support mutation must be called using `apply` and appended.
-To help with this, you can call the `Transform` type directly:
+As an extra convenience, you can call the `Transform` type directly, which emulates calling `apply`:
 ```julia
 julia> ohe = OneHotEncoding(1:3);
 

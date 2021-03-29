@@ -23,6 +23,10 @@
 
             @test_throws BoundsError FeatureTransforms.apply(x, p; dims=2)
         end
+
+        @testset "apply_append" begin
+            @test FeatureTransforms.apply_append(x, p, append_dim=1) == vcat(x, expected)
+        end
     end
 
     @testset "Matrix" begin
@@ -43,6 +47,12 @@
             @test FeatureTransforms.apply(M, p; dims=:, inds=[2, 3]) == expected[[2, 3]]
             @test FeatureTransforms.apply(M, p; dims=1, inds=[2]) == [64 125 216]
             @test FeatureTransforms.apply(M, p; dims=2, inds=[2]) == reshape([8, 125], 2, 1)
+        end
+
+        @testset "apply_append" begin
+            @test FeatureTransforms.apply_append(M, p, append_dim=1) == cat(M, expected, dims=1)
+            @test FeatureTransforms.apply_append(M, p, append_dim=2) == cat(M, expected, dims=2)
+            @test FeatureTransforms.apply_append(M, p, append_dim=3) == cat(M, expected, dims=3)
         end
     end
 
@@ -68,6 +78,12 @@
             @test FeatureTransforms.apply(A, p; dims=1, inds=[2]) == [64 125 216]
             @test FeatureTransforms.apply(A, p; dims=2, inds=[2]) == reshape([8, 125], 2, 1)
         end
+
+        @testset "apply_append" begin
+            @test FeatureTransforms.apply_append(A, p, append_dim=1) == cat(A, expected, dims=1)
+            @test FeatureTransforms.apply_append(A, p, append_dim=2) == cat(A, expected, dims=2)
+            @test FeatureTransforms.apply_append(A, p, append_dim=3) == cat(A, expected, dims=3)
+        end
     end
 
     @testset "AxisKey" begin
@@ -90,6 +106,21 @@
             @test FeatureTransforms.apply(A, p; dims=:, inds=[2, 3]) == [64, 8]
             @test FeatureTransforms.apply(A, p; dims=1, inds=[2]) == [64 125 216]
             @test FeatureTransforms.apply(A, p; dims=2, inds=[2]) == reshape([8, 125], 2, 1)
+        end
+
+        @testset "apply_append" begin
+            expected1 = KeyedArray(
+                vcat(A, expected), foo=["a", "b", "a", "b"], bar=["x", "y", "z"]
+            )
+            @test FeatureTransforms.apply_append(A, p, append_dim=:foo) == expected1
+            expected2 = KeyedArray(
+                hcat(A, expected), foo=["a", "b"], bar=["x", "y", "z", "x", "y", "z"]
+            )
+            @test FeatureTransforms.apply_append(A, p, append_dim=:bar) == expected2
+            expected3 = KeyedArray(
+                cat(A, expected, dims=3), foo=["a", "b"], bar=["x", "y", "z"], baz=Base.OneTo(2),
+            )
+            @test FeatureTransforms.apply_append(A, p, append_dim=:baz) == expected3
         end
     end
 
@@ -127,6 +158,11 @@
                 @test _nt isa NamedTuple
             end
         end
+
+        @testset "apply_append" begin
+            expected = merge(nt, (Column1 = [1, 8, 27], Column2 = [64, 125, 216]))
+            @test FeatureTransforms.apply_append(nt, p) == expected
+        end
     end
 
     @testset "DataFrame" begin
@@ -154,6 +190,13 @@
             @test FeatureTransforms.apply(df, p; cols=[c]) == DataFrame(:Column1=>expected)
             @test FeatureTransforms.apply(df, p; cols=c) == DataFrame(:Column1=>expected)
             @test p(df; cols=[c]) == DataFrame(:Column1=>expected)
+        end
+
+        @testset "apply_append" begin
+            expected = DataFrame(
+                :a => df.a, :b => df.b, :Column1 => [1, 8, 27], :Column2 => [64, 125, 216]
+            )
+            @test FeatureTransforms.apply_append(df, p) == expected
         end
     end
 end

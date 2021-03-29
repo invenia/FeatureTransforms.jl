@@ -28,7 +28,6 @@ function apply(
     return _sum_terms(eachslice(selectdim(A, dims, inds); dims=dims), LC.coefficients)
 end
 
-
 """
     apply(table, LC::LinearCombination; [cols], [header]) -> Table
 
@@ -48,6 +47,15 @@ function apply(table, LC::LinearCombination; cols=_get_cols(table), header=nothi
 
     result = hcat(_sum_terms([getproperty(coltable, col) for col in cols], LC.coefficients))
     return Tables.materializer(table)(_to_table(result, header))
+end
+
+function apply_append(
+    A::AbstractArray{<:Real, N}, LC::LinearCombination; append_dim, kwargs...
+)::AbstractArray{<:Real, N} where N
+    # A was reduced along the append_dim so we must reshape the result setting that dim to 1
+    new_size = collect(size(A))
+    setindex!(new_size, 1, dim(A, append_dim))
+    return cat(A, reshape(apply(A, LC; kwargs...), new_size...); dims=append_dim)
 end
 
 function _sum_terms(terms, coeffs)

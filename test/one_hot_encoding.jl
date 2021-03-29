@@ -50,6 +50,12 @@
 
             @test_throws BoundsError FeatureTransforms.apply(x, ohe; dims=2)
         end
+
+        @testset "apply_append" begin
+            x = ["foo", "baz", "bar", "baz"]
+            expected = ["foo" 1 0 0; "baz" 0 0 1; "bar" 0 1 0; "baz" 0 0 1]
+            @test FeatureTransforms.apply_append(x, ohe; append_dim=2) == expected
+        end
     end
 
 
@@ -69,6 +75,12 @@
         @testset "inds" begin
             @test FeatureTransforms.apply(M, ohe; inds=[2, 3]) == [0 0 0 1 0; 0 1 0 0 0]
             @test FeatureTransforms.apply(M, ohe; dims=:, inds=[2, 3]) == [0 0 0 1 0; 0 1 0 0 0]
+        end
+
+        @testset "apply_append" begin
+            M = ["foo" "bar"; "foo2" "bar2"]
+            @test_throws DimensionMismatch FeatureTransforms.apply_append(M, ohe; append_dim=1)
+            @test_throws DimensionMismatch FeatureTransforms.apply_append(M, ohe; append_dim=2)
         end
     end
 
@@ -91,6 +103,13 @@
             @test FeatureTransforms.apply(A, ohe; inds=[2, 3]) == [0 0 0 1 0; 0 1 0 0 0]
             @test FeatureTransforms.apply(A, ohe; dims=:, inds=[2, 3]) == [0 0 0 1 0; 0 1 0 0 0]
         end
+
+        @testset "apply_append" begin
+            M = ["foo" "bar"; "foo2" "bar2"]
+            A = AxisArray(M, foo=["a", "b"], bar=["x", "y"])
+            @test_throws DimensionMismatch FeatureTransforms.apply_append(A, ohe; append_dim=1)
+            @test_throws DimensionMismatch FeatureTransforms.apply_append(A, ohe; append_dim=2)
+        end
     end
 
     @testset "AxisKey" begin
@@ -112,12 +131,19 @@
             @test FeatureTransforms.apply(A, ohe; inds=[2, 3]) == [0 0 0 1 0; 0 1 0 0 0]
             @test FeatureTransforms.apply(A, ohe; dims=:, inds=[2, 3]) == [0 0 0 1 0; 0 1 0 0 0]
         end
+
+        @testset "apply_append" begin
+            M = ["foo" "bar"; "foo2" "bar2"]
+            A = KeyedArray(M, foo=["a", "b"], bar=["x", "y"])
+            @test_throws DimensionMismatch FeatureTransforms.apply_append(A, ohe; append_dim=:foo)
+            @test_throws DimensionMismatch FeatureTransforms.apply_append(A, ohe; append_dim=:bar)
+        end
     end
 
     @testset "NamedTuple" begin
         categories = ["foo", "bar", "baz", "foo2", "bar2"]
         ohe = OneHotEncoding(categories)
-        nt = (a = ["foo" "bar"], b = ["foo2" "bar2"])
+        nt = (a = ["foo", "bar"], b = ["foo2", "bar2"])
 
         @testset "all cols" begin
             expected = NamedTuple{Tuple(Symbol.(:Column, x) for x in 1:10)}(
@@ -134,6 +160,11 @@
             @test FeatureTransforms.apply(nt, ohe; cols=[:a]) == expected
             @test FeatureTransforms.apply(nt, ohe; cols=:a) == expected
             @test ohe(nt; cols=:a) == expected
+        end
+
+        @testset "apply_append" begin
+            nt = (a = ["foo", "bar"], b = ["foo2", "bar2"])
+            @test FeatureTransforms.apply_append(nt, ohe) == merge(nt, ohe(nt))
         end
     end
 
@@ -153,9 +184,13 @@
         @test FeatureTransforms.apply(df, ohe; cols=:a) == expected[:, 1:5]
 
         expected = DataFrame(
-            [[0, 0], [0, 0], [0, 0], [1, 0], [0, 1]],
+            [[false, false], [false, false], [false, false], [true, false], [false, true]],
             [Symbol.(:Column, x) for x in 1:5],
         )
         @test FeatureTransforms.apply(df, ohe; cols=[:b]) == expected
+
+        @testset "apply_append" begin
+            @test FeatureTransforms.apply_append(df, ohe) == hcat(df, ohe(df))
+        end
     end
 end

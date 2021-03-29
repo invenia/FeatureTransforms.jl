@@ -120,6 +120,10 @@
 
                     @test_throws BoundsError FeatureTransforms.apply(x, p; dims=2)
                 end
+
+                @testset "append_apply" begin
+                    @test FeatureTransforms.apply_append(x, p, append_dim=1) ≈ vcat(x, expected) atol=1e-14
+                end
             end
 
             @testset "Matrix" begin
@@ -140,6 +144,15 @@
                     @test FeatureTransforms.apply(M, p; dims=:, inds=[2, 3]) ≈ M_expected[[2, 3]] atol=1e-14
                     @test FeatureTransforms.apply(M, p; dims=1, inds=[2]) ≈ reshape(M_expected[[2, 5]], 1, 2) atol=1e-14
                     @test FeatureTransforms.apply(M, p; dims=2, inds=[2]) ≈ reshape(M_expected[[4, 5, 6]], 3, 1) atol=1e-14
+                end
+
+                @testset "append_apply" begin
+                    exp1 = vcat(M, M_expected)
+                    @test FeatureTransforms.apply_append(M, p, append_dim=1) ≈ exp1 atol=1e-14
+                    exp2 = hcat(M, M_expected)
+                    @test FeatureTransforms.apply_append(M, p, append_dim=2) ≈ exp2 atol=1e-14
+                    exp3 = cat(M, M_expected, dims=3)
+                    @test FeatureTransforms.apply_append(M, p, append_dim=3) ≈ exp3 atol=1e-14
                 end
             end
 
@@ -171,6 +184,15 @@
                     @test FeatureTransforms.apply(A, p; dims=1, inds=[2]) ≈ reshape(A_expected[[2, 5]], 1, 2) atol=1e-14
                     @test FeatureTransforms.apply(A, p; dims=2, inds=[2]) ≈ reshape(A_expected[[4, 5, 6]], 3, 1) atol=1e-14
                 end
+
+                @testset "append_apply" begin
+                    exp1 = vcat(A, A_expected)
+                    @test FeatureTransforms.apply_append(A, p, append_dim=1) ≈ exp1 atol=1e-14
+                    exp2 = hcat(A, A_expected)
+                    @test FeatureTransforms.apply_append(A, p, append_dim=2) ≈ exp2 atol=1e-14
+                    exp3 = cat(A, A_expected, dims=3)
+                    @test FeatureTransforms.apply_append(A, p, append_dim=3) ≈ exp3 atol=1e-14
+                end
             end
 
             @testset "AxisKey" begin
@@ -198,6 +220,29 @@
                     @test FeatureTransforms.apply(A, p; dims=:, inds=[2, 3]) ≈ [A_expected[2], A_expected[3]] atol=1e-14
                     @test FeatureTransforms.apply(A, p; dims=1, inds=[2]) ≈ reshape([A_expected[2], A_expected[5]], 1, 2) atol=1e-14
                     @test FeatureTransforms.apply(A, p; dims=2, inds=[2]) ≈ reshape([A_expected[4], A_expected[5], A_expected[6]], 3, 1) atol=1e-14
+                end
+
+                @testset "append_apply" begin
+                    M = reshape(x, (3, 2))
+                    M_expected = reshape(expected, (3, 2))
+
+                    exp1 = KeyedArray(
+                        vcat(M, M_expected), foo=["a", "b", "c", "a", "b", "c"], bar=["x", "y"]
+                    )
+                    @test FeatureTransforms.apply_append(A, p, append_dim=:foo) ≈ exp1 atol=1e-14
+
+                    exp2 = KeyedArray(
+                        hcat(M, M_expected), foo=["a", "b", "c"], bar=["x", "y", "x", "y"]
+                    )
+                    @test FeatureTransforms.apply_append(A, p, append_dim=:bar) ≈ exp2 atol=1e-14
+
+                    exp3 = KeyedArray(
+                        cat(M, M_expected, dims=3),
+                        foo=["a", "b", "c"],
+                        bar=["x", "y"],
+                        baz=Base.OneTo(2)
+                    )
+                    @test FeatureTransforms.apply_append(A, p, append_dim=:baz) ≈ exp3 atol=1e-14
                 end
             end
 
@@ -229,6 +274,12 @@
                         @test collect(_nt) ≈ [nt_expected.Column1, nt.b] atol=1e-14
                     end
                 end
+
+                @testset "append_apply" begin
+                    result = FeatureTransforms.apply_append(nt, p)
+                    @test result isa NamedTuple{(:a, :b, :Column1, :Column2)}
+                    @test collect(result) ≈ collect(merge(nt, nt_expected)) atol=1e-14
+                end
             end
 
             @testset "DataFrame" begin
@@ -249,6 +300,16 @@
                     @test FeatureTransforms.apply(df, p; cols=[:a]) ≈ df_expected[!, [:Column1]] atol=1e-14
                     @test FeatureTransforms.apply(df, p; cols=:a) ≈ df_expected[!, [:Column1]] atol=1e-14
                     @test p(df; cols=:a) ≈ df_expected[!, [:Column1]]
+                end
+
+                @testset "apply_append" begin
+                    expected = DataFrame(
+                        :a=>df.a,
+                        :b=>df.b,
+                        :Column1=>df_expected.Column1,
+                        :Column2=>df_expected.Column2,
+                    )
+                    @test FeatureTransforms.apply_append(df, p) ≈ expected atol=1e-14
                 end
             end
         end

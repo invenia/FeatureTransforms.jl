@@ -101,3 +101,27 @@ function apply!(table::T, t::Transform; cols=_get_cols(table), kwargs...)::T whe
 
     return table
 end
+
+"""
+    apply_append(A::AbstractArray, ::Transform; append_dim, kwargs...)
+
+Applies the [`Transform`](@ref) to `A` and returns the result in a new array where the output
+is appended to `A` along the `append_dim` dimension. The remaining `kwargs` correspond to
+the usual [`Transform`](@ref) being invoked.
+"""
+function apply_append(A::AbstractArray, t; append_dim, kwargs...)::AbstractArray
+    return cat(A, apply(A, t; kwargs...); dims=append_dim)
+end
+
+"""
+    apply_append(table, ::Transform; [header], kwargs...)
+
+Applies the [`Transform`](@ref) to the `table` and appends the result in a new table with an
+optional `header`. If none is provided the default in `Tables.table` is used. The remaining
+`kwargs` correspond to the [`Transform`](@ref) being invoked.
+"""
+function apply_append(table, t; kwargs...)
+    T = Tables.materializer(table)
+    result = Tables.columntable(apply(table, t; kwargs...))
+    return T(merge(Tables.columntable(table), result))
+end

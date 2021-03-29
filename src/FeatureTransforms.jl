@@ -1,6 +1,7 @@
 module FeatureTransforms
 
 using Dates: TimeType, Period, Day, hour
+using NamedDims: dim
 using Statistics: mean, std
 using Tables
 

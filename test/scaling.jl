@@ -31,6 +31,10 @@
             @testset "Inverse" begin
                 @test FeatureTransforms.apply(x, scaling; inverse=true) == expected
             end
+
+            @testset "apply_append" begin
+                @test FeatureTransforms.apply_append(x, scaling, append_dim=1) == vcat(x, expected)
+            end
         end
 
         @testset "Matrix" begin
@@ -58,6 +62,15 @@
 
             @testset "Inverse" begin
                 @test FeatureTransforms.apply(M, scaling; inverse=true) == M_expected
+            end
+
+            @testset "apply_append" begin
+                exp1 = cat(M, M_expected, dims=1)
+                @test FeatureTransforms.apply_append(M, scaling, append_dim=1) == exp1
+                exp2 = cat(M, M_expected, dims=2)
+                @test FeatureTransforms.apply_append(M, scaling, append_dim=2) == exp2
+                exp3 = cat(M, M_expected, dims=3)
+                @test FeatureTransforms.apply_append(M, scaling, append_dim=3) == exp3
             end
         end
 
@@ -90,6 +103,12 @@
             @testset "Inverse" begin
                 @test FeatureTransforms.apply(A, scaling; inverse=true) == A_expected
             end
+
+            @testset "apply_append" begin
+                # dims = 1, 2 give ArgumentError: Categorical axes must be unique
+                exp3 = cat(M_expected, M_expected, dims=3)
+                @test FeatureTransforms.apply_append(A, scaling, append_dim=3) == exp3
+            end
         end
 
         @testset "AxisKey" begin
@@ -121,6 +140,25 @@
             @testset "Inverse" begin
                 @test FeatureTransforms.apply(A, scaling; inverse=true) == A_expected
             end
+
+            @testset "apply_append" begin
+                expected1 = KeyedArray(
+                    vcat(M, M_expected), foo=["a", "b", "a", "b"], bar=["x", "y", "z"],
+                )
+                @test FeatureTransforms.apply_append(A, scaling, append_dim=:foo) == expected1
+
+                expected2 = KeyedArray(
+                    hcat(M, M_expected), foo=["a", "b"], bar=["x", "y", "z", "x", "y", "z"]
+                )
+                @test FeatureTransforms.apply_append(A, scaling, append_dim=:bar) == expected2
+                expected3 = KeyedArray(
+                    cat(M, M_expected, dims=3),
+                    foo=["a", "b"],
+                    bar=["x", "y", "z"],
+                    baz=Base.OneTo(2),
+                )
+                @test FeatureTransforms.apply_append(A, scaling, append_dim=:baz) == expected3
+            end
         end
 
         @testset "NamedTuple" begin
@@ -143,6 +181,10 @@
 
             @testset "Inverse" begin
                 @test FeatureTransforms.apply(nt, scaling; inverse=true) == expected
+            end
+
+            @testset "apply_append" begin
+                @test FeatureTransforms.apply_append(nt, scaling) == merge(nt, expected)
             end
         end
 
@@ -167,6 +209,13 @@
 
             @testset "Inverse" begin
                 @test FeatureTransforms.apply(df, scaling; inverse=true) == df_expected
+            end
+
+            @testset "apply_append" begin
+                expected = DataFrame(
+                    :a => df.a, :b => df.b, :Column1 => df.a, :Column2 => df.b,
+                )
+                @test FeatureTransforms.apply_append(df, scaling) == expected
             end
         end
     end
@@ -251,6 +300,11 @@
                 @test transformed ≈ expected atol=1e-5
                 @test FeatureTransforms.apply(transformed, scaling; inverse=true) ≈ x atol=1e-5
             end
+
+            @testset "apply_append" begin
+                scaling = MeanStdScaling(x)
+                @test FeatureTransforms.apply_append(x, scaling, append_dim=1) == vcat(x, expected)
+            end
         end
 
         @testset "Matrix" begin
@@ -315,6 +369,16 @@
 
                 @test transformed ≈ M_expected atol=1e-5
                 @test FeatureTransforms.apply(transformed, scaling; inverse=true) ≈ M atol=1e-5
+            end
+
+            @testset "apply_append" begin
+                scaling = MeanStdScaling(M)
+                exp1 = cat(M, M_expected, dims=1)
+                @test FeatureTransforms.apply_append(M, scaling, append_dim=1) ≈ exp1 atol=1e-5
+                exp2 = cat(M, M_expected, dims=2)
+                @test FeatureTransforms.apply_append(M, scaling, append_dim=2) ≈ exp2 atol=1e-5
+                exp3 = cat(M, M_expected, dims=3)
+                @test FeatureTransforms.apply_append(M, scaling, append_dim=3) ≈ exp3 atol=1e-5
             end
         end
 
@@ -387,6 +451,16 @@
 
                 @test transformed ≈ A_expected atol=1e-5
                 @test FeatureTransforms.apply(transformed, scaling; inverse=true) ≈ A atol=1e-5
+            end
+
+            @testset "apply_append" begin
+                scaling = MeanStdScaling(A)
+                exp1 = cat(M, M_expected, dims=1)
+                @test FeatureTransforms.apply_append(A, scaling, append_dim=1) ≈ exp1 atol=1e-5
+                exp2 = cat(M, M_expected, dims=2)
+                @test FeatureTransforms.apply_append(A, scaling, append_dim=2) ≈ exp2 atol=1e-5
+                exp3 = cat(M, M_expected, dims=3)
+                @test FeatureTransforms.apply_append(A, scaling, append_dim=3) ≈ exp3 atol=1e-5
             end
         end
 
@@ -462,6 +536,27 @@
                 @test transformed ≈ A_expected atol=1e-5
                 @test FeatureTransforms.apply(transformed, scaling; inverse=true) ≈ A atol=1e-5
             end
+
+            @testset "apply_append" begin
+                scaling = MeanStdScaling(A)
+                exp1 = KeyedArray(
+                    vcat(M, M_expected), foo=["a", "b", "a", "b"], bar=["x", "y", "z"],
+                )
+                @test FeatureTransforms.apply_append(A, scaling, append_dim=:foo) ≈ exp1 atol=1e-5
+
+                exp2 = KeyedArray(
+                    hcat(M, M_expected), foo=["a", "b"], bar=["x", "y", "z", "x", "y", "z"]
+                )
+                @test FeatureTransforms.apply_append(A, scaling, append_dim=:bar) ≈ exp2 atol=1e-5
+
+                exp3 = KeyedArray(
+                    cat(M, M_expected, dims=3),
+                    foo=["a", "b"],
+                    bar=["x", "y", "z"],
+                    baz=Base.OneTo(2),
+                )
+                @test FeatureTransforms.apply_append(A, scaling, append_dim=:baz) ≈ exp3 atol=1e-5
+            end
         end
 
         @testset "NamedTuple" begin
@@ -518,6 +613,17 @@
                 expected_inverse = (Column1 = [0.0, -0.5, 0.5], Column2 = [1.0, 0.0, 2.0])
                 inverted = FeatureTransforms.apply(transformed, scaling; inverse=true)
                 @test expected_inverse == inverted
+            end
+
+             @testset "apply_append" begin
+                scaling = MeanStdScaling(nt)
+                 expected = (
+                    Column1 = [-0.55902, -1.11803, 0.0],
+                    Column2 = [0.55902, -0.55902, 1.67705]
+                )
+                result = FeatureTransforms.apply_append(nt, scaling)
+                @test result isa NamedTuple{(:a, :b, :Column1, :Column2)}
+                @test collect(result) ≈ collect(merge(nt, expected)) atol=1e-5
             end
         end
 
@@ -582,6 +688,17 @@
                 expected_inverse = DataFrame(:Column1=>df.a, :Column2=>df.b)
                 inverted = FeatureTransforms.apply(transformed, scaling; inverse=true)
                 @test inverted == expected_inverse
+            end
+
+            @testset "apply_append" begin
+                scaling = MeanStdScaling(df)
+                expected = DataFrame(
+                    :a => df.a,
+                    :b => df.b,
+                    :Column1 => df_expected.Column1,
+                    :Column2 => df_expected.Column2,
+                )
+                @test FeatureTransforms.apply_append(df, scaling) ≈ expected atol=1e-5
             end
         end
 

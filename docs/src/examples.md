@@ -41,9 +41,7 @@ One way to do this is with the `Periodic` transform, specifying a period of 1 da
 ```jldoctest example
 julia> periodic = Periodic(sin, Day(1));
 
-julia> df.hour_of_day_sin = FeatureTransforms.apply(df.time, periodic);
-
-julia> feature_df = df
+julia> feature_df = FeatureTransforms.apply_append(df, periodic, cols=:time, header=[:hour_of_day_sin])
 24×4 DataFrame
  Row │ time                 temperature  humidity  hour_of_day_sin
      │ DateTime             Float64      Float64   Float64
@@ -127,8 +125,8 @@ julia> FeatureTransforms.apply!(test_df, hum_scaling; cols=:humidity)
    2 │ 2018-09-10T23:00:00    -0.403818  0.579814        -0.258819
 ```
 
-Suppose we then train our model, and get a prediction for the test points as a matrix: `[-0.36 0.61; -0.45 0.68]`.
-We can scale this back to the original units of temperature and humidity by converting to a [`Table`](https://github.com/JuliaData/Tables.jl) type (to label the columns) and using inverse scaling:
+Suppose we then train our model, and get a prediction for the test points.
+We can scale this back to the original units of temperature and humidity by using the inverse scaling:
 
 ```jldoctest example
 julia> predictions = DataFrame([-0.36 0.61; -0.45 0.68], output_cols);

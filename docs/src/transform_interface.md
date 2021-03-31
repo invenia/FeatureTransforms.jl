@@ -1,11 +1,14 @@
 # [Transform Interface](@id transform-interface)
 
-The idea around a "transform interface” is to make feature transformations composable, i.e. the output of one `Transform` should be valid input to another.
+The "transform interface” is a mechanism that allows sequences of `Transform`s to be combined (with other steps) into end-to-end feature engineering pipelines.
 
-Feature engineering pipelines, which comprise a sequence of multiple `Transform`s and other steps, should obey the same principle and one should be able to add/remove subsequent `Transform`s without the pipeline breaking.
-So the output of an end-to-end transform pipeline should itself be "transformable".
+This is supported by the return of a `Transform`s having the same type as the input.
+This type consistency helps to make `Transform`s _composable_, i.e., the output of one is always a valid input to another, which allows users to "stack" sequences of `Transform`s together with minimal glue code needed to keep it working.
 
-We have enforced this in Transforms.jl by only supporting certain input types, i.e. AbstractArrays and Tables, which produce other AbstractArrays and Tables.
-We also have specified this in the `transform` function API, which is expected to be overloaded for implementing pipelines (the exact method is an implementation detail for the user).
-Our only requirement is that the return of the implemented `transform` is itself "transformable", i.e. an AbstractArray or Table.
-This can be checked by calling `is_transformable` on the output.
+Morever, the end-to-end pipelines themselves should obey the same principle: you should be able to add or remove `Transform`s (or another pipeline) to the output without breaking your code.
+That is, the output should also be a valid "transformable" type: either an `AbstractArray`, a `Table`, or other type for which the user has extended [`FeatureTransforms.apply`](@ref) to support.
+Valid types can be checked by calling `is_transformable`, which is the first part of the transform interface.
+
+The second part is the `transform` method stub, which users should overload when they want to "encapsulate" an end-to-end pipeline.
+The exact method for doing so is an implementation detail for the user but refer to the example below.
+The only requirement of the transform API is that the return of the implemented `transform` method is itself "transformable", i.e. satisfies `is_transformable`.

@@ -12,6 +12,10 @@ of results. It defaults to a `Matrix` of `Bool`s.
 
 Note that this Transform does not support specifying dims other than `:` (all dims) because
 it is a one-to-many transform (for example a `Vector` input produces a `Matrix` output).
+
+Note that `OneHotEncoding` needs to be first encoded with the expected categories before it
+can be used. This is because the data might be missing certain categoires which will lead to
+incomplete classification.
 """
 struct OneHotEncoding{R<:Real} <: Transform
     categories::Dict

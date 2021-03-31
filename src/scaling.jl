@@ -30,18 +30,23 @@ struct MeanStdScaling <: AbstractScaling
 
     """
         MeanStdScaling(A::AbstractArray; dims=:, inds=:) -> MeanStdScaling
-        MeanStdScaling(table, cols=nothing) -> MeanStdScaling
+        MeanStdScaling(table, [cols]) -> MeanStdScaling
 
     Construct a [`MeanStdScaling`](@ref) transform from the statistics of the given data.
     By default _all the data_ is considered when computing the mean and standard deviation.
     This can be restricted to certain slices via the keyword arguments (see below).
+
+    Since `MeanStdScaling` is a stateful transform, i.e. the parameters depend on the data
+    it's given, you should define it independently before applying it so you can keep the
+    information for later use. For instance, if you want to invert the transform or apply it
+    to a test set.
 
     # `AbstractArray` keyword arguments
     * `dims=:`: the dimension along which to take the `inds` slices. Default uses all dims.
     * `inds=:`: the indices to use in computing the statistics. Default uses all indices.
 
     # `Table` keyword arguments
-    * `cols=nothing`: the columns to use in computing the statistics. Default uses all columns.
+    * `cols`: the columns to use in computing the statistics. Default uses all columns.
 
     !!! note
         If you want the `MeanStdScaling` to transform your data consistently you should use
@@ -53,13 +58,10 @@ struct MeanStdScaling <: AbstractScaling
         return new(compute_stats(selectdim(A, dims, inds))...)
     end
 
-    function MeanStdScaling(table; cols=nothing)
+    function MeanStdScaling(table; cols=_get_cols(table))
         Tables.istable(table) || throw(MethodError(MeanStdScaling, table))
         columntable = Tables.columns(table)
-
-        cols = _to_vec(cols)  # handle single column name
-        cnames = cols === nothing ? propertynames(columntable) : cols
-        data = reduce(vcat, [getproperty(columntable, c) for c in cnames])
+        data = reduce(vcat, [getproperty(columntable, c) for c in _to_vec(cols)])
         return new(compute_stats(data)...)
     end
 end

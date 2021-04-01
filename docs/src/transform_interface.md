@@ -20,22 +20,40 @@ In practice, there may be other steps involved, such as checking for missing dat
 An advantage of the transform API is that the output can be readily integrated into another transform pipeline downstream. 
 For example, if `MyModel` were being stacked with the result of a previous model.
 
-```julia
-function FeatureTransforms.transform(::MyModel, data::DataFrame)
+
+```@meta
+DocTestSetup = quote
+    using FeatureTransforms
+end
+```
+
+```jldoctest transform
+
+function FeatureTransforms.transform(data)
     # Define the Transforms we will apply
     p = Power(0.123)
     lc = LinearCombination([0.1, 0.9])
-    ohe = OneHotEncoding(["Type1", "Type2", "Type"])
-    
-    features = deepcopy(data)
-    FeatureTransforms.apply!(features, p; cols=[:a])
-    features = FeatureTransforms.apply_append(features, lc; cols=[:b, :c], header=[:bc])
-    features = FeatureTransforms.apply_append(features, ohe; cols=:types, header=[:type1, :type2, :type3])
+    ohe = OneHotEncoding(["type1", "type2", "type3"])
 
-    return select!(features, [:a, :bc, :type1, :type2, :type3]) 
+    features = deepcopy(data)
+    FeatureTransforms.apply!(features, p; cols=[:a], header=[:a])
+    features = FeatureTransforms.apply_append(features, lc; cols=[:a, :b], header=[:ab])
+    features = FeatureTransforms.apply_append(features, ohe; cols=:types, header=[:type1, :type2, :type3])
 end
 
-# test that the output is transformable
-output = transform(my_model, my_data))
-is_transformable(output)
+# this could be any table-type, including a DataFrame
+input = (a=rand(5), b=rand(5), types=["type1", "type2", "type1", "type1", "type1"]);
+
+output = FeatureTransforms.transform(input);
+
+# verify the output is transformable
+is_transformable(output) && print("output is transformable")
+
+# output
+
+output is transformable
+```
+
+```@meta
+DocTestSetup = Nothing
 ```

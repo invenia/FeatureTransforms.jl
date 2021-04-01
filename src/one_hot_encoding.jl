@@ -14,7 +14,7 @@ Note that this Transform does not support specifying dims other than `:` (all di
 it is a one-to-many transform (for example a `Vector` input produces a `Matrix` output).
 
 Note that `OneHotEncoding` needs to be first encoded with the expected categories before it
-can be used. This is because the data might be missing certain categoires which will lead to
+can be used. This is because the data might be missing certain categories which will lead to
 incomplete classification.
 """
 struct OneHotEncoding{R<:Real} <: Transform

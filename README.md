@@ -15,7 +15,7 @@ There are a few key parts to the Transforms.jl API, refer to the documentation f
 
 1. [`Transform`](@ref about-transforms)s are callable types that define a certain operation to be performed on data. For example, normalizating or a computing a linear combination. Refer to the [page about Transforms](@ref about-transforms) to learn how they are defined and used on various types of input.
 1. The [`FeatureTransforms.apply`](@ref), [`FeatureTransforms.apply!`](@ref) and [`FeatureTransforms.apply_append`](@ref) methods apply [`Transform`](@ref about-transforms) in various ways. Consult the [Examples Section](@ref) for a quick guide to some typical use cases.
-1. The [`transform interface`](@ref transform-interface) is used to encapsulte feature engineering pipelines that comprise sequences of [`Transform`](@ref about-transforms)s.
+1. The [`transform interface`](@ref transform-interface) is used to encapsulate feature engineering pipelines that comprise sequences of [`Transform`](@ref about-transforms)s.
 1. For a full list of currently implemented `Transform`s, consult the [API](@ref).
 
 ## Installation

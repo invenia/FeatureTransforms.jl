@@ -13,10 +13,10 @@ FeatureTransforms.jl provides utilities for performing feature engineering in ma
 
 There are a few key parts to the Transforms.jl API, refer to the documentation for each to learn more.
 
-1. [`Transform`](@ref about-transforms)s are callable types that define a certain operation to be performed on data. For example, normalizating or a computing a linear combination. Refer to the [page about Transforms](@ref about-transforms) to learn how they are defined and used on various types of input.
-1. The [`FeatureTransforms.apply`](@ref), [`FeatureTransforms.apply!`](@ref) and [`FeatureTransforms.apply_append`](@ref) methods apply [`Transform`](@ref about-transforms) in various ways. Consult the [Examples Section](@ref) for a quick guide to some typical use cases.
-1. The [`transform interface`](@ref transform-interface) is used to encapsulate feature engineering pipelines that comprise sequences of [`Transform`](@ref about-transforms)s.
-1. For a full list of currently implemented `Transform`s, consult the [API](@ref).
+1. `Transform`s are callable types that define certain operations to be performed on data, for example, normalizating or computing a linear combination. Refer to the [Guide to Transforms](https://invenia.github.io/FeatureTransforms.jl/stable/transforms) to learn how they are defined and used on various types of input.
+1. The `apply`, `apply!` and `apply_append` methods are used to implement `Transform`s in various ways. Consult the [Examples Section](https://invenia.github.io/FeatureTransforms.jl/stable/examples) for a guide to some typical use cases. See also the example below.
+1. The [Transform Interface](https://invenia.github.io/FeatureTransforms.jl/stable/transform_interface) is used when you want to encapsulate sequences of `Transform`s in an end-to-end feature engineering pipeline.
+1. For a full list of currently implemented `Transform`s, consult the [API](https://invenia.github.io/FeatureTransforms.jl/stable/examples/api).
 
 ## Installation
 ```julia

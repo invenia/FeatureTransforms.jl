@@ -16,6 +16,7 @@ makedocs(;
     pages=[
         "Introduction" => "index.md",
         "Guide to Transforms" => "transforms.md",
+        "Transform Interface" => "transform_interface.md",
         "Examples" => "examples.md",
         "API" => "api.md",
     ],

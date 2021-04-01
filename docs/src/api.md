@@ -2,12 +2,17 @@
 
 ## Transforms
 
+### Abstract Transform Types
 ```@docs
 Transform
+AbstractScaling
+```
+
+### Implemented Transforms
+```@docs
 HoD
 Power
 Periodic
-AbstractScaling
 MeanStdScaling
 IdentityScaling
 LinearCombination
@@ -20,6 +25,10 @@ OneHotEncoding
 FeatureTransforms.apply
 FeatureTransforms.apply!
 FeatureTransforms.apply_append
+```
+
+## Transform Interface
+```@docs
 FeatureTransforms.is_transformable
 FeatureTransforms.transform!
 FeatureTransforms.transform

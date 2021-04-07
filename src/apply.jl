@@ -41,13 +41,13 @@ specified.
 function apply(A::AbstractArray, t::Transform; dims=:, inds=:, kwargs...)
     if dims === Colon()
         if inds === Colon()
-            return _apply(A, t; kwargs...)
+            return _apply(cardinality(t), A, t; dims=:, kwargs...)
         else
-            return @views _apply(A[:][inds], t; kwargs...)
+            return _apply(cardinality(t), A[:][inds], t; dims=:, kwargs...)
         end
     end
 
-    return _apply(selectdim(A, dims, inds), t; kwargs...)
+    return _apply(cardinality(t), selectdim(A, dims, inds), t; dims=dims, kwargs...)
 end
 
 """
@@ -59,6 +59,9 @@ function apply!(A::AbstractArray, t::Transform; kwargs...)
     A[:] = apply(A, t; kwargs...)
     return A
 end
+
+_apply(::Union{OneToOne, OneToMany}, A, t; kwargs...) = _apply(A, t; kwargs...)
+_apply(::Union{ManyToOne, ManyToMany}, A, t; dims, kwargs...) = _apply(eachslice(A; dims=dims), t; kwargs...)
 
 """
     apply(table, ::Transform; [cols], [header], kwargs...) -> Table
@@ -77,7 +80,8 @@ function apply(table, t::Transform; cols=_get_cols(table), header=nothing, kwarg
     coltable = Tables.columntable(table)
     cols = _to_vec(cols)
 
-    result = reduce(hcat, [_apply(getproperty(coltable, col), t; kwargs...) for col in cols])
+    components = reduce(hcat, getproperty(coltable, col) for col in cols)
+    result = hcat(_apply(cardinality(t), hcat(components), t; dims=2, kwargs...))
     return Tables.materializer(table)(_to_table(result, header))
 end
 
@@ -110,7 +114,17 @@ is appended to `A` along the `append_dim` dimension. The remaining `kwargs` corr
 the usual [`Transform`](@ref) being invoked.
 """
 function apply_append(A::AbstractArray, t; append_dim, kwargs...)::AbstractArray
-    return cat(A, apply(A, t; kwargs...); dims=append_dim)
+    result = _apply_append(cardinality(t), A, t; append_dim=append_dim, kwargs...)
+    return cat(A, result; dims=append_dim)
+end
+
+_apply_append(::Cardinality, A, t; kwargs...) = apply(A, t; kwargs...)
+
+function _apply_append(::ManyToOne, A, t; append_dim, kwargs...)
+    # A was reduced along the append_dim so we must reshape the result setting that dim to 1
+    new_size = collect(size(A))
+    setindex!(new_size, 1, dim(A, append_dim))
+    return reshape(apply(A, t; kwargs...), new_size...)
 end
 
 """

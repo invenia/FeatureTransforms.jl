@@ -12,6 +12,8 @@ Represents the no-op scaling which simply returns the `data` it is applied on.
 """
 struct IdentityScaling <: AbstractScaling end
 
+cardinality(::IdentityScaling) = OneToOne()
+
 @inline _apply(x, ::IdentityScaling; kwargs...) = x
 
 """
@@ -67,6 +69,8 @@ struct MeanStdScaling <: AbstractScaling
 end
 
 compute_stats(x) = (mean(x), std(x))
+
+cardinality(::MeanStdScaling) = OneToOne()
 
 function _apply(A::AbstractArray, scaling::MeanStdScaling; inverse=false, eps=1e-3, kwargs...)
     inverse && return scaling.μ .+ scaling.σ .* A

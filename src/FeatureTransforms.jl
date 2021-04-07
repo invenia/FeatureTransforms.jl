@@ -11,6 +11,7 @@ export Transform
 export is_transformable, transform, transform!
 
 include("utils.jl")
+include("traits.jl")
 include("transform.jl")
 include("apply.jl")
 

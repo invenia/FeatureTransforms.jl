@@ -5,6 +5,7 @@ using Dates
 using Documenter: doctest
 using FeatureTransforms
 using FeatureTransforms: _periodic
+using FeatureTransforms: Cardinality, OneToOne, OneToMany, ManyToOne, ManyToMany
 using Test
 using TimeZones
 
@@ -19,4 +20,5 @@ using TimeZones
     include("scaling.jl")
     include("temporal.jl")
     include("transform.jl")
+    include("traits.jl")
 end

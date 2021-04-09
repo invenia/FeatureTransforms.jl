@@ -7,8 +7,8 @@
         @testset "all inds" begin
             x = [1, 2]
             lc = LinearCombination([1, -1])
-            @test FeatureTransforms.apply(x, lc) == fill(-1)
-            @test lc(x) == fill(-1)
+            @test FeatureTransforms.apply(x, lc; dims=1) == fill(-1)
+            @test lc(x; dims=1) == fill(-1)
         end
 
         @testset "dims behaviour" begin
@@ -21,44 +21,36 @@
         @testset "dimension mismatch" begin
             x = [1, 2, 3]
             lc = LinearCombination([1, -1])
-            @test_throws DimensionMismatch FeatureTransforms.apply(x, lc)
+            @test_throws DimensionMismatch FeatureTransforms.apply(x, lc, dims=1)
         end
 
         @testset "specified inds" begin
             x = [1, 2, 3]
             lc = LinearCombination([1, -1])
-            @test FeatureTransforms.apply(x, lc; inds=[2, 3]) == fill(-1)
-            @test lc(x; inds=[2, 3]) == fill(-1)
+            @test FeatureTransforms.apply(x, lc; dims=1, inds=[2, 3]) == fill(-1)
+            @test lc(x; dims=1, inds=[2, 3]) == fill(-1)
         end
 
         @testset "output is different type" begin
             x = [1, 2]
             lc = LinearCombination([.1, -.1])
-            @test FeatureTransforms.apply(x, lc) == fill(-.1)
-            @test lc(x) == fill(-.1)
+            @test FeatureTransforms.apply(x, lc, dims=1) == fill(-.1)
+            @test lc(x; dims=1) == fill(-.1)
         end
 
         @testset "apply_append" begin
             x = [1, 2]
             lc = LinearCombination([1, -1])
-            @test FeatureTransforms.apply_append(x, lc; append_dim=1) == [1, 2, -1]
+            @test FeatureTransforms.apply_append(x, lc; dims=1, append_dim=1) == [1, 2, -1]
         end
     end
 
     @testset "Matrix" begin
-
-        @testset "default reduces over columns" begin
-            M = [1 1; 2 2; 3 5]
-            lc = LinearCombination([1, -1, 1])
-            @test FeatureTransforms.apply(M, lc) == [2, 4]
-            @test lc(M) == [2, 4]
-        end
-
         @testset "dims" begin
             @testset "dims = :" begin
                 M = [1 1; 2 2; 3 5]
                 lc = LinearCombination([1, -1, 1])
-                @test_throws ArgumentError FeatureTransforms.apply(M, lc; dims=:)
+                @test_throws MethodError FeatureTransforms.apply(M, lc; dims=:)
             end
 
             @testset "dims = 1" begin
@@ -78,14 +70,14 @@
         @testset "dimension mismatch" begin
             M = [1 1 1; 2 2 2]
             lc = LinearCombination([1, -1, 1])  # there are only 2 rows
-            @test_throws DimensionMismatch FeatureTransforms.apply(M, lc)
+            @test_throws DimensionMismatch FeatureTransforms.apply(M, lc; dims=1)
         end
 
         @testset "specified inds" begin
             M = [1 1; 5 2; 2 4]
             lc = LinearCombination([1, -1])
-            @test FeatureTransforms.apply(M, lc; inds=[2, 3]) == [3, -2]
-            @test lc(M; inds=[2, 3]) == [3, -2]
+            @test FeatureTransforms.apply(M, lc; dims=1, inds=[2, 3]) == [3, -2]
+            @test lc(M; dims=1, inds=[2, 3]) == [3, -2]
         end
 
         @testset "apply_append" begin
@@ -103,8 +95,8 @@
     @testset "N-dim Array" begin
         A = reshape(1:27, 3, 3, 3)
         lc = LinearCombination([1, -1, 1])
-        @test FeatureTransforms.apply(A, lc) == [2 11 20; 5 14 23; 8 17 26]
-        @test lc(A) == [2 11 20; 5 14 23; 8 17 26]
+        @test FeatureTransforms.apply(A, lc; dims=1) == [2 11 20; 5 14 23; 8 17 26]
+        @test lc(A; dims=1) == [2 11 20; 5 14 23; 8 17 26]
     end
 
     @testset "AxisArray" begin
@@ -112,13 +104,13 @@
         lc = LinearCombination([1, -1])
 
         @testset "all inds" begin
-            @test FeatureTransforms.apply(A, lc) == [-3, -3]
-            @test lc(A) == [-3, -3]
+            @test FeatureTransforms.apply(A, lc; dims=1) == [-3, -3]
+            @test lc(A; dims=1) == [-3, -3]
         end
 
         @testset "dims" begin
             @testset "dims = :" begin
-                @test_throws ArgumentError FeatureTransforms.apply(A, lc; dims=:)
+                @test_throws MethodError FeatureTransforms.apply(A, lc; dims=:)
             end
 
             @testset "dims = 1" begin
@@ -139,8 +131,8 @@
 
         @testset "specified inds" begin
             A = AxisArray([1 2 3; 4 5 5], foo=["a", "b"], bar=["x", "y", "z"])
-            @test FeatureTransforms.apply(A, lc; inds=[1, 2]) == [-3, -3, -2]
-            @test lc(A; inds=[1, 2]) == [-3, -3, -2]
+            @test FeatureTransforms.apply(A, lc; dims=1, inds=[1, 2]) == [-3, -3, -2]
+            @test lc(A; dims=1, inds=[1, 2]) == [-3, -3, -2]
         end
 
         @testset "apply_append" begin
@@ -159,13 +151,13 @@
         lc = LinearCombination([1, -1])
 
         @testset "all inds" begin
-            @test FeatureTransforms.apply(A, lc) == [-3, -3]
-            @test lc(A) == [-3, -3]
+            @test FeatureTransforms.apply(A, lc; dims=1) == [-3, -3]
+            @test lc(A; dims=1) == [-3, -3]
         end
 
         @testset "dims" begin
             @testset "dims = :" begin
-                @test_throws ArgumentError FeatureTransforms.apply(A, lc; dims=:)
+                @test_throws MethodError FeatureTransforms.apply(A, lc; dims=:)
             end
 
             @testset "dims = 1" begin
@@ -188,8 +180,8 @@
 
         @testset "specified inds" begin
             A = KeyedArray([1 2 3; 4 5 5], foo=["a", "b"], bar=["x", "y", "z"])
-            @test FeatureTransforms.apply(A, lc; inds=[1, 2]) == [-3, -3, -2]
-            @test lc(A; inds=[1, 2]) == [-3, -3, -2]
+            @test FeatureTransforms.apply(A, lc; dims=1, inds=[1, 2]) == [-3, -3, -2]
+            @test lc(A; dims=1, inds=[1, 2]) == [-3, -3, -2]
         end
 
         @testset "apply_append" begin

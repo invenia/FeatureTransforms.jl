@@ -21,4 +21,7 @@ using TimeZones
     include("temporal.jl")
     include("transform.jl")
     include("traits.jl")
+
+    # TODO: remove this
+    include("example_test.jl")
 end

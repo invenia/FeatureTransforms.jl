@@ -14,7 +14,6 @@ include("utils.jl")
 include("traits.jl")
 include("transform.jl")
 include("apply.jl")
-include("test_utils.jl")
 
 # Transform implementations
 include("linear_combination.jl")
@@ -23,5 +22,7 @@ include("periodic.jl")
 include("power.jl")
 include("scaling.jl")
 include("temporal.jl")
+
+include("test_utils.jl")
 
 end

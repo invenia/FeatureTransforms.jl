@@ -5,9 +5,9 @@ using NamedDims: dim
 using Statistics: mean, std
 using Tables
 
+export Transform
 export HoD, LinearCombination, OneHotEncoding, Periodic, Power
 export IdentityScaling, MeanStdScaling, AbstractScaling
-export Transform
 export is_transformable, transform, transform!
 
 include("utils.jl")
@@ -22,5 +22,7 @@ include("periodic.jl")
 include("power.jl")
 include("scaling.jl")
 include("temporal.jl")
+
+include("test_utils.jl")
 
 end

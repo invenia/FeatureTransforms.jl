@@ -35,15 +35,17 @@ Note: if `dims === :` (all dimensions), then `inds` will be the global indices o
 instead of being relative to a certain dimension.
 """
 function apply(A::AbstractArray, t::Transform; dims=:, inds=:, kwargs...)
+    c = cardinality(t)
     if dims === Colon()
         if inds === Colon()
-            return _apply(_preformat(cardinality(t), A, :), t; dims=:, kwargs...)
+            return _apply(_preformat(c, A, :), t; dims=:, kwargs...)
         else
-            return _apply(_preformat(cardinality(t), A[:][inds], :), t; dims=:, kwargs...)
+            return _apply(_preformat(c, A[:][inds], :), t; dims=:, kwargs...)
         end
     end
 
-    return _apply(_preformat(cardinality(t), selectdim(A, dims, inds), dims), t; dims=dims, kwargs...)
+    input = _preformat(c, selectdim(A, dims, inds), dims)
+    return _apply(input, t; dims=dims, kwargs...)
 end
 
 """
@@ -75,7 +77,8 @@ function apply(table, t::Transform; cols=_get_cols(table), header=nothing, kwarg
 
     # We call hcat to convert any Vector components/results into a Matrix.
     # Passing dims=2 only matters for ManyToOne transforms - otherwise it has no effect.
-    result = hcat(_apply(_preformat(cardinality(t), hcat(components), 2), t; dims=2, kwargs...))
+    input = _preformat(cardinality(t), hcat(components), 2)
+    result = hcat(_apply(input, t; dims=2, kwargs...))
     return Tables.materializer(table)(_to_table(result, header))
 end
 

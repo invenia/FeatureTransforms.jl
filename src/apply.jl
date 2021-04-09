@@ -33,10 +33,6 @@ Provide the `inds` keyword to apply the [`Transform`](@ref) to certain indices a
 
 Note: if `dims === :` (all dimensions), then `inds` will be the global indices of the array,
 instead of being relative to a certain dimension.
-
-This method does not guarantee the data type of what is returned. It will try to conserve
-type but the returned type depends on what the original `A` was, and the `dims` and `inds`
-specified.
 """
 function apply(A::AbstractArray, t::Transform; dims=:, inds=:, kwargs...)
     if dims === Colon()
@@ -78,9 +74,10 @@ function apply(table, t::Transform; cols=_get_cols(table), header=nothing, kwarg
     # Extract a columns iterator that we should be able to use to mutate the data.
     # NOTE: Mutation is not guaranteed for all table types, but it avoid copying the data
     coltable = Tables.columntable(table)
-    cols = _to_vec(cols)
+    components = reduce(hcat, getproperty(coltable, col) for col in _to_vec(cols))
 
-    components = reduce(hcat, getproperty(coltable, col) for col in cols)
+    # We call hcat to convert any Vector components/results into a Matrix.
+    # Passing dims=2 only matters for ManyToOne transforms - otherwise it has no effect.
     result = hcat(_apply(cardinality(t), hcat(components), t; dims=2, kwargs...))
     return Tables.materializer(table)(_to_table(result, header))
 end
@@ -97,9 +94,7 @@ function apply!(table::T, t::Transform; cols=_get_cols(table), kwargs...)::T whe
     # Extract a columns iterator that we should be able to use to mutate the data.
     # NOTE: Mutation is not guaranteed for all table types, but it avoid copying the data
     coltable = Tables.columntable(table)
-    cols = _to_vec(cols)  # handle single column name
-
-    for cname in cols
+    for cname in _to_vec(cols)
         apply!(getproperty(coltable, cname), t; kwargs...)
     end
 

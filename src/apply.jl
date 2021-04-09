@@ -106,7 +106,8 @@ is appended to `A` along the `append_dim` dimension. The remaining `kwargs` corr
 the usual [`Transform`](@ref) being invoked.
 """
 function apply_append(A::AbstractArray, t; append_dim, kwargs...)::AbstractArray
-    result = _apply_append(cardinality(t), A, t; append_dim=append_dim, kwargs...)
+    result = apply(A, t; kwargs...)
+    result = _reformat(cardinality(t), result, A, append_dim)
     return cat(A, result; dims=append_dim)
 end
 
@@ -135,10 +136,12 @@ function _apply(::ManyToOne, A, t; dims, kwargs...)
     return _apply(eachslice(A; dims=dims), t; kwargs...)
 end
 
-_apply_append(::Cardinality, A, t; kwargs...) = apply(A, t; kwargs...)
-function _apply_append(::ManyToOne, A, t; append_dim, kwargs...)
-    # A was reduced along the append_dim so we must reshape the result setting that dim to 1
+# In general we don't need to reformat.
+_reformat(::Cardinality, result, args...) = result
+# If the result is reduced along a certain dimension we have to reshape the result setting
+# that dimension to 1, otherwise cat will error if the dimensions don't match.
+function _reformat(::ManyToOne, result, A, append_dim)
     new_size = collect(size(A))
     setindex!(new_size, 1, dim(A, append_dim))
-    return reshape(apply(A, t; kwargs...), new_size...)
+    return reshape(result, new_size...)
 end

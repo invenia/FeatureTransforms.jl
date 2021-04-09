@@ -37,13 +37,13 @@ instead of being relative to a certain dimension.
 function apply(A::AbstractArray, t::Transform; dims=:, inds=:, kwargs...)
     if dims === Colon()
         if inds === Colon()
-            return _apply(cardinality(t), A, t; dims=:, kwargs...)
+            return _apply(_preformat(cardinality(t), A, :), t; dims=:, kwargs...)
         else
-            return _apply(cardinality(t), A[:][inds], t; dims=:, kwargs...)
+            return _apply(_preformat(cardinality(t), A[:][inds], :), t; dims=:, kwargs...)
         end
     end
 
-    return _apply(cardinality(t), selectdim(A, dims, inds), t; dims=dims, kwargs...)
+    return _apply(_preformat(cardinality(t), selectdim(A, dims, inds), dims), t; dims=dims, kwargs...)
 end
 
 """
@@ -75,7 +75,7 @@ function apply(table, t::Transform; cols=_get_cols(table), header=nothing, kwarg
 
     # We call hcat to convert any Vector components/results into a Matrix.
     # Passing dims=2 only matters for ManyToOne transforms - otherwise it has no effect.
-    result = hcat(_apply(cardinality(t), hcat(components), t; dims=2, kwargs...))
+    result = hcat(_apply(_preformat(cardinality(t), hcat(components), 2), t; dims=2, kwargs...))
     return Tables.materializer(table)(_to_table(result, header))
 end
 
@@ -107,7 +107,7 @@ the usual [`Transform`](@ref) being invoked.
 """
 function apply_append(A::AbstractArray, t; append_dim, kwargs...)::AbstractArray
     result = apply(A, t; kwargs...)
-    result = _reformat(cardinality(t), result, A, append_dim)
+    result = _postformat(cardinality(t), result, A, append_dim)
     return cat(A, result; dims=append_dim)
 end
 
@@ -124,24 +124,23 @@ function apply_append(table, t; kwargs...)
     return T(merge(Tables.columntable(table), result))
 end
 
-# These intermediate _apply methods take the cardinality of the Transform into account.
-# Most Transforms operate on all the data provided, where the transformation is typically
-# broadcast over all the elements using the same parameters. Note: we don't have an example
-# of a ManyToMany transform yet so there might be a separate method for that when we do.
-_apply(::Cardinality, A, t; kwargs...) = _apply(A, t; kwargs...)
 
-# ManyToOne Transforms typically reduce many compoments over a certain dimension. Hence it
-# needs to be applied to along the slices of the data provided.
-function _apply(::ManyToOne, A, t; dims, kwargs...)
-    return _apply(eachslice(A; dims=dims), t; kwargs...)
-end
+# These methods format data according to the cardinality of the Transform.
+# Most Transforms don't require any formatting, only those that are ManyToOne do.
+# Note: we don't yet have a ManyToMany transform, so those might need separate treatment.
 
-# In general we don't need to reformat.
-_reformat(::Cardinality, result, args...) = result
-# If the result is reduced along a certain dimension we have to reshape the result setting
-# that dimension to 1, otherwise cat will error if the dimensions don't match.
-function _reformat(::ManyToOne, result, A, append_dim)
+# _preformat formats the data before calling _apply. Needed for all apply methods.
+# Before applying a ManyToOne Transform we must first slice up the data along the dimension
+# we are reducing over.
+_preformat(::Cardinality, A, d) = A
+_preformat(::ManyToOne, A, d) = eachslice(A; dims=d)
+
+# _postformat formats the data after calling _apply. Needed for apply_append.
+# After applying a ManyToOne Transform, if we want to cat the result we have to reshape it
+# setting the reduced dimension to 1, otherwise cat will error.
+_postformat(::Cardinality, result, A, d) = result
+function _postformat(::ManyToOne, result, A, d)
     new_size = collect(size(A))
-    setindex!(new_size, 1, dim(A, append_dim))
+    setindex!(new_size, 1, dim(A, d))
     return reshape(result, new_size...)
 end

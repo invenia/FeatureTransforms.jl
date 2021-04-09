@@ -56,9 +56,6 @@ function apply!(A::AbstractArray, t::Transform; kwargs...)
     return A
 end
 
-_apply(::Union{OneToOne, OneToMany}, A, t; kwargs...) = _apply(A, t; kwargs...)
-_apply(::Union{ManyToOne, ManyToMany}, A, t; dims, kwargs...) = _apply(eachslice(A; dims=dims), t; kwargs...)
-
 """
     apply(table, ::Transform; [cols], [header], kwargs...) -> Table
 
@@ -113,15 +110,6 @@ function apply_append(A::AbstractArray, t; append_dim, kwargs...)::AbstractArray
     return cat(A, result; dims=append_dim)
 end
 
-_apply_append(::Cardinality, A, t; kwargs...) = apply(A, t; kwargs...)
-
-function _apply_append(::ManyToOne, A, t; append_dim, kwargs...)
-    # A was reduced along the append_dim so we must reshape the result setting that dim to 1
-    new_size = collect(size(A))
-    setindex!(new_size, 1, dim(A, append_dim))
-    return reshape(apply(A, t; kwargs...), new_size...)
-end
-
 """
     apply_append(table, ::Transform; [header], kwargs...)
 
@@ -133,4 +121,24 @@ function apply_append(table, t; kwargs...)
     T = Tables.materializer(table)
     result = Tables.columntable(apply(table, t; kwargs...))
     return T(merge(Tables.columntable(table), result))
+end
+
+# These intermediate _apply methods take the cardinality of the Transform into account.
+# Most Transforms operate on all the data provided, where the transformation is typically
+# broadcast over all the elements using the same parameters. Note: we don't have an example
+# of a ManyToMany transform yet so there might be a separate method for that when we do.
+_apply(::Cardinality, A, t; kwargs...) = _apply(A, t; kwargs...)
+
+# ManyToOne Transforms typically reduce many compoments over a certain dimension. Hence it
+# needs to be applied to along the slices of the data provided.
+function _apply(::ManyToOne, A, t; dims, kwargs...)
+    return _apply(eachslice(A; dims=dims), t; kwargs...)
+end
+
+_apply_append(::Cardinality, A, t; kwargs...) = apply(A, t; kwargs...)
+function _apply_append(::ManyToOne, A, t; append_dim, kwargs...)
+    # A was reduced along the append_dim so we must reshape the result setting that dim to 1
+    new_size = collect(size(A))
+    setindex!(new_size, 1, dim(A, append_dim))
+    return reshape(apply(A, t; kwargs...), new_size...)
 end

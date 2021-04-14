@@ -4,6 +4,11 @@
         scaling = IdentityScaling()
         @test scaling isa Transform
 
+        @testset "Arguments do nothing" begin
+            @test IdentityScaling(123) == IdentityScaling()
+            @test IdentityScaling([1, 2, 3]) == IdentityScaling()
+        end
+
         @testset "Vector" begin
             x = [1., 2., 3.]
             expected = [1., 2., 3.]

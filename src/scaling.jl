@@ -11,6 +11,7 @@ abstract type AbstractScaling <: Transform end
 Represents the no-op scaling which simply returns the `data` it is applied on.
 """
 struct IdentityScaling <: AbstractScaling end
+IdentityScaling(args...) = IdentityScaling()
 
 @inline _apply(x, ::IdentityScaling; kwargs...) = x
 

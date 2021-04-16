@@ -18,7 +18,6 @@ If [`Transform`](@ref) does not support mutation, this method will error.
 """
 function apply! end
 
-
 """
     apply(A::AbstractArray, ::Transform; dims=:, inds=:, kwargs...)
 
@@ -36,6 +35,7 @@ instead of being relative to a certain dimension.
 """
 function apply(A::AbstractArray, t::Transform; dims=:, inds=:, kwargs...)
 
+    # TODO: remove this in version >=0.4
     if t isa LinearCombination && dims === Colon()
         Base.depwarn(
            "The default `dims=1` for `LinearCombination` is deprecated and will be removed " *
@@ -83,7 +83,7 @@ function apply(table, t::Transform; cols=_get_cols(table), header=nothing, kwarg
     # Extract a columns iterator that we should be able to use to mutate the data.
     # NOTE: Mutation is not guaranteed for all table types, but it avoid copying the data
     coltable = Tables.columntable(table)
-    # Combine the Vector{Vector} of components into a Matrix
+    # Consolidate the Vector{Vector} components into a single array, which might be a Vector.
     components = reduce(hcat, getproperty(coltable, col) for col in _to_vec(cols))
 
     # Calling hcat converts any Vector components/results into a Matrix.

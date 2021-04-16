@@ -60,7 +60,7 @@
             @testset "dims = :" begin
                 M = [1 1; 2 2; 3 5]
                 lc = LinearCombination([1, -1, 1])
-                @test_throws ArgumentError FeatureTransforms.apply(M, lc; dims=:)
+                @test_deprecated FeatureTransforms.apply(M, lc; dims=:)
             end
 
             @testset "dims = 1" begin
@@ -120,7 +120,7 @@
 
         @testset "dims" begin
             @testset "dims = :" begin
-                @test_throws ArgumentError FeatureTransforms.apply(A, lc; dims=:)
+                @test_deprecated FeatureTransforms.apply(A, lc; dims=:)
             end
 
             @testset "dims = 1" begin
@@ -167,7 +167,7 @@
 
         @testset "dims" begin
             @testset "dims = :" begin
-                @test_throws ArgumentError FeatureTransforms.apply(A, lc; dims=:)
+                @test_deprecated FeatureTransforms.apply(A, lc; dims=:)
             end
 
             @testset "dims = 1" begin

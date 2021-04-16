@@ -147,8 +147,8 @@
         nt = (a = ["foo", "bar"], b = ["foo2", "bar2"])
 
         @testset "all cols" begin
-            expected = NamedTuple{Tuple(Symbol.(:Column, x) for x in 1:10)}(
-               ([1, 0], [0, 1], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [1, 0], [0, 1])
+            expected = NamedTuple{Tuple(Symbol.(:Column, x) for x in 1:5)}(
+               eachcol(Bool[1 0 0 0 0; 0 1 0 0 0; 0 0 0 1 0; 0 0 0 0 1])
             )
             @test FeatureTransforms.apply(nt, ohe) == expected
             @test ohe(nt) == expected
@@ -175,14 +175,14 @@
 
         df = DataFrame(:a => ["foo", "bar"], :b => ["foo2", "bar2"])
         expected = DataFrame(
-            [[1, 0], [0, 1], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [1, 0], [0, 1]],
-            [Symbol.(:Column, x) for x in 1:10],
+            Bool[1 0 0 0 0; 0 1 0 0 0; 0 0 0 1 0; 0 0 0 0 1],
+            [Symbol.(:Column, x) for x in 1:5],
         )
 
         @test FeatureTransforms.apply(df, ohe) == expected
 
-        @test FeatureTransforms.apply(df, ohe; cols=[:a]) == expected[:, 1:5]
-        @test FeatureTransforms.apply(df, ohe; cols=:a) == expected[:, 1:5]
+        @test FeatureTransforms.apply(df, ohe; cols=[:a]) == expected[1:2, :]
+        @test FeatureTransforms.apply(df, ohe; cols=:a) == expected[1:2, :]
 
         expected = DataFrame(
             [[false, false], [false, false], [false, false], [true, false], [false, true]],
@@ -191,7 +191,7 @@
         @test FeatureTransforms.apply(df, ohe; cols=[:b]) == expected
 
         @testset "apply_append" begin
-            @test FeatureTransforms.apply_append(df, ohe) == hcat(df, ohe(df))
+            @test_throws DimensionMismatch FeatureTransforms.apply_append(df, ohe)
         end
     end
 end

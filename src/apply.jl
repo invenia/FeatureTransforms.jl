@@ -18,7 +18,6 @@ If [`Transform`](@ref) does not support mutation, this method will error.
 """
 function apply! end
 
-
 """
     apply(A::AbstractArray, ::Transform; dims=:, inds=:, kwargs...)
 
@@ -33,21 +32,30 @@ Provide the `inds` keyword to apply the [`Transform`](@ref) to certain indices a
 
 Note: if `dims === :` (all dimensions), then `inds` will be the global indices of the array,
 instead of being relative to a certain dimension.
-
-This method does not guarantee the data type of what is returned. It will try to conserve
-type but the returned type depends on what the original `A` was, and the `dims` and `inds`
-specified.
 """
 function apply(A::AbstractArray, t::Transform; dims=:, inds=:, kwargs...)
+
+    # TODO: remove this https://github.com/invenia/FeatureTransforms.jl/issues/82
+    if t isa LinearCombination && dims === Colon()
+        Base.depwarn(
+           "The default `dims=1` for `LinearCombination` is deprecated and will be removed " *
+           "in a future release. Please set `dims` explicitly.",
+           :apply,
+        )
+        dims=1
+    end
+
+    c = cardinality(t)
     if dims === Colon()
         if inds === Colon()
-            return _apply(A, t; kwargs...)
+            return _apply(_preformat(c, A, :), t; dims=:, kwargs...)
         else
-            return @views _apply(A[:][inds], t; kwargs...)
+            return _apply(_preformat(c, A[:][inds], :), t; dims=:, kwargs...)
         end
     end
 
-    return _apply(selectdim(A, dims, inds), t; kwargs...)
+    input = _preformat(c, selectdim(A, dims, inds), dims)
+    return _apply(input, t; dims=dims, kwargs...)
 end
 
 """
@@ -72,12 +80,12 @@ Optionally provide a `header` for the output table. If none is provided the defa
 function apply(table, t::Transform; cols=_get_cols(table), header=nothing, kwargs...)
     Tables.istable(table) || throw(MethodError(apply, (table, t)))
 
-    # Extract a columns iterator that we should be able to use to mutate the data.
-    # NOTE: Mutation is not guaranteed for all table types, but it avoid copying the data
-    coltable = Tables.columntable(table)
-    cols = _to_vec(cols)
+    indices = Tables.columnindex.(Ref(table), _to_vec(cols))
+    components = Tables.matrix(table)[:, indices]
 
-    result = reduce(hcat, [_apply(getproperty(coltable, col), t; kwargs...) for col in cols])
+    # Passing dims=2 only matters for ManyToOne transforms - otherwise it has no effect.
+    input = _preformat(cardinality(t), components, 2)
+    result = hcat(_apply(input, t; dims=2, kwargs...))
     return Tables.materializer(table)(_to_table(result, header))
 end
 
@@ -93,9 +101,7 @@ function apply!(table::T, t::Transform; cols=_get_cols(table), kwargs...)::T whe
     # Extract a columns iterator that we should be able to use to mutate the data.
     # NOTE: Mutation is not guaranteed for all table types, but it avoid copying the data
     coltable = Tables.columntable(table)
-    cols = _to_vec(cols)  # handle single column name
-
-    for cname in cols
+    for cname in _to_vec(cols)
         apply!(getproperty(coltable, cname), t; kwargs...)
     end
 
@@ -110,7 +116,9 @@ is appended to `A` along the `append_dim` dimension. The remaining `kwargs` corr
 the usual [`Transform`](@ref) being invoked.
 """
 function apply_append(A::AbstractArray, t; append_dim, kwargs...)::AbstractArray
-    return cat(A, apply(A, t; kwargs...); dims=append_dim)
+    result = apply(A, t; kwargs...)
+    result = _postformat(cardinality(t), result, A, append_dim)
+    return cat(A, result; dims=append_dim)
 end
 
 """
@@ -124,4 +132,26 @@ function apply_append(table, t; kwargs...)
     T = Tables.materializer(table)
     result = Tables.columntable(apply(table, t; kwargs...))
     return T(merge(Tables.columntable(table), result))
+end
+
+# These methods format data according to the cardinality of the Transform.
+# Most Transforms don't require any formatting, only those that are ManyToOne do.
+# Note: we don't yet have a ManyToMany transform, so those might need separate treatment.
+
+# _preformat formats the data before calling _apply. Needed for all apply methods.
+# Before applying a ManyToOne Transform we must first slice up the data along the dimension
+# we are reducing over.
+_preformat(::Cardinality, A, d) = A
+_preformat(::ManyToOne, A, d) = eachslice(A; dims=d)
+
+# _postformat formats the data after calling _apply so it will work with apply_append.
+# Basically, when we call LinearCombination it always returns a column vector. But if we
+# want to append the result as a row we have to reshape to get it to fit.
+# In general, after applying a ManyToOne Transform, we have to reshape the reduced dimension
+# to 1 if we want to cat the result.
+_postformat(::Cardinality, result, A, append_dim) = result
+function _postformat(::ManyToOne, result, A, append_dim)
+    new_size = collect(size(A))
+    setindex!(new_size, 1, dim(A, append_dim))
+    return reshape(result, new_size...)
 end

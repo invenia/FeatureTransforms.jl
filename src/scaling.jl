@@ -4,6 +4,7 @@
 Linearly scale the data according to some statistics.
 """
 abstract type AbstractScaling <: Transform end
+cardinality(::AbstractScaling) = OneToOne()
 
 """
     IdentityScaling <: AbstractScaling

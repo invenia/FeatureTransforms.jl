@@ -33,6 +33,8 @@ struct Periodic{P, S} <: Transform
     end
 end
 
+cardinality(::Periodic) = OneToOne()
+
 """
     Periodic(f, period) -> Periodic
 

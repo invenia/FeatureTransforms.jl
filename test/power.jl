@@ -2,6 +2,7 @@
 
     p = Power(3)
     @test p isa Transform
+    @test cardinality(p) == OneToOne()
 
     # TODO: all of these should be part of some test utils
     @testset "Vector" begin

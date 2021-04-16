@@ -3,6 +3,7 @@
     @testset "IdentityScaling" begin
         scaling = IdentityScaling()
         @test scaling isa Transform
+        @test cardinality(scaling) == OneToOne()
 
         @testset "Arguments do nothing" begin
             @test IdentityScaling(123) == IdentityScaling()
@@ -233,6 +234,7 @@
             @testset "simple" for x in (M, nt)
                 x_copy = deepcopy(x)
                 scaling = MeanStdScaling(x)
+                @test cardinality(scaling) == OneToOne()
                 @test scaling isa Transform
                 @test x == x_copy  # data is not mutated
                 # constructor uses all data by default

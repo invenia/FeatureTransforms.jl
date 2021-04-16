@@ -2,6 +2,7 @@
 
     hod = HoD()
     @test hod isa Transform
+    @test cardinality(hod) == OneToOne()
 
     @testset "Vector" begin
         x = collect(DateTime(2020, 1, 1, 9, 0):Hour(1):DateTime(2020, 5, 7, 9, 0))

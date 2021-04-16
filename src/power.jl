@@ -7,4 +7,6 @@ struct Power <: Transform
     exponent::Real
 end
 
+cardinality(::Power) = OneToOne()
+
 _apply(x, P::Power; kwargs...) = x .^ P.exponent

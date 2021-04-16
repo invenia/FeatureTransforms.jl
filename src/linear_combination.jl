@@ -7,6 +7,8 @@ struct LinearCombination <: Transform
     coefficients::Vector{Real}
 end
 
+cardinality(::LinearCombination) = ManyToOne()
+
 """
     apply(
         ::AbstractArray{<:Real, N}, ::LinearCombination; dims=1, inds=:

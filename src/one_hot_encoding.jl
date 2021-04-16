@@ -32,6 +32,8 @@ struct OneHotEncoding{R<:Real} <: Transform
     end
 end
 
+cardinality(::OneHotEncoding) = OneToMany()
+
 function OneHotEncoding(possible_values::AbstractVector{T}) where T
     return OneHotEncoding{Bool}(possible_values)
 end

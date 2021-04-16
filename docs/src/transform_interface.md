@@ -26,6 +26,7 @@ For example, if `MyModel` were being stacked with the result of a previous model
 ```@meta
 DocTestSetup = quote
     using FeatureTransforms
+    using FeatureTransforms.TestUtils
 end
 ```
 

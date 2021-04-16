@@ -28,7 +28,7 @@ for C in (:OneToOne, :OneToMany, :ManyToOne, :ManyToMany)
         """
             $($FT) <: Transform
 
-        A fake [`$($C)`](@ref) transform for test purposes. Calling `apply` will return an
+        A fake `$($C)` transform for test purposes. Calling `apply` will return an
         array of ones with a size and dimension matching the `cardinality` of the transform.
         """
         struct $FT <: Transform end

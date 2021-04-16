@@ -8,7 +8,7 @@ This type consistency helps to make `Transform`s _composable_, i.e., the output 
 Morever, the end-to-end pipelines themselves should obey the same principle: you should be able to add or remove `Transform`s (or another pipeline) to the output without breaking your code.
 That is, the output should also be a valid "transformable" type: either an `AbstractArray`, a `Table`, or other type for which the user has extended [`FeatureTransforms.apply`](@ref) to support.
 Valid types can be checked by calling `is_transformable`, which is the first part of the transform interface.
-See the [FeatureTransforms.TestUtils](@id test-utils) for these testing utiliies.
+See the [FeatureTransforms.TestUtils](@ref test-utils) for this and other testing utiliies.
 
 The second part is the `transform` method stub, which users should overload when they want to "encapsulate" an end-to-end pipeline.
 The exact method for doing so is an implementation detail for the user but refer to the code below as an example.

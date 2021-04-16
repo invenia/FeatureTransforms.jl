@@ -35,7 +35,7 @@ instead of being relative to a certain dimension.
 """
 function apply(A::AbstractArray, t::Transform; dims=:, inds=:, kwargs...)
 
-    # TODO: remove this in version >=0.4
+    # TODO: remove this https://github.com/invenia/FeatureTransforms.jl/issues/82
     if t isa LinearCombination && dims === Colon()
         Base.depwarn(
            "The default `dims=1` for `LinearCombination` is deprecated and will be removed " *
@@ -80,16 +80,11 @@ Optionally provide a `header` for the output table. If none is provided the defa
 function apply(table, t::Transform; cols=_get_cols(table), header=nothing, kwargs...)
     Tables.istable(table) || throw(MethodError(apply, (table, t)))
 
-    # Extract a columns iterator that we should be able to use to mutate the data.
-    # NOTE: Mutation is not guaranteed for all table types, but it avoid copying the data
-    coltable = Tables.columntable(table)
-    # Consolidate the Vector{Vector} components into a single array, which might be a Vector.
-    components = reduce(hcat, getproperty(coltable, col) for col in _to_vec(cols))
+    indices = Tables.columnindex.(Ref(table), _to_vec(cols))
+    components = Tables.matrix(table)[:, indices]
 
-    # Calling hcat converts any Vector components/results into a Matrix.
-    # First hcat ensures we can use eachslice, second hcat is so we can put result in a Table.
     # Passing dims=2 only matters for ManyToOne transforms - otherwise it has no effect.
-    input = _preformat(cardinality(t), hcat(components), 2)
+    input = _preformat(cardinality(t), components, 2)
     result = hcat(_apply(input, t; dims=2, kwargs...))
     return Tables.materializer(table)(_to_table(result, header))
 end
@@ -151,7 +146,7 @@ _preformat(::ManyToOne, A, d) = eachslice(A; dims=d)
 
 # _postformat formats the data after calling _apply so it will work with apply_append.
 # Basically, when we call LinearCombination it always returns a column vector. But if we
-# want to append the result as a row to reshape to get it to fit.
+# want to append the result as a row we have to reshape to get it to fit.
 # In general, after applying a ManyToOne Transform, we have to reshape the reduced dimension
 # to 1 if we want to cat the result.
 _postformat(::Cardinality, result, A, append_dim) = result

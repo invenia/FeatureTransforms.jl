@@ -35,6 +35,16 @@ Note: if `dims === :` (all dimensions), then `inds` will be the global indices o
 instead of being relative to a certain dimension.
 """
 function apply(A::AbstractArray, t::Transform; dims=:, inds=:, kwargs...)
+
+    if t isa LinearCombination && dims === Colon()
+        Base.depwarn(
+           "The default `dims=1` for `LinearCombination` is deprecated and will be removed " *
+           "in a future release. Please set `dims` explicitly.",
+           :apply,
+        )
+        dims=1
+    end
+
     c = cardinality(t)
     if dims === Colon()
         if inds === Colon()
@@ -128,7 +138,6 @@ function apply_append(table, t; kwargs...)
     result = Tables.columntable(apply(table, t; kwargs...))
     return T(merge(Tables.columntable(table), result))
 end
-
 
 # These methods format data according to the cardinality of the Transform.
 # Most Transforms don't require any formatting, only those that are ManyToOne do.

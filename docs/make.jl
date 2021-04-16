@@ -18,6 +18,7 @@ makedocs(;
         "Guide to Transforms" => "transforms.md",
         "Transform Interface" => "transform_interface.md",
         "Examples" => "examples.md",
+        "TestUtils" => "test_utils.md",
         "API" => "api.md",
     ],
     strict=true,

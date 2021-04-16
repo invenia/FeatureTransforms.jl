@@ -10,16 +10,6 @@ abstract type Transform end
 (t::Transform)(x; kwargs...) = apply(x, t; kwargs...)
 
 """
-    is_transformable(x)
-
-Determine if `x` is both a valid input and output of any [`Transform`](@ref), i.e. that it
-follows the [`transform`](@ref) interface.
-Currently, all subtypes of `Table`s and `AbstractArray`s are transformable.
-"""
-is_transformable(::AbstractArray) = true
-is_transformable(x) = Tables.istable(x)
-
-"""
     transform(::T, data)
 
 Defines the feature engineering pipeline for some type `T`, which comprises a collection of

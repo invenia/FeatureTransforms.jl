@@ -5,10 +5,9 @@ using NamedDims: dim
 using Statistics: mean, std
 using Tables
 
+export Transform, transform, transform!
 export HoD, LinearCombination, OneHotEncoding, Periodic, Power
-export IdentityScaling, MeanStdScaling, AbstractScaling
-export Transform
-export is_transformable, transform, transform!
+export AbstractScaling, IdentityScaling, MeanStdScaling
 
 include("utils.jl")
 include("traits.jl")
@@ -22,5 +21,10 @@ include("periodic.jl")
 include("power.jl")
 include("scaling.jl")
 include("temporal.jl")
+
+include("test_utils.jl")
+
+# TODO: remove in v0.4 https://github.com/invenia/FeatureTransforms.jl/issues/82
+Base.@deprecate_binding is_transformable TestUtils.is_transformable
 
 end

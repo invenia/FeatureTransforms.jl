@@ -25,4 +25,7 @@ include("temporal.jl")
 
 include("test_utils.jl")
 
+# TODO: remove in v0.4.0 or later
+Base.@deprecate_binding is_transformable TestUtils.is_transformable
+
 end

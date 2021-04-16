@@ -8,6 +8,7 @@ module TestUtils
 
 using ..FeatureTransforms
 using ..FeatureTransforms: OneToOne, OneToMany, ManyToOne, ManyToMany
+using Tables
 
 export FakeOneToOneTransform, FakeOneToManyTransform
 export FakeManyToOneTransform, FakeManyToManyTransform
@@ -41,5 +42,15 @@ end
 function FeatureTransforms._apply(A, ::FakeManyToManyTransform; kwargs...)
     return hcat(ones(size(A)), ones(size(A)))
 end
+
+"""
+    is_transformable(x)
+
+Determine if `x` is both a valid input and output of any [`Transform`](@ref), i.e. that it
+follows the [`transform`](@ref) interface.
+Currently, all subtypes of `Table`s and `AbstractArray`s are transformable.
+"""
+is_transformable(::AbstractArray) = true
+is_transformable(x) = Tables.istable(x)
 
 end

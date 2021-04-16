@@ -1,3 +1,9 @@
+"""
+    FeatureTransforms.TestUtils
+
+Provides fake [`Transform`](@ref)s for testing purposes only.
+"""
+
 module TestUtils
 
 using ..FeatureTransforms

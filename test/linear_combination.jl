@@ -1,6 +1,8 @@
 @testset "linear combination" begin
 
-    @test LinearCombination([1, -1]) isa Transform
+    lc = LinearCombination([1, -1])
+    @test lc isa Transform
+    @test cardinality(lc) == ManyToOne()
 
     @testset "Vector" begin
 

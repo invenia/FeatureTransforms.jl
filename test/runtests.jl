@@ -5,7 +5,7 @@ using Dates
 using Documenter: doctest
 using FeatureTransforms
 using FeatureTransforms: _periodic
-using FeatureTransforms: Cardinality, OneToOne, OneToMany, ManyToOne, ManyToMany
+using FeatureTransforms: cardinality, OneToOne, OneToMany, ManyToOne, ManyToMany
 using Test
 using TimeZones
 

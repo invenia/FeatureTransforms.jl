@@ -322,6 +322,7 @@
                 @test p isa Transform
                 @test p.period == Day(5)
                 @test p.phase_shift == Day(2)
+                @test cardinality(p) == OneToOne()
             end
 
             @testset "No phase_shift" begin

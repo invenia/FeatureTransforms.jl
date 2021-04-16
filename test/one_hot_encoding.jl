@@ -3,6 +3,7 @@
     categories = ["foo", "bar", "baz"]
     ohe = OneHotEncoding(categories)
     @test ohe isa Transform
+    @test cardinality(ohe) == OneToMany()
 
     @testset "Vector" begin
 

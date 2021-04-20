@@ -25,4 +25,5 @@ using TimeZones
     include("test_utils.jl")
 
     include("types/tables.jl")
+    include("types/vector.jl")
 end

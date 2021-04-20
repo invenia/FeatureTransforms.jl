@@ -6,6 +6,7 @@ using Documenter: doctest
 using FeatureTransforms
 using FeatureTransforms: _periodic
 using FeatureTransforms: cardinality, OneToOne, OneToMany, ManyToOne, ManyToMany
+using Tables: rowtable, columntable
 using Test
 using TimeZones
 

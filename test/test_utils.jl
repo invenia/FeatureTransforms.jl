@@ -49,19 +49,31 @@ using FeatureTransforms.TestUtils
 
     @testset "is_transformable" begin
 
-        # Test that AbstractArrays and Tables are transformable
-        @test is_transformable([1, 2, 3, 4, 5])
-        @test is_transformable([1 2 3; 4 5 6])
-        @test is_transformable(AxisArray([1 2 3; 4 5 6], foo=["a", "b"], bar=["x", "y", "z"]))
-        @test is_transformable(KeyedArray([1 2 3; 4 5 6], foo=["a", "b"], bar=["x", "y", "z"]))
-        @test is_transformable((a = [1, 2, 3], b = [4, 5, 6]))
-        @test is_transformable(DataFrame(:a => [1, 2, 3], :b => [4, 5, 6]))
+        @testset "$(typeof(x)) is transformable" for x in (
+                [1, 2, 3, 4, 5],
+                [1 2 3; 4 5 6],
+                AxisArray([1 2 3; 4 5 6], foo=["a", "b"], bar=["x", "y", "z"]),
+                KeyedArray([1 2 3; 4 5 6], foo=["a", "b"], bar=["x", "y", "z"]),
+                rowtable((a=[1, 2, 3], b=[4, 5, 6])),
+                columntable((a=[1, 2, 3], b=[4, 5, 6])),
+                Dict(:a => [1, 2, 3], :b => [4, 5, 6]),
+                DataFrame(:a => [1, 2, 3], :b => [4, 5, 6]),
+            )
+            @test is_transformable(x)
+            @test is_transformable(typeof(x))
+        end
 
-        # Test types that are not transformable
-        @test is_transformable(1) == false
-        @test is_transformable("string") == false
-        @test is_transformable(true) == false
-        @test is_transformable(Dict(2 => 3)) == false
+        @testset "$(typeof(x)) is not transformable" for x in (
+                1,
+                "string",
+                true,
+                ([1, 2, 3], [4, 5, 6]),
+                Dict(:a=>1, :b=>2),
+                FakeOneToOneTransform(),
+            )
+            @test !is_transformable(x)
+            @test !is_transformable(typeof(x))
+        end
     end
 
 end

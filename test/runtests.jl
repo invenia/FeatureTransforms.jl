@@ -6,7 +6,8 @@ using Documenter: doctest
 using FeatureTransforms
 using FeatureTransforms: _periodic
 using FeatureTransforms: cardinality, OneToOne, OneToMany, ManyToOne, ManyToMany
-using Tables: rowtable, columntable
+using FeatureTransforms.TestUtils
+using Tables: columntable, istable, rowtable
 using Test
 using TimeZones
 
@@ -22,4 +23,6 @@ using TimeZones
     include("temporal.jl")
     include("traits.jl")
     include("test_utils.jl")
+
+    include("types/tables.jl")
 end

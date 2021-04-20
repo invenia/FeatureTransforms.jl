@@ -4,32 +4,6 @@
     @test p isa Transform
     @test cardinality(p) == OneToOne()
 
-    # TODO: all of these should be part of some test utils
-    @testset "Vector" begin
-        x = [1, 2, 3, 4, 5]
-        expected = [1, 8, 27, 64, 125]
-
-        @test FeatureTransforms.apply(x, p) == expected
-        @test p(x) == expected
-
-        _x = copy(x)
-        FeatureTransforms.apply!(_x, p)
-        @test _x == expected
-
-        @testset "inds" begin
-            @test FeatureTransforms.apply(x, p; inds=2:5) ==  expected[2:5]
-            @test FeatureTransforms.apply(x, p; dims=:) == expected
-            @test FeatureTransforms.apply(x, p; dims=1) == expected
-            @test FeatureTransforms.apply(x, p; dims=1, inds=[2, 3, 4, 5]) == expected[2:5]
-
-            @test_throws BoundsError FeatureTransforms.apply(x, p; dims=2)
-        end
-
-        @testset "apply_append" begin
-            @test FeatureTransforms.apply_append(x, p, append_dim=1) == vcat(x, expected)
-        end
-    end
-
     @testset "Matrix" begin
         M = [1 2 3; 4 5 6]
         expected = [1 8 27; 64 125 216]

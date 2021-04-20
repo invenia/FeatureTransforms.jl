@@ -102,30 +102,6 @@
             expected = expected_dict[f]
             p = Periodic(f, 5, 2)
 
-            @testset "Vector" begin
-                x = collect(0.:5.)
-
-                @test FeatureTransforms.apply(x, p) ≈ expected atol=1e-14
-                @test p(x) ≈ expected atol=1e-14
-
-                _x = copy(x)
-                FeatureTransforms.apply!(_x, p)
-                @test _x ≈ expected atol=1e-14
-
-                @testset "inds" begin
-                    @test FeatureTransforms.apply(x, p; inds=2:5) ≈ expected[2:5] atol=1e-14
-                    @test FeatureTransforms.apply(x, p; dims=:) ≈ expected atol=1e-14
-                    @test FeatureTransforms.apply(x, p; dims=1) ≈ expected atol=1e-14
-                    @test FeatureTransforms.apply(x, p; dims=1, inds=[2, 3, 4, 5]) ≈ expected[2:5] atol=1e-14
-
-                    @test_throws BoundsError FeatureTransforms.apply(x, p; dims=2)
-                end
-
-                @testset "append_apply" begin
-                    @test FeatureTransforms.apply_append(x, p, append_dim=1) ≈ vcat(x, expected) atol=1e-14
-                end
-            end
-
             @testset "Matrix" begin
                 M = reshape(0.:5., (3, 2))
                 M_expected = reshape(expected, (3, 2))
@@ -285,7 +261,7 @@
         @testset "$f" for f in (sin, cos)
             p = Periodic(f, Day(5), Day(2))
 
-            @testset "Vector" begin
+            @testset "Basic" begin
                 x = ZonedDateTime(2020, 1, 1, tz"EST") .+ (Day(0):Day(1):Day(5))
                 # Use _periodic to get expected outputs because we test it elsewhere
                 expected = _periodic.(f, x, Day(5), Day(2))

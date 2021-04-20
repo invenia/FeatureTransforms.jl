@@ -4,49 +4,6 @@
     @test lc isa Transform
     @test cardinality(lc) == ManyToOne()
 
-    @testset "Vector" begin
-
-        @testset "all inds" begin
-            x = [1, 2]
-            lc = LinearCombination([1, -1])
-            @test FeatureTransforms.apply(x, lc) == fill(-1)
-            @test lc(x) == fill(-1)
-        end
-
-        @testset "dims behaviour" begin
-            x = [1, 2]
-            lc = LinearCombination([1, -1])
-            @test FeatureTransforms.apply(x, lc; dims=1) == fill(-1)
-            @test_throws BoundsError FeatureTransforms.apply(x, lc; dims=2)
-        end
-
-        @testset "dimension mismatch" begin
-            x = [1, 2, 3]
-            lc = LinearCombination([1, -1])
-            @test_throws DimensionMismatch FeatureTransforms.apply(x, lc)
-        end
-
-        @testset "specified inds" begin
-            x = [1, 2, 3]
-            lc = LinearCombination([1, -1])
-            @test FeatureTransforms.apply(x, lc; inds=[2, 3]) == fill(-1)
-            @test lc(x; inds=[2, 3]) == fill(-1)
-        end
-
-        @testset "output is different type" begin
-            x = [1, 2]
-            lc = LinearCombination([.1, -.1])
-            @test FeatureTransforms.apply(x, lc) == fill(-.1)
-            @test lc(x) == fill(-.1)
-        end
-
-        @testset "apply_append" begin
-            x = [1, 2]
-            lc = LinearCombination([1, -1])
-            @test FeatureTransforms.apply_append(x, lc; append_dim=1) == [1, 2, -1]
-        end
-    end
-
     @testset "Matrix" begin
 
         @testset "default reduces over columns" begin

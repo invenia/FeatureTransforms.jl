@@ -10,39 +10,6 @@
             @test IdentityScaling([1, 2, 3]) == IdentityScaling()
         end
 
-        @testset "Vector" begin
-            x = [1., 2., 3.]
-            expected = [1., 2., 3.]
-
-            @test FeatureTransforms.apply(x, scaling) == expected
-            @test scaling(x) == expected
-
-            @testset "Mutating" begin
-                _x = copy(x)
-                FeatureTransforms.apply!(_x, scaling)
-                @test _x == expected
-            end
-
-            @testset "dims" begin
-                @test FeatureTransforms.apply(x, scaling; dims=1) == expected
-                @test_throws BoundsError FeatureTransforms.apply(expected, scaling; dims=2)
-            end
-
-            @testset "inds" begin
-                @test FeatureTransforms.apply(x, scaling; inds=[2, 3]) == [2., 3.]
-                @test FeatureTransforms.apply(x, scaling; dims=:, inds=[2, 3]) == [2., 3.]
-                @test FeatureTransforms.apply(x, scaling; dims=1, inds=[2, 3]) == [2., 3.]
-            end
-
-            @testset "Inverse" begin
-                @test FeatureTransforms.apply(x, scaling; inverse=true) == expected
-            end
-
-            @testset "apply_append" begin
-                @test FeatureTransforms.apply_append(x, scaling, append_dim=1) == vcat(x, expected)
-            end
-        end
-
         @testset "Matrix" begin
             M = [0.0 -0.5 0.5; 0.0 1.0 2.0]
             M_expected = [0.0 -0.5 0.5; 0.0 1.0 2.0]
@@ -196,63 +163,6 @@
                     @test scaling.μ == 0.0
                     @test scaling.σ == 0.5
                 end
-            end
-        end
-
-        @testset "Vector" begin
-            x = [1., 2., 3.]
-            expected = [-1., 0., 1.]
-
-            @testset "Non-mutating" begin
-                scaling = MeanStdScaling(x)
-                @test FeatureTransforms.apply(x, scaling) ≈ expected atol=1e-5
-                @test scaling(x) ≈ expected atol=1e-5
-
-                # Test the transform was not mutating
-                @test !isapprox(x, expected; atol=1e-5)
-            end
-
-            @testset "Mutating" begin
-                scaling = MeanStdScaling(x)
-                _x = copy(x)
-                FeatureTransforms.apply!(_x, scaling)
-                @test _x ≈ expected atol=1e-5
-            end
-
-            @testset "dims" begin
-                scaling = MeanStdScaling(x; dims=1)
-                @test FeatureTransforms.apply(x, scaling; dims=1) == expected
-                @test_throws BoundsError FeatureTransforms.apply(x, scaling; dims=2)
-            end
-
-            @testset "inds" begin
-                scaling = MeanStdScaling(x)
-                @test FeatureTransforms.apply(x, scaling; inds=[2, 3]) == [0., 1.]
-                @test FeatureTransforms.apply(x, scaling; dims=:, inds=[2, 3]) == [0., 1.]
-
-                scaling = MeanStdScaling(x; dims=1)
-                @test FeatureTransforms.apply(x, scaling; dims=1, inds=[2, 3]) == [0., 1.]
-            end
-
-            @testset "Re-apply" begin
-                scaling = MeanStdScaling(x)
-                FeatureTransforms.apply(x, scaling)
-
-                # Expect scaling parameters to be fixed to the first data applied to
-                @test FeatureTransforms.apply([-0.5, 0.5, 0.0], scaling) ≈ [-2.5, -1.5, -2.0] atol=1e-5
-            end
-
-            @testset "Inverse" begin
-                scaling = MeanStdScaling(x)
-                transformed = FeatureTransforms.apply(x, scaling)
-
-                @test transformed ≈ expected atol=1e-5
-                @test FeatureTransforms.apply(transformed, scaling; inverse=true) ≈ x atol=1e-5
-            end
-
-            @testset "apply_append" begin
-                scaling = MeanStdScaling(x)
-                @test FeatureTransforms.apply_append(x, scaling, append_dim=1) == vcat(x, expected)
             end
         end
 

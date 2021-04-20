@@ -4,7 +4,7 @@
     @test hod isa Transform
     @test cardinality(hod) == OneToOne()
 
-    @testset "Vector" begin
+    @testset "Basic" begin
         x = collect(DateTime(2020, 1, 1, 9, 0):Hour(1):DateTime(2020, 5, 7, 9, 0))
         # Expected result is an hour a day starting and ending on the 9th hour inclusive,
         # with 126 full days in the middle
@@ -13,27 +13,10 @@
         @test FeatureTransforms.apply(x, hod) == expected
         @test hod(x) == expected
 
-        # Test the tranform was not mutating
-        @test x != expected
-
         @testset "StepRange" begin
             x = DateTime(2020, 1, 1, 9, 0):Hour(1):DateTime(2020, 5, 7, 9, 0)
             @test FeatureTransforms.apply(x, hod) == expected
             @test hod(x) == expected
-        end
-
-        @testset "dims = $d" for d in (Colon(), 1)
-            @test FeatureTransforms.apply(x, hod; dims=d) == expected
-            @test hod(x; dims=d) == expected
-        end
-
-        @test_throws BoundsError FeatureTransforms.apply(x, hod; dims=2)
-
-        @testset "inds" begin
-            @test FeatureTransforms.apply(x, hod; inds=2:5) == expected[2:5]
-            @test FeatureTransforms.apply(x, hod; dims=:) == expected
-            @test FeatureTransforms.apply(x, hod; dims=1) == expected
-            @test FeatureTransforms.apply(x, hod; dims=1, inds=[2, 3, 4, 5]) == expected[2:5]
         end
 
         @testset "DST" begin
@@ -44,12 +27,6 @@
 
             @test FeatureTransforms.apply(x, hod) == expected_dst
             @test hod(x) == expected_dst
-        end
-
-        @testset "apply_append" begin
-            x = collect(DateTime(2020, 1, 1, 9, 0):Hour(1):DateTime(2020, 5, 7, 9, 0))
-            expected = [9:23..., repeat(0:23, 126)..., 0:9...]
-            @test FeatureTransforms.apply_append(x, hod, append_dim=1) == vcat(x, expected)
         end
     end
 

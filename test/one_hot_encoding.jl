@@ -5,17 +5,7 @@
     @test ohe isa Transform
     @test cardinality(ohe) == OneToMany()
 
-    @testset "Vector" begin
-
-        @testset "simple" begin
-            x = ["foo", "bar", "baz"]
-            expected = [1 0 0; 0 1 0; 0 0 1]
-
-            transformed = FeatureTransforms.apply(x, ohe)
-            @test transformed == expected
-            @test transformed isa AbstractMatrix{Bool}
-            @test ohe(x) == expected
-        end
+    @testset "Basic" begin
 
         @testset "specify return type" begin
             x = ["foo", "bar", "baz"]
@@ -37,25 +27,6 @@
         @testset "value does not exist as a category" begin
             x = ["foo", "baz", "bar", "dne"]
             @test_throws KeyError FeatureTransforms.apply(x, ohe)
-        end
-
-        @testset "inds" begin
-            x = ["foo", "baz", "bar", "baz"]
-            expected = [1 0 0; 0 0 1; 0 1 0; 0 0 1]
-
-            @test FeatureTransforms.apply(x, ohe; inds=2:4) == [0 0 1; 0 1 0; 0 0 1]
-            @test FeatureTransforms.apply(x, ohe; dims=:) == expected
-
-            @test FeatureTransforms.apply(x, ohe; dims=1) == expected
-            @test FeatureTransforms.apply(x, ohe; dims=1, inds=[2, 4]) == [0 0 1; 0 0 1]
-
-            @test_throws BoundsError FeatureTransforms.apply(x, ohe; dims=2)
-        end
-
-        @testset "apply_append" begin
-            x = ["foo", "baz", "bar", "baz"]
-            expected = ["foo" 1 0 0; "baz" 0 0 1; "bar" 0 1 0; "baz" 0 0 1]
-            @test FeatureTransforms.apply_append(x, ohe; append_dim=2) == expected
         end
     end
 

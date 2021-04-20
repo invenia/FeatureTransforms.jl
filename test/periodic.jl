@@ -245,37 +245,6 @@
                     @test FeatureTransforms.apply_append(A, p, append_dim=:baz) ≈ exp3 atol=1e-14
                 end
             end
-
-            @testset "DataFrame" begin
-                df = DataFrame(:a => collect(0.:2.), :b => collect(3.:5.))
-                df_expected = DataFrame(:Column1 => expected[1:3], :Column2 => expected[4:6])
-
-                @testset "all cols" begin
-                    @test FeatureTransforms.apply(df, p) ≈ df_expected atol=1e-14
-                    @test p(df) ≈ df_expected atol=1e-14
-
-                    _df = deepcopy(df)
-                    FeatureTransforms.apply!(_df, p)
-                    @test _df isa DataFrame
-                    @test _df ≈ DataFrame(:a=>df_expected.Column1, :b=>df_expected.Column2) atol=1e-14
-                end
-
-                @testset "cols = :a" begin
-                    @test FeatureTransforms.apply(df, p; cols=[:a]) ≈ df_expected[!, [:Column1]] atol=1e-14
-                    @test FeatureTransforms.apply(df, p; cols=:a) ≈ df_expected[!, [:Column1]] atol=1e-14
-                    @test p(df; cols=:a) ≈ df_expected[!, [:Column1]]
-                end
-
-                @testset "apply_append" begin
-                    expected = DataFrame(
-                        :a=>df.a,
-                        :b=>df.b,
-                        :Column1=>df_expected.Column1,
-                        :Column2=>df_expected.Column2,
-                    )
-                    @test FeatureTransforms.apply_append(df, p) ≈ expected atol=1e-14
-                end
-            end
         end
     end
 
@@ -379,24 +348,6 @@
                     transformed = FeatureTransforms.apply(A, p; dims=d)
                     @test transformed isa KeyedArray
                     @test transformed ≈ expected atol=1e-14
-                end
-            end
-
-            @testset "DataFrame" begin
-                x = ZonedDateTime(2020, 1, 1, tz"EST") .+ (Day(0):Day(1):Day(5))
-                df = DataFrame(:a => x[1:3], :b => x[4:6])
-                df_expected = DataFrame(
-                    :Column1 => _periodic.(f, x[1:3], Day(5), Day(2)),
-                    :Column2 => _periodic.(f, x[4:6], Day(5), Day(2))
-                )
-
-                transformed = FeatureTransforms.apply(df, p)
-                @test transformed ≈ df_expected atol=1e-14
-
-                @testset "cols = :a" begin
-                    @test FeatureTransforms.apply(df, p; cols=[:a]) ≈ df_expected[!, [:Column1]] atol=1e-14
-                    @test FeatureTransforms.apply(df, p; cols=:a) ≈ df_expected[!, [:Column1]] atol=1e-14
-                    @test p(df; cols=[:a]) ≈ df_expected[!, [:Column1]] atol=1e-14
                 end
             end
         end

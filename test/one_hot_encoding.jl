@@ -140,30 +140,4 @@
             @test_throws DimensionMismatch FeatureTransforms.apply_append(A, ohe; append_dim=:bar)
         end
     end
-
-    @testset "DataFrame" begin
-        categories = ["foo", "bar", "baz", "foo2", "bar2"]
-        ohe = OneHotEncoding(categories)
-
-        df = DataFrame(:a => ["foo", "bar"], :b => ["foo2", "bar2"])
-        expected = DataFrame(
-            Bool[1 0 0 0 0; 0 1 0 0 0; 0 0 0 1 0; 0 0 0 0 1],
-            [Symbol.(:Column, x) for x in 1:5],
-        )
-
-        @test FeatureTransforms.apply(df, ohe) == expected
-
-        @test FeatureTransforms.apply(df, ohe; cols=[:a]) == expected[1:2, :]
-        @test FeatureTransforms.apply(df, ohe; cols=:a) == expected[1:2, :]
-
-        expected = DataFrame(
-            [[false, false], [false, false], [false, false], [true, false], [false, true]],
-            [Symbol.(:Column, x) for x in 1:5],
-        )
-        @test FeatureTransforms.apply(df, ohe; cols=[:b]) == expected
-
-        @testset "apply_append" begin
-            @test_throws DimensionMismatch FeatureTransforms.apply_append(df, ohe)
-        end
-    end
 end

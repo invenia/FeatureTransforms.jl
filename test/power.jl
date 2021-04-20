@@ -124,39 +124,4 @@
             @test FeatureTransforms.apply_append(A, p, append_dim=:baz) == expected3
         end
     end
-
-    @testset "DataFrame" begin
-        df = DataFrame(:a => [1, 2, 3], :b => [4, 5, 6])
-
-        @testset "all cols" begin
-            expected_df = DataFrame(:Column1 => [1, 8, 27], :Column2 => [64, 125, 216])
-            @test FeatureTransforms.apply(df, p) == expected_df
-            @test p(df) == expected_df
-
-            _df = deepcopy(df)
-            FeatureTransforms.apply!(_df, p)
-            @test _df isa DataFrame
-            @test _df == DataFrame(:a => [1, 8, 27], :b => [64, 125, 216])
-        end
-
-        @testset "custom header" begin
-            expected_df = DataFrame(:x => [1, 8, 27], :y => [64, 125, 216])
-            @test FeatureTransforms.apply(df, p; header=[:x, :y]) == expected_df
-            @test p(df; header=[:x, :y]) == expected_df
-        end
-
-        @testset "cols = $c" for c in (:a, :b)
-            expected = getproperty(df, c) .^ 3
-            @test FeatureTransforms.apply(df, p; cols=[c]) == DataFrame(:Column1=>expected)
-            @test FeatureTransforms.apply(df, p; cols=c) == DataFrame(:Column1=>expected)
-            @test p(df; cols=[c]) == DataFrame(:Column1=>expected)
-        end
-
-        @testset "apply_append" begin
-            expected = DataFrame(
-                :a => df.a, :b => df.b, :Column1 => [1, 8, 27], :Column2 => [64, 125, 216]
-            )
-            @test FeatureTransforms.apply_append(df, p) == expected
-        end
-    end
 end

@@ -69,6 +69,7 @@ using FeatureTransforms.TestUtils
                 true,
                 ([1, 2, 3], [4, 5, 6]),
                 Dict(:a=>1, :b=>2),
+                FakeOneToOneTransform(),
             )
             @test !is_transformable(x)
             @test !is_transformable(typeof(x))

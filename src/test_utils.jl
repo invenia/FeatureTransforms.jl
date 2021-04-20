@@ -63,7 +63,8 @@ function is_transformable(T::Type)
     Tables.istable(T) && return true  # cannot directly check against the method with no type
     return !isempty(methodswith(T, FeatureTransforms.apply; supertypes=true))
 end
-
 is_transformable(::T) where T = is_transformable(T)
+# Need this to get around using methodswith, which would otherwise return true
+is_transformable(::Type{<:Transform}) = false
 
 end

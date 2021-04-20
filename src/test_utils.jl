@@ -8,14 +8,15 @@ Each fake [`Transform`](@ref) has different a different `cardinality`: `OneToOne
 they only need to test against these 4 fakes to guarantee their type can support any
 [`Transform`](@ref) in the package.
 
-Similarly, `is_transformable` is used to check that the output of a `transform` pipeline is
-a transformable type.
+Similarly, [`is_transformable`](@ref) is used to check that the output of a `transform`
+pipeline is a transformable type.
 """
 
 module TestUtils
 
 using ..FeatureTransforms
 using ..FeatureTransforms: OneToOne, OneToMany, ManyToOne, ManyToMany
+using InteractiveUtils: methodswith
 using Tables
 
 export FakeOneToOneTransform, FakeOneToManyTransform
@@ -56,10 +57,13 @@ end
     is_transformable(x)
 
 Determine if `x` is both a valid input and output of any [`Transform`](@ref), i.e. that it
-follows the [`transform`](@ref) interface.
-Currently, all subtypes of `Table`s and `AbstractArray`s are transformable.
+has an `apply` method defined and therefore follows the [`transform`](@ref) interface.
 """
-is_transformable(::AbstractArray) = true
-is_transformable(x) = Tables.istable(x)
+function is_transformable(T::Type)
+    Tables.istable(T) && return true  # cannot directly check against the method with no type
+    return !isempty(methodswith(T, FeatureTransforms.apply; supertypes=true))
+end
+
+is_transformable(::T) where T = is_transformable(T)
 
 end

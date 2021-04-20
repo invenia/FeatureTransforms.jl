@@ -205,54 +205,6 @@
         end
     end
 
-    @testset "NamedTuple" begin
-        @testset "all cols" begin
-            nt = (a = [1, 2, 3], b = [4, 5, 6])
-            lc = LinearCombination([1, -1])
-            expected = (Column1 = [-3, -3, -3],)
-            @test FeatureTransforms.apply(nt, lc) == expected
-            @test lc(nt) == expected
-        end
-
-        @testset "custom header" begin
-            nt = (a = [1, 2, 3], b = [4, 5, 6])
-            lc = LinearCombination([1, -1])
-            expected = (x = [-3, -3, -3],)
-            @test FeatureTransforms.apply(nt, lc; header=[:x]) == expected
-            @test lc(nt; header=[:x]) == expected
-        end
-
-        @testset "dimension mismatch" begin
-            nt = (a = [1, 2, 3], b = [4, 5, 6], c = [1, 1, 1])
-            lc = LinearCombination([1, -1])
-            @test_throws DimensionMismatch FeatureTransforms.apply(nt, lc)
-        end
-
-        @testset "specified cols" begin
-            nt = (a = [1, 2, 3], b = [4, 5, 6], c = [1, 1, 1])
-            lc = LinearCombination([1, -1])
-            expected = (Column1 = [-3, -3, -3],)
-            @test FeatureTransforms.apply(nt, lc; cols=[:a, :b]) == expected
-            @test lc(nt; cols=[:a, :b]) == expected
-        end
-
-        @testset "single col" begin
-            nt = (a = [1, 2, 3], b = [4, 5, 6])
-            lc_single = LinearCombination([-1])
-            expected = (Column1 = [-1, -2, -3],)
-            @test FeatureTransforms.apply(nt, lc_single; cols=:a) == expected
-            @test FeatureTransforms.apply(nt, lc_single; cols=[:a]) == expected
-            @test lc_single(nt; cols=:a) == expected
-        end
-
-        @testset "apply_append" begin
-            nt = (a = [1, 2, 3], b = [4, 5, 6])
-            lc = LinearCombination([1, -1])
-            expected = (a = [1, 2, 3], b = [4, 5, 6], Column1 = [-3, -3, -3])
-            @test FeatureTransforms.apply_append(nt, lc) == expected
-        end
-    end
-
     @testset "DataFrame" begin
 
         @testset "all cols" begin

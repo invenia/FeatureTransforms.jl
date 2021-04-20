@@ -166,35 +166,6 @@
         end
     end
 
-    @testset "NamedTuple" begin
-        nt = (
-            a = DateTime(2020, 1, 1, 0, 0):Hour(1):DateTime(2020, 1, 1, 2, 0),
-            b = DateTime(2020, 1, 1, 3, 0):Hour(1):DateTime(2020, 1, 1, 5, 0)
-        )
-
-        @testset "all cols" begin
-            expected = (Column1 = [0, 1, 2], Column2 = [3, 4, 5])
-            @test FeatureTransforms.apply(nt, hod) == expected
-            @test hod(nt) == expected
-
-            # Test the tranform was not mutating
-            @test nt != expected
-        end
-
-        @testset "cols = :a" begin
-            expected = (Column1 = [0, 1, 2],)
-            @test FeatureTransforms.apply(nt, hod; cols=[:a]) == expected
-            @test FeatureTransforms.apply(nt, hod; cols=:a) == expected
-            @test hod(nt; cols=:a) == expected
-        end
-
-        @testset "apply_append" begin
-            expected = merge(nt, (Column1 = [0, 1, 2], Column2 = [3, 4, 5]))
-            @test FeatureTransforms.apply_append(nt, hod) == expected
-        end
-    end
-
-
     @testset "DataFrame" begin
         df = DataFrame(
             :a => DateTime(2020, 1, 1, 0, 0):Hour(1):DateTime(2020, 1, 1, 2, 0),

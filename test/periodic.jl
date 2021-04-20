@@ -246,42 +246,6 @@
                 end
             end
 
-            @testset "NamedTuple" begin
-                nt = (a = collect(0.:2.), b = collect(3.:5.))
-                nt_expected = (Column1 = expected[1:3], Column2 = expected[4:6])
-
-                @testset "all cols" begin
-                    transformed = FeatureTransforms.apply(nt, p)
-                    @test transformed isa NamedTuple{(:Column1, :Column2)}
-                    @test collect(transformed) ≈ collect(nt_expected) atol=1e-14
-                    @test collect(p(nt)) ≈ collect(nt_expected) atol=1e-14
-
-                    _nt = deepcopy(nt)
-                    FeatureTransforms.apply!(_nt, p)
-                    @test _nt isa NamedTuple{(:a, :b)}
-                    @test collect(_nt) ≈ collect(nt_expected) atol=1e-14
-                end
-
-                @testset "cols = :a" begin
-                    transformed = FeatureTransforms.apply(nt, p; cols=[:a])
-                    @test collect(transformed) ≈ [nt_expected.Column1] atol=1e-14
-                    @test collect(p(nt; cols=:a)) ≈ [nt_expected.Column1] atol=1e-14
-
-                    @testset "mutating" for _c in (:a, [:a])
-                        _nt = deepcopy(nt)
-                        FeatureTransforms.apply!(_nt, p; cols=_c)
-                        @test _nt isa NamedTuple{(:a, :b)}  # before applying `collect`
-                        @test collect(_nt) ≈ [nt_expected.Column1, nt.b] atol=1e-14
-                    end
-                end
-
-                @testset "append_apply" begin
-                    result = FeatureTransforms.apply_append(nt, p)
-                    @test result isa NamedTuple{(:a, :b, :Column1, :Column2)}
-                    @test collect(result) ≈ collect(merge(nt, nt_expected)) atol=1e-14
-                end
-            end
-
             @testset "DataFrame" begin
                 df = DataFrame(:a => collect(0.:2.), :b => collect(3.:5.))
                 df_expected = DataFrame(:Column1 => expected[1:3], :Column2 => expected[4:6])
@@ -415,27 +379,6 @@
                     transformed = FeatureTransforms.apply(A, p; dims=d)
                     @test transformed isa KeyedArray
                     @test transformed ≈ expected atol=1e-14
-                end
-            end
-
-            @testset "NamedTuple" begin
-                x = ZonedDateTime(2020, 1, 1, tz"EST") .+ (Day(0):Day(1):Day(5))
-                nt = (a = x[1:3], b = x[4:6])
-                expected = (
-                    Column1 = _periodic.(f, x[1:3], Day(5), Day(2)),
-                    Column2 = _periodic.(f, x[4:6], Day(5), Day(2))
-                )
-
-                @testset "all cols" begin
-                    transformed = FeatureTransforms.apply(nt, p)
-                    @test collect(transformed) ≈ collect(expected) atol=1e-14
-                    @test collect(p(nt)) ≈ collect(expected) atol=1e-14
-                end
-
-                @testset "cols = :a" begin
-                    @test collect(FeatureTransforms.apply(nt, p; cols=[:a])) ≈ [expected.Column1] atol=1e-14
-                    @test collect(FeatureTransforms.apply(nt, p; cols=:a)) ≈ [expected.Column1] atol=1e-14
-                    @test collect(p(nt; cols=:a)) ≈ [expected.Column1] atol=1e-14
                 end
             end
 

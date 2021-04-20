@@ -167,33 +167,6 @@
             end
         end
 
-        @testset "NamedTuple" begin
-            nt = (a = [0.0, -0.5, 0.5], b = [1.0, 0.0, 2.0])
-            expected = (Column1 = [0.0, -0.5, 0.5], Column2 = [1.0, 0.0, 2.0])
-
-           @test FeatureTransforms.apply(nt, scaling) == expected
-
-            @testset "Mutating" begin
-                _nt = deepcopy(nt)
-                FeatureTransforms.apply!(_nt, scaling)
-                @test _nt == nt
-            end
-
-            @testset "cols = :a" begin
-                exp = (Column1=nt.a, )
-                @test FeatureTransforms.apply(nt, scaling; cols=[:a]) == exp
-                @test FeatureTransforms.apply(nt, scaling; cols=:a) == exp
-            end
-
-            @testset "Inverse" begin
-                @test FeatureTransforms.apply(nt, scaling; inverse=true) == expected
-            end
-
-            @testset "apply_append" begin
-                @test FeatureTransforms.apply_append(nt, scaling) == merge(nt, expected)
-            end
-        end
-
         @testset "DataFrame" begin
             df = DataFrame(:a => [0.0, -0.5, 0.5], :b => [1.0, 0.0, 2.0])
             df_expected = DataFrame(:Column1 => [0.0, -0.5, 0.5], :Column2 => [1.0, 0.0, 2.0])
@@ -563,74 +536,6 @@
                     baz=Base.OneTo(2),
                 )
                 @test FeatureTransforms.apply_append(A, scaling, append_dim=:baz) ≈ exp3 atol=1e-5
-            end
-        end
-
-        @testset "NamedTuple" begin
-            nt = (a = [0.0, -0.5, 0.5], b = [1.0, 0.0, 2.0])
-
-            @testset "Non-mutating" begin
-                expected = [[-0.55902, -1.11803, 0.0], [0.55902, -0.55902, 1.67705]]
-
-                scaling = MeanStdScaling(nt)
-                result = FeatureTransforms.apply(nt, scaling)
-                @test result isa NamedTuple{(:Column1, :Column2)}
-                @test collect(result) ≈ expected atol=1e-5
-
-                result = scaling(nt)
-                @test result isa NamedTuple{(:Column1, :Column2)}
-                @test collect(result) ≈ expected atol=1e-5
-            end
-
-            @testset "Mutating" begin
-                expected = [[-0.55902, -1.11803, 0.0], [0.55902, -0.55902, 1.67705]]
-                scaling = MeanStdScaling(nt)
-                _nt = deepcopy(nt)
-                FeatureTransforms.apply!(_nt, scaling)
-                @test _nt isa NamedTuple{(:a, :b)}
-                @test collect(_nt) ≈ expected atol=1e-5
-            end
-
-            @testset "cols = :a" begin
-                scaling = MeanStdScaling(nt; cols=:a)
-
-                expected = (Column1 = [0.0, -1.0, 1.0], )
-                @test FeatureTransforms.apply(nt, scaling; cols=:a) == expected
-                @test FeatureTransforms.apply(nt, scaling; cols=[:a]) == expected
-                @test scaling(nt; cols=:a) == expected
-
-                _nt = deepcopy(nt)
-                FeatureTransforms.apply!(_nt, scaling; cols=:a)
-                @test _nt == (a=[0.0, -1.0, 1.0], b=[1.0, 0.0, 2.0])
-            end
-
-            @testset "Re-apply" begin
-                scaling = MeanStdScaling(nt)
-
-                # Expect scaling parameters to be fixed to the first data applied to
-                nt2 = (a = [-1.0, 0.5, 0.0], b = [2.0, 2.0, 1.0])
-                @test nt !== nt2
-                expected2 = [[-1.67705, 0.0, -0.55902], [1.67705, 1.67705, 0.55902]]
-                @test collect(FeatureTransforms.apply(nt2, scaling)) ≈ expected2 atol=1e-5
-            end
-
-            @testset "Inverse" begin
-                scaling = MeanStdScaling(nt)
-                transformed = FeatureTransforms.apply(nt, scaling)
-                expected_inverse = (Column1 = [0.0, -0.5, 0.5], Column2 = [1.0, 0.0, 2.0])
-                inverted = FeatureTransforms.apply(transformed, scaling; inverse=true)
-                @test expected_inverse == inverted
-            end
-
-             @testset "apply_append" begin
-                scaling = MeanStdScaling(nt)
-                 expected = (
-                    Column1 = [-0.55902, -1.11803, 0.0],
-                    Column2 = [0.55902, -0.55902, 1.67705]
-                )
-                result = FeatureTransforms.apply_append(nt, scaling)
-                @test result isa NamedTuple{(:a, :b, :Column1, :Column2)}
-                @test collect(result) ≈ collect(merge(nt, expected)) atol=1e-5
             end
         end
 

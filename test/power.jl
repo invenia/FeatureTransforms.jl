@@ -125,47 +125,6 @@
         end
     end
 
-    @testset "NamedTuple" begin
-        nt = (a = [1, 2, 3], b = [4, 5, 6])
-
-        @testset "all cols" begin
-
-            expected_nt = (Column1 = [1, 8, 27], Column2 = [64, 125, 216])
-            @test FeatureTransforms.apply(nt, p) == expected_nt
-            @test p(nt) == expected_nt
-
-            _nt = deepcopy(nt)
-            FeatureTransforms.apply!(_nt, p)
-            @test _nt isa NamedTuple{(:a, :b)}
-            @test _nt == (a = [1, 8, 27], b = [64, 125, 216])
-        end
-
-        @testset "custom header" begin
-            expected_nt = (x = [1, 8, 27], y = [64, 125, 216])
-            @test FeatureTransforms.apply(nt, p; header=[:x, :y]) == expected_nt
-            @test p(nt; header=[:x, :y]) == expected_nt
-        end
-
-        @testset "cols = $c" for c in (:a, :b)
-            expected = getproperty(nt, c) .^3
-
-            @test FeatureTransforms.apply(nt, p; cols=c) == (Column1 = expected, )
-            @test p(nt; cols=c) == (Column1 = expected, )
-
-            @testset "mutating" for _c in (c, [c])
-                _nt = deepcopy(nt)
-                FeatureTransforms.apply!(_nt, p; cols=_c)
-                @test _nt == merge(nt, NamedTuple{(c,)}((expected,)))
-                @test _nt isa NamedTuple
-            end
-        end
-
-        @testset "apply_append" begin
-            expected = merge(nt, (Column1 = [1, 8, 27], Column2 = [64, 125, 216]))
-            @test FeatureTransforms.apply_append(nt, p) == expected
-        end
-    end
-
     @testset "DataFrame" begin
         df = DataFrame(:a => [1, 2, 3], :b => [4, 5, 6])
 

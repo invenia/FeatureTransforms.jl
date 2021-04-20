@@ -141,34 +141,6 @@
         end
     end
 
-    @testset "NamedTuple" begin
-        categories = ["foo", "bar", "baz", "foo2", "bar2"]
-        ohe = OneHotEncoding(categories)
-        nt = (a = ["foo", "bar"], b = ["foo2", "bar2"])
-
-        @testset "all cols" begin
-            expected = NamedTuple{Tuple(Symbol.(:Column, x) for x in 1:5)}(
-               eachcol(Bool[1 0 0 0 0; 0 1 0 0 0; 0 0 0 1 0; 0 0 0 0 1])
-            )
-            @test FeatureTransforms.apply(nt, ohe) == expected
-            @test ohe(nt) == expected
-        end
-
-        @testset "cols = :a" begin
-            expected = NamedTuple{Tuple(Symbol.(:Column, x) for x in 1:5)}(
-                ([1, 0], [0, 1], [0, 0], [0, 0], [0, 0])
-            )
-            @test FeatureTransforms.apply(nt, ohe; cols=[:a]) == expected
-            @test FeatureTransforms.apply(nt, ohe; cols=:a) == expected
-            @test ohe(nt; cols=:a) == expected
-        end
-
-        @testset "apply_append" begin
-            nt = (a = ["foo", "bar"], b = ["foo2", "bar2"])
-            @test FeatureTransforms.apply_append(nt, ohe) == merge(nt, ohe(nt))
-        end
-    end
-
     @testset "DataFrame" begin
         categories = ["foo", "bar", "baz", "foo2", "bar2"]
         ohe = OneHotEncoding(categories)

@@ -38,19 +38,19 @@ for C in (:OneToOne, :OneToMany, :ManyToOne, :ManyToMany)
 end
 
 function FeatureTransforms._apply(A, ::FakeOneToOneTransform; kwargs...)
-    return ones(size(A))
+    return replace(one, A)
 end
 
 function FeatureTransforms._apply(A, ::FakeOneToManyTransform; kwargs...)
-    return hcat(ones(size(A)), ones(size(A)))
+    return hcat(replace(one, A), replace(one, A))
 end
 
-function FeatureTransforms._apply(A, ::FakeManyToOneTransform; dims, kwargs...)
-    return ones(size(first(A)))
+function FeatureTransforms._apply(A, ::FakeManyToOneTransform; kwargs...)
+    return replace(one, first(A))
 end
 
 function FeatureTransforms._apply(A, ::FakeManyToManyTransform; kwargs...)
-    return hcat(ones(size(A)), ones(size(A)))
+    return hcat(replace(one, A), replace(one, A))
 end
 
 """

@@ -11,6 +11,13 @@ using FeatureTransforms.TestUtils
 
         M = reshape(1:9, 3, 3)
         @test FeatureTransforms.apply(M, t) == ones(3, 3)
+
+        # TODO: remove when refactoring tests
+        M = KeyedArray(M; a=["a", "b", "c"], b=[:x, :y, :z])
+        expected = KeyedArray(ones(3, 3); a=["a", "b", "c"], b=[:x, :y, :z])
+        result = FeatureTransforms.apply(M, t)
+        @test result == expected
+        @test result isa KeyedArray
     end
 
     @testset "FakeOneToManyTransform" begin
@@ -22,6 +29,13 @@ using FeatureTransforms.TestUtils
 
         M = reshape(1:9, 3, 3)
         @test FeatureTransforms.apply(M, t) == ones(3, 6)
+
+        # TODO: remove when refactoring tests
+        M = KeyedArray(M; a=["a", "b", "c"], b=[:x, :y, :z])
+        expected = KeyedArray(ones(3, 6); a=["a", "b", "c"], b=[:x, :y, :z, :x, :y, :z])
+        result = FeatureTransforms.apply(M, t)
+        @test result == expected
+        @test result isa KeyedArray
     end
 
     @testset "FakeManyToOneTransform" begin
@@ -33,6 +47,13 @@ using FeatureTransforms.TestUtils
 
         M = reshape(1:9, 3, 3)
         @test FeatureTransforms.apply(M, t; dims=1) == ones(3)
+
+        # TODO: remove when refactoring tests
+        M = KeyedArray(M; a=["a", "b", "c"], b=[:x, :y, :z])
+        expected = KeyedArray(ones(3); a=["a", "b", "c"])
+        result = FeatureTransforms.apply(M, t; dims=:b)
+        @test result == expected
+        @test result isa KeyedArray
     end
 
     @testset "FakeManyToManyTransform" begin
@@ -44,6 +65,13 @@ using FeatureTransforms.TestUtils
 
         M = reshape(1:9, 3, 3)
         @test FeatureTransforms.apply(M, t) == ones(3, 6)
+
+        # TODO: remove when refactoring tests
+        M = KeyedArray(M; a=["a", "b", "c"], b=[:x, :y, :z])
+        expected = KeyedArray(ones(3, 6); a=["a", "b", "c"], b=[:x, :y, :z, :x, :y, :z])
+        result = FeatureTransforms.apply(M, t)
+        @test result == expected
+        @test result isa KeyedArray
     end
 
 

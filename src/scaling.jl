@@ -69,7 +69,7 @@ struct MeanStdScaling <: AbstractScaling
 end
 
 # Set std to 0 using corrected=false if x is a singleton
-compute_stats(x) = (mean(x), std(x; corrected=(length(x) != 1))
+compute_stats(x) = (mean(x), std(x; corrected=(length(x) != 1)))
 
 function _apply(A::AbstractArray, scaling::MeanStdScaling; inverse=false, eps=1e-3, kwargs...)
     inverse && return scaling.μ .+ scaling.σ .* A

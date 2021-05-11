@@ -312,6 +312,12 @@
                 scaling = MeanStdScaling(x)
                 @test FeatureTransforms.apply_append(x, scaling, append_dim=1) == vcat(x, expected)
             end
+                        
+            @testset "singleton" begin
+                x = [2.]
+                scaling = MeanStdScaling(x)
+                @test FeatureTransforms.apply(x, scaling) == [0.]
+            end
         end
 
         @testset "Matrix" begin

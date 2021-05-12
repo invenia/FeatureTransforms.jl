@@ -255,6 +255,26 @@
                     @test scaling.σ == 0.5
                 end
             end
+
+            @testset "std correction" begin
+                @testset "singleton" begin
+                    x = [2.]
+
+                    scaling = MeanStdScaling(x)
+                    @test scaling.μ == 2.
+                    @test isnan(scaling.σ)
+
+                    scaling = MeanStdScaling(x; corrected=false)
+                    @test scaling.μ == 2.
+                    @test scaling.σ == 0.
+                end
+
+                @testset "Array" begin
+                    scaling = MeanStdScaling(M; corrected=false)
+                    @test scaling.μ == 0.5
+                    @test scaling.σ ≈ 0.81650 atol=1e-5
+                end
+            end
         end
 
         @testset "Vector" begin
@@ -311,12 +331,6 @@
             @testset "apply_append" begin
                 scaling = MeanStdScaling(x)
                 @test FeatureTransforms.apply_append(x, scaling, append_dim=1) == vcat(x, expected)
-            end
-                        
-            @testset "singleton" begin
-                x = [2.]
-                scaling = MeanStdScaling(x)
-                @test FeatureTransforms.apply(x, scaling) == [0.]
             end
         end
 

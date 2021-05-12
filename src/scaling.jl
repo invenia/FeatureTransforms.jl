@@ -31,8 +31,8 @@ struct MeanStdScaling <: AbstractScaling
     σ::Real
 
     """
-        MeanStdScaling(A::AbstractArray; dims=:, inds=:) -> MeanStdScaling
-        MeanStdScaling(table, [cols]) -> MeanStdScaling
+        MeanStdScaling(A::AbstractArray; dims=:, inds=:, corrected=true) -> MeanStdScaling
+        MeanStdScaling(table, [cols], corrected=true) -> MeanStdScaling
 
     Construct a [`MeanStdScaling`](@ref) transform from the statistics of the given data.
     By default _all the data_ is considered when computing the mean and standard deviation.
@@ -46,29 +46,31 @@ struct MeanStdScaling <: AbstractScaling
     # `AbstractArray` keyword arguments
     * `dims=:`: the dimension along which to take the `inds` slices. Default uses all dims.
     * `inds=:`: the indices to use in computing the statistics. Default uses all indices.
+    * `corrected=true`: passed to `Statistics.std`.
 
     # `Table` keyword arguments
     * `cols`: the columns to use in computing the statistics. Default uses all columns.
+    * `corrected=true`: passed to `Statistics.std`.
 
     !!! note
         If you want the `MeanStdScaling` to transform your data consistently you should use
         the same `inds`, `dims`, or `cols` keywords when calling `apply`. Otherwise, `apply`
         might rescale the wrong data or throw an error.
     """
-    function MeanStdScaling(A::AbstractArray; dims=:, inds=:)
-        dims == Colon() && return new(compute_stats(A)...)
-        return new(compute_stats(selectdim(A, dims, inds))...)
+    function MeanStdScaling(A::AbstractArray; dims=:, inds=:, corrected=true)
+        dims == Colon() && return new(compute_stats(A; corrected=corrected)...)
+        return new(compute_stats(selectdim(A, dims, inds); corrected=corrected)...)
     end
 
-    function MeanStdScaling(table; cols=_get_cols(table))
+    function MeanStdScaling(table; cols=_get_cols(table), corrected=true)
         Tables.istable(table) || throw(MethodError(MeanStdScaling, table))
         columntable = Tables.columns(table)
         data = reduce(vcat, [getproperty(columntable, c) for c in _to_vec(cols)])
-        return new(compute_stats(data)...)
+        return new(compute_stats(data; corrected=corrected)...)
     end
 end
 
-compute_stats(x) = (mean(x), std(x))
+compute_stats(x; corrected) = (mean(x), std(x; corrected=corrected))
 
 function _apply(A::AbstractArray, scaling::MeanStdScaling; inverse=false, eps=1e-3, kwargs...)
     inverse && return scaling.μ .+ scaling.σ .* A

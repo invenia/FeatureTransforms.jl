@@ -1,15 +1,14 @@
 # TODO: test on rowtable https://github.com/invenia/FeatureTransforms.jl/issues/64
 @testset "$TableType" for TableType in (columntable, DataFrame)
 
-    @testset "is_transformable" begin
-        table = TableType((a=[1, 2, 3], b=[4, 5, 6]))
-        @test is_transformable(table)
-    end
+    table = TableType((a=[1, 2, 3], b=[4, 5, 6]))
+
+    @test is_transformable(table)
 
     @testset "apply" begin
 
         @testset "OneToOne" begin
-            table = TableType((a=[1, 2, 3], b=[4, 5, 6]))
+
             T = FakeOneToOneTransform()
 
             @test isequal(
@@ -27,7 +26,7 @@
         end
 
         @testset "OneToMany" begin
-            table = TableType((a=[1, 2, 3], b=[4, 5, 6]))
+
             T = FakeOneToManyTransform()
 
             @test isequal(
@@ -45,7 +44,7 @@
         end
 
         @testset "ManyToOne" begin
-            table = TableType((a=[1, 2, 3], b=[4, 5, 6]))
+
             T = FakeManyToOneTransform()
 
             @test isequal(
@@ -63,7 +62,7 @@
         end
 
         @testset "ManyToMany" begin
-            table = TableType((a=[1, 2, 3], b=[4, 5, 6]))
+
             T = FakeManyToManyTransform()
 
             @test isequal(
@@ -92,19 +91,19 @@
     @testset "apply!" begin
         T = FakeOneToOneTransform()
 
-        table = TableType((a=[1, 2, 3], b=[4, 5, 6]))
-        FeatureTransforms.apply!(table, T)
-        @test table == TableType((a=ones(3), b=ones(3)))
+        _table = deepcopy(table)
+        FeatureTransforms.apply!(_table, T)
+        @test _table == TableType((a=ones(3), b=ones(3)))
 
-        table = TableType((a=[1, 2, 3], b=[4, 5, 6]))
-        FeatureTransforms.apply!(table, T; cols=:a)
-        @test table == TableType((a=[1, 1, 1], b=[4, 5, 6]))
+        _table = deepcopy(table)
+        FeatureTransforms.apply!(_table, T; cols=:a)
+        @test _table == TableType((a=[1, 1, 1], b=[4, 5, 6]))
     end
 
     @testset "apply_append" begin
 
         @testset "OneToOne" begin
-            table = TableType((a=[1, 2, 3], b=[4, 5, 6]))
+
             T = FakeOneToOneTransform()
 
             @test isequal(
@@ -119,7 +118,7 @@
         end
 
         @testset "OneToMany" begin
-            table = TableType((a=[1, 2, 3], b=[4, 5, 6]))
+
             T = FakeOneToManyTransform()
 
             @test isequal(
@@ -142,7 +141,7 @@
         end
 
         @testset "ManyToOne" begin
-            table = TableType((a=[1, 2, 3], b=[4, 5, 6]))
+
             T = FakeManyToOneTransform()
 
             @test isequal(
@@ -157,7 +156,7 @@
         end
 
         @testset "ManyToMany" begin
-            table = TableType((a=[1, 2, 3], b=[4, 5, 6]))
+
             T = FakeManyToManyTransform()
 
             @test isequal(

@@ -1,4 +1,4 @@
-@testset "vector" begin
+@testset "matrix" begin
 
     @testset "is_transformable" begin
         x = [1 2 3; 4 5 6]

@@ -4,59 +4,23 @@
     @test lc isa Transform
     @test cardinality(lc) == ManyToOne()
 
-    @testset "Matrix" begin
+    @testset "default reduces over columns" begin
+        M = [1 1; 2 2; 3 5]
+        lc = LinearCombination([1, -1, 1])
+        @test FeatureTransforms.apply(M, lc) == [2, 4]
+        @test lc(M) == [2, 4]
+    end
 
-        @testset "default reduces over columns" begin
-            M = [1 1; 2 2; 3 5]
-            lc = LinearCombination([1, -1, 1])
-            @test FeatureTransforms.apply(M, lc) == [2, 4]
-            @test lc(M) == [2, 4]
-        end
+    @testset "dims = :" begin
+        M = [1 1; 2 2; 3 5]
+        lc = LinearCombination([1, -1, 1])
+        @test_deprecated FeatureTransforms.apply(M, lc; dims=:)
+    end
 
-        @testset "dims" begin
-            @testset "dims = :" begin
-                M = [1 1; 2 2; 3 5]
-                lc = LinearCombination([1, -1, 1])
-                @test_deprecated FeatureTransforms.apply(M, lc; dims=:)
-            end
-
-            @testset "dims = 1" begin
-                M = [1 1; 2 2; 3 5]
-                lc = LinearCombination([1, -1, 1])
-                @test FeatureTransforms.apply(M, lc; dims=1) == [2, 4]
-                @test lc(M; dims=1) == [2, 4]
-            end
-
-            @testset "dims = 2" begin
-                M = [1 1; 2 2; 3 5]
-                lc = LinearCombination([1, -1])
-                @test FeatureTransforms.apply(M, lc; dims=2) == [0, 0, -2]
-            end
-        end
-
-        @testset "dimension mismatch" begin
-            M = [1 1 1; 2 2 2]
-            lc = LinearCombination([1, -1, 1])  # there are only 2 rows
-            @test_throws DimensionMismatch FeatureTransforms.apply(M, lc)
-        end
-
-        @testset "specified inds" begin
-            M = [1 1; 5 2; 2 4]
-            lc = LinearCombination([1, -1])
-            @test FeatureTransforms.apply(M, lc; inds=[2, 3]) == [3, -2]
-            @test lc(M; inds=[2, 3]) == [3, -2]
-        end
-
-        @testset "apply_append" begin
-            M = [1 1 1; 2 2 2; 3 3 3]
-            lc = LinearCombination([1, 1, 1])
-
-            expected1 = [1 1 1; 2 2 2; 3 3 3; 6 6 6]
-            @test FeatureTransforms.apply_append(M, lc; dims=1, append_dim=1) == expected1
-
-            expected2 = [1 1 1 3; 2 2 2 6; 3 3 3 9]
-            @test FeatureTransforms.apply_append(M, lc; dims=2, append_dim=2) == expected2
-        end
+    @testset "dimension mismatch" begin
+        M = [1 1 1; 2 2 2]
+        lc = LinearCombination([1, -1, 1])  # there are only 2 rows
+        @test_throws DimensionMismatch FeatureTransforms.apply(M, lc)
     end
 
     @testset "N-dim Array" begin

@@ -10,43 +10,6 @@
             @test IdentityScaling([1, 2, 3]) == IdentityScaling()
         end
 
-        @testset "Matrix" begin
-            M = [0.0 -0.5 0.5; 0.0 1.0 2.0]
-            M_expected = [0.0 -0.5 0.5; 0.0 1.0 2.0]
-
-           @test FeatureTransforms.apply(M, scaling) == M_expected
-
-            @testset "Mutating" begin
-                _M = copy(M)
-                FeatureTransforms.apply!(_M, scaling)
-                @test _M == M_expected
-            end
-
-            @testset "dims = $d" for d in (Colon(), 1, 2)
-                @test FeatureTransforms.apply(M, scaling; dims=d) == M_expected
-            end
-
-            @testset "inds" begin
-                @test FeatureTransforms.apply(M, scaling; inds=[2, 3]) == [0.0, -0.5]
-                @test FeatureTransforms.apply(M, scaling; dims=:, inds=[2, 3]) == [0.0, -0.5]
-                @test FeatureTransforms.apply(M, scaling; dims=1, inds=[2]) == [0.0 1.0 2.0]
-                @test FeatureTransforms.apply(M, scaling; dims=2, inds=[2]) == reshape([-0.5; 1.0], 2, 1)
-            end
-
-            @testset "Inverse" begin
-                @test FeatureTransforms.apply(M, scaling; inverse=true) == M_expected
-            end
-
-            @testset "apply_append" begin
-                exp1 = cat(M, M_expected, dims=1)
-                @test FeatureTransforms.apply_append(M, scaling, append_dim=1) == exp1
-                exp2 = cat(M, M_expected, dims=2)
-                @test FeatureTransforms.apply_append(M, scaling, append_dim=2) == exp2
-                exp3 = cat(M, M_expected, dims=3)
-                @test FeatureTransforms.apply_append(M, scaling, append_dim=3) == exp3
-            end
-        end
-
         @testset "AxisArray" begin
             M = [0.0 -0.5 0.5; 0.0 1.0 2.0]
             A = AxisArray(M; foo=["a", "b"], bar=["x", "y", "z"])
@@ -166,79 +129,24 @@
             end
         end
 
-        @testset "Matrix" begin
+        @testset "Re-apply" begin
+            M = [0.0 -0.5 0.5; 0.0 1.0 2.0]
+            scaling = MeanStdScaling(M; dims=2)
+            new_M = [1.0 -2.0 -1.0; 0.5 0.0 0.5]
+            @test M !== new_M
+            # Expect scaling parameters to be fixed to the first data applied to
+            expected_reapply = [0.559017 -2.79508 -1.67705; 0.0 -0.55901 0.0]
+            @test FeatureTransforms.apply(new_M, scaling; dims=2) ≈ expected_reapply atol=1e-5
+        end
+
+        @testset "Inverse" begin
             M = [0.0 -0.5 0.5; 0.0 1.0 2.0]
             M_expected = [-0.559017 -1.11803 0.0; -0.559017 0.559017 1.67705]
+            scaling = MeanStdScaling(M)
+            transformed = FeatureTransforms.apply(M, scaling)
 
-            @testset "Non-mutating" begin
-                scaling = MeanStdScaling(M)
-                @test FeatureTransforms.apply(M, scaling) ≈ M_expected atol=1e-5
-                @test scaling(M) ≈ M_expected atol=1e-5
-
-                # Test the transform was not mutating
-                @test !isapprox(M, M_expected; atol=1e-5)
-            end
-
-            @testset "Mutating" begin
-                scaling = MeanStdScaling(M)
-                _M = copy(M)
-                FeatureTransforms.apply!(_M, scaling)
-                @test _M ≈ M_expected atol=1e-5
-            end
-
-            @testset "dims = :" begin
-                scaling = MeanStdScaling(M; dims=:)
-                @test FeatureTransforms.apply(M, scaling; dims=:) ≈ M_expected atol=1e-5
-            end
-
-            @testset "dims = 1" begin
-                scaling = MeanStdScaling(M; dims=1)
-                @test FeatureTransforms.apply(M, scaling; dims=1) ≈ M_expected atol=1e-5
-            end
-
-            @testset "dims = 2" begin
-                scaling = MeanStdScaling(M; dims=2)
-                @test FeatureTransforms.apply(M, scaling; dims=2) ≈ M_expected atol=1e-5
-            end
-
-            @testset "inds" begin
-                scaling = MeanStdScaling(M)
-                @test FeatureTransforms.apply(M, scaling; inds=[2, 3]) ≈ [-0.559017, -1.11803] atol=1e-5
-                @test FeatureTransforms.apply(M, scaling; dims=:, inds=[2, 3]) ≈ [-0.559017, -1.11803] atol=1e-5
-
-                scaling = MeanStdScaling(M; dims=1, inds=[2])
-                @test FeatureTransforms.apply(M, scaling; dims=1, inds=[2]) ≈ [-1.0 0.0 1.0] atol=1e-5
-
-                scaling = MeanStdScaling(M; dims=2, inds=[2])
-                @test FeatureTransforms.apply(M, scaling; dims=2, inds=[2]) ≈ [-0.70711 0.70711]' atol=1e-5
-            end
-
-            @testset "Re-apply" begin
-                scaling = MeanStdScaling(M; dims=2)
-                new_M = [1.0 -2.0 -1.0; 0.5 0.0 0.5]
-                @test M !== new_M
-                # Expect scaling parameters to be fixed to the first data applied to
-                expected_reapply = [0.559017 -2.79508 -1.67705; 0.0 -0.55901 0.0]
-                @test FeatureTransforms.apply(new_M, scaling; dims=2) ≈ expected_reapply atol=1e-5
-            end
-
-            @testset "Inverse" begin
-                scaling = MeanStdScaling(M)
-                transformed = FeatureTransforms.apply(M, scaling)
-
-                @test transformed ≈ M_expected atol=1e-5
-                @test FeatureTransforms.apply(transformed, scaling; inverse=true) ≈ M atol=1e-5
-            end
-
-            @testset "apply_append" begin
-                scaling = MeanStdScaling(M)
-                exp1 = cat(M, M_expected, dims=1)
-                @test FeatureTransforms.apply_append(M, scaling, append_dim=1) ≈ exp1 atol=1e-5
-                exp2 = cat(M, M_expected, dims=2)
-                @test FeatureTransforms.apply_append(M, scaling, append_dim=2) ≈ exp2 atol=1e-5
-                exp3 = cat(M, M_expected, dims=3)
-                @test FeatureTransforms.apply_append(M, scaling, append_dim=3) ≈ exp3 atol=1e-5
-            end
+            @test transformed ≈ M_expected atol=1e-5
+            @test FeatureTransforms.apply(transformed, scaling; inverse=true) ≈ M atol=1e-5
         end
 
         @testset "AxisArray" begin

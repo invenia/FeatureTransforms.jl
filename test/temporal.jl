@@ -30,39 +30,6 @@
         end
     end
 
-    @testset "Matrix" begin
-        x = [
-            DateTime(2020, 1, 1, 1, 0):Hour(1):DateTime(2020, 1, 1, 3, 0);
-            DateTime(2020, 1, 1, 9, 0):Hour(1):DateTime(2020, 1, 1, 11, 0)
-        ]
-        M = reshape(x, 3, 2)
-        expected = [1 9; 2 10; 3 11]
-
-        @test FeatureTransforms.apply(M, hod) == expected
-        @test hod(M) == expected
-
-        # Test the tranform was not mutating
-        @test M != expected
-
-        @testset "dims = $d" for d in (Colon(), 1, 2)
-            @test FeatureTransforms.apply(M, hod; dims=d) == expected
-            @test hod(M; dims=d) == expected
-        end
-
-        @testset "inds" begin
-            @test FeatureTransforms.apply(M, hod; inds=[2, 3]) == [2, 3]
-            @test FeatureTransforms.apply(M, hod; dims=:, inds=[2, 3]) == [2, 3]
-            @test FeatureTransforms.apply(M, hod; dims=1, inds=[2]) == [2 10]
-            @test FeatureTransforms.apply(M, hod; dims=2, inds=[2]) == reshape([9; 10; 11], 3, 1)
-        end
-
-        @testset "apply_append" begin
-            @test FeatureTransforms.apply_append(M, hod, append_dim=1) == vcat(M, expected)
-            @test FeatureTransforms.apply_append(M, hod, append_dim=2) == hcat(M, expected)
-            @test FeatureTransforms.apply_append(M, hod, append_dim=3) == cat(M, expected, dims=3)
-        end
-    end
-
     @testset "AxisArray" begin
         x = [
             DateTime(2020, 1, 1, 1, 0):Hour(1):DateTime(2020, 1, 1, 2, 0);

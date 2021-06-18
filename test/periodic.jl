@@ -102,36 +102,6 @@
             expected = expected_dict[f]
             p = Periodic(f, 5, 2)
 
-            @testset "Matrix" begin
-                M = reshape(0.:5., (3, 2))
-                M_expected = reshape(expected, (3, 2))
-
-                @testset "dims = $d" for d in (Colon(), 1, 2)
-                    @test FeatureTransforms.apply(M, p; dims=d) ≈ M_expected atol=1e-14
-                    @test p(M; dims=d) ≈ M_expected atol=1e-14
-
-                    _M = copy(M)
-                    FeatureTransforms.apply!(_M, p; dims=d)
-                    @test _M ≈ M_expected atol=1e-14
-                end
-
-                @testset "inds" begin
-                    @test FeatureTransforms.apply(M, p; inds=[2, 3]) ≈ M_expected[[2, 3]] atol=1e-14
-                    @test FeatureTransforms.apply(M, p; dims=:, inds=[2, 3]) ≈ M_expected[[2, 3]] atol=1e-14
-                    @test FeatureTransforms.apply(M, p; dims=1, inds=[2]) ≈ reshape(M_expected[[2, 5]], 1, 2) atol=1e-14
-                    @test FeatureTransforms.apply(M, p; dims=2, inds=[2]) ≈ reshape(M_expected[[4, 5, 6]], 3, 1) atol=1e-14
-                end
-
-                @testset "append_apply" begin
-                    exp1 = vcat(M, M_expected)
-                    @test FeatureTransforms.apply_append(M, p, append_dim=1) ≈ exp1 atol=1e-14
-                    exp2 = hcat(M, M_expected)
-                    @test FeatureTransforms.apply_append(M, p, append_dim=2) ≈ exp2 atol=1e-14
-                    exp3 = cat(M, M_expected, dims=3)
-                    @test FeatureTransforms.apply_append(M, p, append_dim=3) ≈ exp3 atol=1e-14
-                end
-            end
-
             @testset "AxisArray" begin
                 x = collect(0.:5.)
                 A = AxisArray(reshape(x, (3, 2)), foo=["a", "b", "c"], bar=["x", "y"])
@@ -268,18 +238,6 @@
 
                 @test FeatureTransforms.apply(x, p) ≈ expected atol=1e-14
                 @test p(x) ≈ expected atol=1e-14
-            end
-
-            @testset "Matrix" begin
-                x = ZonedDateTime(2020, 1, 1, tz"EST") .+ (Day(0):Day(1):Day(5))
-                M = reshape(x, (3, 2))
-                expected = _periodic.(f, x, Day(5), Day(2))
-                expected = reshape(expected, (3, 2))
-
-                @testset "dims = $d" for d in (Colon(), 1, 2)
-                    @test FeatureTransforms.apply(M, p; dims=d) ≈ expected atol=1e-14
-                    @test p(M; dims=d) ≈ expected atol=1e-14
-                end
             end
 
             @testset "AxisArray" begin

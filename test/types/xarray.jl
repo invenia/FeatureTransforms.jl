@@ -1,7 +1,5 @@
 @testset "$ArrayType" for ArrayType in (AxisArray, KeyedArray)
 
-    # TODO: test on dims=:foo, :bar
-
     @testset "is_transformable" begin
         x = ArrayType([1 2 3; 4 5 6], foo=["a", "b"], bar=[:x, :y, :z])
         @test is_transformable(x)
@@ -121,4 +119,23 @@
 
     end
 
+    if ArrayType == KeyedArray
+        @testset "indexing with dims" begin
+
+            T = FakeOneToOneTransform()
+
+            # apply
+            @test FeatureTransforms.apply(x, T; dims=:foo) == ones(2, 3)
+            @test FeatureTransforms.apply(x, T; dims=:bar) == ones(2, 3)
+
+            # apply to certain dims/inds
+            @test FeatureTransforms.apply(x, T; dims=:bar, inds=Key([:x, :z])) == ones(2, 2)
+
+            # apply_append
+            @test isequal(
+                FeatureTransforms.apply_append(x, T; dims=:foo, append_dim=:foo),
+                cat(x, ones(2, 3); dims=:foo)
+            )
+        end
+    end
 end

@@ -26,4 +26,5 @@ using TimeZones
 
     include("types/tables.jl")
     include("types/vector.jl")
+    include("types/matrix.jl")
 end

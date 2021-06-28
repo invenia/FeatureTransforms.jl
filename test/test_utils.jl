@@ -1,5 +1,3 @@
-using FeatureTransforms.TestUtils
-
 @testset "test_utils.jl" begin
 
     @testset "FakeOneToOneTransform" begin

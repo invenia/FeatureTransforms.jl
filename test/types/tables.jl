@@ -98,6 +98,10 @@
         _table = deepcopy(table)
         FeatureTransforms.apply!(_table, T; cols=:a)
         @test _table == TableType((a=[1, 1, 1], b=[4, 5, 6]))
+
+        _table = deepcopy(table)
+        @test_broken FeatureTransforms.apply!(_table, T; cols=:b, dims=[1, 2])
+        @test_broken _table == TableType((a=[1, 2, 3], b=[1, 1, 6]))
     end
 
     @testset "apply_append" begin

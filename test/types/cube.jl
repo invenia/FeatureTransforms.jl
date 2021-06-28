@@ -44,7 +44,11 @@
         @test _x == ones(2, 3, 4)
 
         # https://github.com/invenia/FeatureTransforms.jl/issues/68
-        @test_broken FeatureTransforms.apply!(copy(x), T; inds=[1, 2])
+        _x = copy(x)
+        @test_broken FeatureTransforms.apply!(_x, T; dims=2, inds=[1, 2])
+        @test_broken _x == cat(
+            [1 1 5; 1 1 6], [1 1 11; 1 1 12], [1 1 17; 1 1 18], [1 1 23; 1 1 24]; dims=3
+        )
     end
 
     @testset "apply_append" begin

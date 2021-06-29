@@ -134,6 +134,12 @@ function apply_append(table, t; kwargs...)
     return T(merge(Tables.columntable(table), result))
 end
 
+function apply_append(table::Tables.RowTable, t; kwargs...)
+    T = Tables.materializer(table)
+    result = apply(table, t; kwargs...)
+    return T(merge.(Tables.rowtable(table), result))
+end
+
 # These methods format data according to the cardinality of the Transform.
 # Most Transforms don't require any formatting, only those that are ManyToOne do.
 # Note: we don't yet have a ManyToMany transform, so those might need separate treatment.

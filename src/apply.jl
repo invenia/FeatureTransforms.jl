@@ -118,7 +118,8 @@ the usual [`Transform`](@ref) being invoked.
 function apply_append(A::AbstractArray, t; append_dim, kwargs...)::AbstractArray
     result = apply(A, t; kwargs...)
     result = _postformat(cardinality(t), result, A, append_dim)
-    return cat(A, result; dims=append_dim)
+    # Call parent to avoid clashing axis/key names in concatenated result
+    return cat(A, parent(result); dims=append_dim)
 end
 
 """
@@ -153,5 +154,5 @@ _postformat(::Cardinality, result, A, append_dim) = result
 function _postformat(::ManyToOne, result, A, append_dim)
     new_size = collect(size(A))
     setindex!(new_size, 1, dim(A, append_dim))
-    return reshape(result, new_size...)
+    return copy(reshape(result, new_size...))  # return a copy to remove the reshape type
 end

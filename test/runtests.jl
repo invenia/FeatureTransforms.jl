@@ -1,5 +1,6 @@
 using AxisArrays
 using AxisKeys
+using Base: ReshapedArray
 using DataFrames: DataFrame
 using Dates
 using Documenter: doctest

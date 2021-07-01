@@ -1,4 +1,4 @@
-@testset "$ArrayType" for ArrayType in (AxisArray, KeyedArray)
+@testset "$ArrayType" for ArrayType in (AxisArray, KeyedArray, NamedDimsArray)
 
     x = ArrayType([1 2 3; 4 5 6], foo=["a", "b"], bar=[:x, :y, :z])
 
@@ -114,7 +114,7 @@
 
     end
 
-    if ArrayType == KeyedArray
+    if ArrayType != AxisArray
         @testset "indexing with dims" begin
 
             T = FakeOneToOneTransform()

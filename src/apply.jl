@@ -118,8 +118,8 @@ the usual [`Transform`](@ref) being invoked.
 function apply_append(A::AbstractArray, t; append_dim, kwargs...)::AbstractArray
     result = apply(A, t; kwargs...)
     result = _postformat(cardinality(t), result, A, append_dim)
-    # Call parent to avoid clashing axis/key names in concatenated result
-    return cat(A, parent(result); dims=append_dim)
+    # Conver result to Array to avoid clashing axis/key names in concatenated result
+    return cat(A, Array(result); dims=append_dim)
 end
 
 """

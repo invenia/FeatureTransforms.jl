@@ -1,6 +1,11 @@
-@testset "matrix" begin
+# Want to test that certain subtypes of arrays are compatible
+_make_matrix(::Type{Matrix}) = [1 2 3; 4 5 6]
+_make_matrix(::Type{SubArray}) = view([1 2 3; 4 5 6], :, :)
+_make_matrix(::Type{ReshapedArray}) = reshape([1 2 3; 4 5 6], 2, 3)
 
-    x = [1 2 3; 4 5 6]
+@testset "$MatrixType" for MatrixType in (Matrix, SubArray, ReshapedArray)
+
+    x = _make_matrix(MatrixType)
 
     @test is_transformable(x)
 

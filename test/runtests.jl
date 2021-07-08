@@ -8,7 +8,7 @@ using FeatureTransforms
 using FeatureTransforms: _periodic
 using FeatureTransforms: cardinality, OneToOne, OneToMany, ManyToOne, ManyToMany
 using FeatureTransforms.TestUtils
-using Tables: columntable, istable, rowtable
+using Tables: columntable, isrowtable, istable, rowtable
 using Test
 using TimeZones
 

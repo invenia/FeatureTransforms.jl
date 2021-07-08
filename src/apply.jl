@@ -89,23 +89,33 @@ function apply(table, t::Transform; cols=_get_cols(table), header=nothing, kwarg
     return Tables.materializer(table)(_to_table(result, header))
 end
 
+# Prevents Vector{NamedTuple} from using the AbstractArray method above
+function apply(table::Tables.RowTable, t::Transform; kwargs...)
+    return rowtable(apply(Tables.columntable(table), t; kwargs...))
+end
+
 """
     apply!(table::T, ::Transform; [cols])::T where T
 
 Applies the [`Transform`](@ref) to each of the specified columns in the `table`.
 If no `cols` are specified, then the [`Transform`](@ref) is applied to all columns.
+
+!!! Note
+  `apply!` does not support `RowTable`s since the `NamedTuple` rows are immutable.
 """
 function apply!(table::T, t::Transform; cols=_get_cols(table), kwargs...)::T where T
     Tables.istable(table) || throw(MethodError(apply!, (table, t)))
 
-    # Extract a columns iterator that we should be able to use to mutate the data.
-    # NOTE: Mutation is not guaranteed for all table types, but it avoid copying the data
-    coltable = Tables.columntable(table)
     for cname in _to_vec(cols)
-        apply!(getproperty(coltable, cname), t; kwargs...)
+        apply!(getproperty(table, cname), t; kwargs...)
     end
 
     return table
+end
+
+# Prevents Vector{NamedTuple} from using the AbstractArray method above
+function apply!(table::Tables.RowTable, t::Transform; kwargs...)
+    return throw(MethodError(apply!, (table, t)))
 end
 
 """
@@ -133,6 +143,13 @@ function apply_append(table, t; kwargs...)
     T = Tables.materializer(table)
     result = Tables.columntable(apply(table, t; kwargs...))
     return T(merge(Tables.columntable(table), result))
+end
+
+# Prevents Vector{NamedTuple} from using the AbstractArray method above
+function apply_append(table::Tables.RowTable, t; kwargs...)
+    T = Tables.materializer(table)
+    result = apply(table, t; kwargs...)
+    return T(merge.(Tables.rowtable(table), result))
 end
 
 # These methods format data according to the cardinality of the Transform.

@@ -1,5 +1,4 @@
-# TODO: test on rowtable https://github.com/invenia/FeatureTransforms.jl/issues/64
-@testset "$TableType" for TableType in (columntable, DataFrame)
+@testset "$TableType" for TableType in (columntable, rowtable, DataFrame)
 
     table = TableType((a=[1, 2, 3], b=[4, 5, 6]))
 
@@ -91,17 +90,22 @@
     @testset "apply!" begin
         T = FakeOneToOneTransform()
 
-        _table = deepcopy(table)
-        FeatureTransforms.apply!(_table, T)
-        @test _table == TableType((a=ones(3), b=ones(3)))
+        # Cannot mutate NamedTuple elements
+        if isrowtable(table)
+            @test_throws MethodError FeatureTransforms.apply!(table, T)
+        else
+            _table = deepcopy(table)
+            FeatureTransforms.apply!(_table, T)
+            @test _table == TableType((a=ones(3), b=ones(3)))
 
-        _table = deepcopy(table)
-        FeatureTransforms.apply!(_table, T; cols=:a)
-        @test _table == TableType((a=[1, 1, 1], b=[4, 5, 6]))
+            _table = deepcopy(table)
+            FeatureTransforms.apply!(_table, T; cols=:a)
+            @test _table == TableType((a=[1, 1, 1], b=[4, 5, 6]))
 
-        _table = deepcopy(table)
-        @test_broken FeatureTransforms.apply!(_table, T; cols=:b, dims=[1, 2])
-        @test_broken _table == TableType((a=[1, 2, 3], b=[1, 1, 6]))
+            _table = deepcopy(table)
+            @test_broken FeatureTransforms.apply!(_table, T; cols=:b, dims=[1, 2])
+            @test_broken _table == TableType((a=[1, 2, 3], b=[1, 1, 6]))
+        end
     end
 
     @testset "apply_append" begin

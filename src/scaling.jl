@@ -75,6 +75,6 @@ function _apply(A::AbstractArray, scaling::MeanStdScaling; inverse=false, eps=1e
     # Avoid division by 0
     # If std is 0 then data was uniform, so the scaled value would end up ≈ 0
     # Therefore the particular `eps` value should not matter much.
-    σ_safe = maximum([scaling.σ, eps])
+    σ_safe = max(scaling.σ, eps)
     return (A .- scaling.μ) ./ σ_safe
 end

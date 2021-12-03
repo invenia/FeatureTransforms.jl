@@ -15,7 +15,9 @@ Power
 Periodic
 MeanStdScaling
 IdentityScaling
+InverseHyperbolicSine
 LinearCombination
+LogTransform
 OneHotEncoding
 ```
 

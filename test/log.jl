@@ -1,13 +1,13 @@
 @testset "log" begin
 
-    V1 = [1; 2; 3; 4; 0; 6]
-    V2 = [1; 2; -3; 4; 0; 6]
+    V1 = [1; -2; 3; 4; 0; -6]
+    V2 = -V1
     M = [1 1 0.5; 0.0 1.0 2.0]
 
     @testset "LogTransform" begin
  
-        logV1 = [log(2); log(3); log(4); log(5); log(1); log(7)]
-        logV2 = [log(2); log(3); -log(4); log(5); log(1); log(7)]
+        logV1 = [log(2); -log(3); log(4); log(5); log(1); -log(7)]
+        logV2 = -logV1
         logM = [log(2) log(2) log(1.5); log(1) log(2) log(3)]
 
         @testset "simple" for x in (V1, V2, M)

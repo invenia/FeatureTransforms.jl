@@ -8,6 +8,7 @@ using Tables
 export Transform, transform, transform!
 export HoD, LinearCombination, OneHotEncoding, Periodic, Power
 export AbstractScaling, IdentityScaling, MeanStdScaling
+export LogTransform, InverseHyperbolicSine
 
 include("utils.jl")
 include("traits.jl")
@@ -16,6 +17,7 @@ include("apply.jl")
 
 # Transform implementations
 include("linear_combination.jl")
+include("log.jl")
 include("one_hot_encoding.jl")
 include("periodic.jl")
 include("power.jl")

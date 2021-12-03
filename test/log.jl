@@ -1,14 +1,14 @@
 @testset "log" begin
 
-    V1 = [1; 2; 3; 4; 5; 6]
-    V2 = [1; 2; -3; 4; 5; 6]
+    V1 = [1; 2; 3; 4; 0; 6]
+    V2 = [1; 2; -3; 4; 0; 6]
     M = [1 1 0.5; 0.0 1.0 2.0]
 
     @testset "LogTransform" begin
  
-        logV1 = [0.693147; 1.098612; 1.386294; 1.609437; 1.791759; 1.945910]
-        logV2 = [0.693147; 1.098612; -1.386294; 1.609437; 1.791759; 1.945910]
-        logM = [0.693147  0.693147  0.405465; 0.0 0.693147 1.09861]
+        logV1 = [log(2); log(3); log(4); log(5); log(1); log(7)]
+        logV2 = [log(2); log(3); -log(4); log(5); log(1); log(7)]
+        logM = [log(2) log(2) log(1.5); log(1) log(2) log(3)]
 
         @testset "simple" for x in (V1, V2, M)
             transform = LogTransform()

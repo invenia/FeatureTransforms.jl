@@ -3,13 +3,13 @@
 
 Logarithmically transform the data through: sign(x) * log(|x| + 1).
 
-This allows positive domains elements to be transformed. 
+This allows transformations of all real numbers, not just positive ones.
 """
 struct LogTransform <: Transform end
 cardinality(::LogTransform) = OneToOne()
 
-_logtransform(x) = sign(x) * log(abs(x) + 1)
-_invlogtransform(x) = sign(x) * (exp(sign(x) * x) - 1)
+_logtransform(x) = sign(x) * log(abs(x) + one(x))
+_invlogtransform(x) = sign(x) * (exp(sign(x) * x) - one(x))
 
 function _apply(A::AbstractArray, transform::LogTransform; inverse=false, kwargs...)
     inverse && return _invlogtransform.(A)

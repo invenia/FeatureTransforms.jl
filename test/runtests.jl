@@ -17,6 +17,7 @@ using TimeZones
     Sys.WORD_SIZE == 64 && v"1.6" <= VERSION < v"1.7" && doctest(FeatureTransforms)
 
     include("linear_combination.jl")
+    include("log.jl")
     include("one_hot_encoding.jl")
     include("periodic.jl")
     include("power.jl")

@@ -31,4 +31,6 @@ using TimeZones
     include("types/matrix.jl")
     include("types/cube.jl")
     include("types/xarray.jl")
+
+    include("deprecated.jl")
 end

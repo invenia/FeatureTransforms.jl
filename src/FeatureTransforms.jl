@@ -28,6 +28,8 @@ include("temporal.jl")
 
 include("test_utils.jl")
 
+include("deprecated.jl")
+
 # TODO: remove in v0.4 https://github.com/invenia/FeatureTransforms.jl/issues/82
 Base.@deprecate_binding is_transformable TestUtils.is_transformable
 

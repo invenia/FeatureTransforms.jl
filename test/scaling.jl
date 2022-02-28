@@ -18,7 +18,7 @@
             @test cardinality(ss) == OneToOne()
             @test ss isa Transform
 
-            @test_throws MethodError StandardScaler(0.0, 1.0, false)
+            @test_throws MethodError StandardScaling(0.0, 1.0, false)
         end
 
         @testset "fit!" begin

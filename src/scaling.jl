@@ -24,7 +24,11 @@ Transforms the data according to
     x -> (x - μ) / σ
 
 where μ and σ are the mean and standard deviation of the training data.
-""" # TODO: expand the docstring
+
+!!! note
+    `fit!(scaling, data)` needs to be called before the transform can be `apply`ed.
+    By default _all the data_ is considered when `fit!`ing the mean and standard deviation.
+"""
 mutable struct StandardScaling <: AbstractScaling
     μ::Real
     σ::Real
@@ -33,6 +37,26 @@ mutable struct StandardScaling <: AbstractScaling
     StandardScaling() = return new(0.0, 1.0, false)
 end
 
+"""
+    fit!(scaling::StandardScaling, data::AbstractArray; dims=:, inds=:)
+    fit!(scaling::StandardScaling, table, [cols])
+
+Fit the [`StandardScaling`](@ref) transform to the given data. By default _all the data_
+is considered when computing the mean and standard deviation.
+This can be restricted to certain slices via the keyword arguments (see below).
+
+# `AbstractArray` keyword arguments
+* `dims=:`: the dimension along which to take the `inds` slices. Default uses all dims.
+* `inds=:`: the indices to use in computing the statistics. Default uses all indices.
+
+# `Table` keyword arguments
+* `cols`: the columns to use in computing the statistics. Default uses all columns.
+
+!!! note
+    If you want the `StandardScaling` to transform your data consistently you should use
+    the same `inds`, `dims`, or `cols` keywords when calling `apply`. Otherwise, `apply`
+    might rescale the wrong data or throw an error.
+"""
 function StatsBase.fit!(ss::StandardScaling, args...; kwargs...)
     ss.fitted === true && @warn("StandardScaling is being refit, Y?")
     μ, σ = _fit(ss, args...; kwargs...)

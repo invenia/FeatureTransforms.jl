@@ -3,17 +3,19 @@ module FeatureTransforms
 using Dates: TimeType, Period, Day, hour
 using NamedDims: dim
 using Statistics: mean, std
+using StatsBase
 using Tables
 
 export Transform, transform, transform!
 export HoD, LinearCombination, OneHotEncoding, Periodic, Power
-export AbstractScaling, IdentityScaling, MeanStdScaling
+export AbstractScaling, IdentityScaling, MeanStdScaling, StandardScaling
 export LogTransform, InverseHyperbolicSine
 
 include("utils.jl")
 include("traits.jl")
 include("transform.jl")
 include("apply.jl")
+include("fit.jl")
 
 # Transform implementations
 include("linear_combination.jl")

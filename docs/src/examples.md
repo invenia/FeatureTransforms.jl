@@ -5,7 +5,7 @@ In the following example, we will imagine we are training a model to predict the
 First we load some hourly weather data:
 
 ```jldoctest example
-julia> using DataFrames, Dates, FeatureTransforms
+julia> using DataFrames, Dates, FeatureTransforms, StatsBase
 
 julia> df = DataFrame(
             :time => DateTime(2018, 9, 10):Hour(1):DateTime(2018, 9, 10, 23),
@@ -77,13 +77,17 @@ julia> output_cols = [:temperature, :humidity];
 ```
 
 For many models it is helpful to normalize the training data.
-We can use `MeanStdScaling` for that purpose.
+We can use `StandardScaling` for that purpose.
 Note that we are mutating the data frame in-place using `apply!` one column at a time.
 
 ```jldoctest example
-julia> temp_scaling = MeanStdScaling(train_df; cols=:temperature);
+julia> temp_scaling = StandardScaling();
 
-julia> hum_scaling = MeanStdScaling(train_df; cols=:humidity);
+julia> fit!(temp_scaling, train_df; cols=:temperature);
+
+julia> hum_scaling = StandardScaling();
+
+julia> fit!(hum_scaling, train_df; cols=:humidity);
 
 julia> FeatureTransforms.apply!(train_df, temp_scaling; cols=:temperature);
 

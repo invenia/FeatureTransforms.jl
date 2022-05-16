@@ -7,6 +7,8 @@ First we load some hourly weather data:
 ```jldoctest example
 julia> using DataFrames, Dates, FeatureTransforms
 
+julia> using FeatureTransforms: fit!
+
 julia> df = DataFrame(
             :time => DateTime(2018, 9, 10):Hour(1):DateTime(2018, 9, 10, 23),
             :temperature => [10.6, 9.5, 8.9, 8.9, 8.4, 8.4, 7.7, 8.9, 11.7, 13.9, 16.2, 17.7, 18.9, 20.0, 21.2, 21.7, 21.7, 21.2, 20.0, 18.4, 16.7, 15.0, 13.9, 12.7],

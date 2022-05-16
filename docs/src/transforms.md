@@ -2,12 +2,14 @@
 
 A `Transform` defines a transformation of data for feature engineering purposes.
 Some examples are scaling, periodic functions, linear combination, and one-hot encoding.
+Transforms can be stateless, for example the power transform, or they can be stateful and fit to the data, such as the [`StandardScaling`](@ref).
 
 ```@meta
 DocTestSetup = quote
     using DataFrames
     using Dates
     using FeatureTransforms
+    using FeatureTransforms: fit!
 end
 ```
 
@@ -18,6 +20,15 @@ For example, the following defines a squaring operation (i.e. raise to the power
 
 ```julia-repl
 julia> p = Power(2);
+```
+
+A stateful transform, such as a [`StandardScaling`](@ref) should also be fit to the data before it is applied:
+```julia-repl
+julia> s = StandardScaling();
+
+julia> x = rand(5);
+
+julia> FeatureTransforms.fit(s, x);
 ```
 
 ## Methods to apply a transform
@@ -147,7 +158,7 @@ julia> M
 julia> normalize_row = StandardScaling();
 
 julia> fit!(normalize_row, M; dims=1, inds=[2])
-StandardScaling(3.0, 2.8284271247461903, true)
+StandardScaling(3.0, 2.8284271247461903)
 
 julia> normalize_row(M; dims=1, inds=[2])
 1×2 Matrix{Float64}:
@@ -156,7 +167,7 @@ julia> normalize_row(M; dims=1, inds=[2])
 julia> normalize_col = StandardScaling();
 
 julia> fit!(normalize_col, M; dims=2, inds=[2])
-StandardScaling(5.0, 1.0, true)
+StandardScaling(5.0, 1.0)
 
 julia> normalize_col(M; dims=2, inds=[2])
 3×1 Matrix{Float64}:

@@ -76,7 +76,7 @@ julia> test_df = feature_df[end-1:end, :];
 julia> output_cols = [:temperature, :humidity];
 ```
 
-For many models it is helpful to normalize the training data.
+For many models it is helpful to standardise the training data.
 We can use `StandardScaling` for that purpose.
 Note that we are mutating the data frame in-place using `apply!` one column at a time.
 
@@ -115,7 +115,7 @@ julia> FeatureTransforms.apply!(train_df, hum_scaling; cols=:humidity)
                                                         7 rows omitted
 ```
 
-We can use the same `scaling` transform to normalize the test data:
+We can use the same `scaling` transform to standardise the test data:
 
 ```jldoctest example
 julia> FeatureTransforms.apply!(test_df, temp_scaling; cols=:temperature);

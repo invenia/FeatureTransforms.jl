@@ -65,11 +65,8 @@ end
 compute_stats(x) = (mean(x), std(x))
 
 function _fit(::StandardScaling, data::AbstractArray; dims=:, inds=:)
-    return if dims isa Colon
-        compute_stats(data)
-    else
-        compute_stats(selectdim(data, dims, inds))
-    end
+    dims isa Colon && return compute_stats(data)
+    compute_stats(selectdim(data, dims, inds))
 end
 function _fit(::StandardScaling, table; cols=_get_cols(table))
     Tables.istable(table) || throw(MethodError(StandardScaling, table))

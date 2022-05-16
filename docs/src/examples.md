@@ -5,7 +5,7 @@ In the following example, we will imagine we are training a model to predict the
 First we load some hourly weather data:
 
 ```jldoctest example
-julia> using DataFrames, Dates, FeatureTransforms, StatsBase
+julia> using DataFrames, Dates, FeatureTransforms
 
 julia> df = DataFrame(
             :time => DateTime(2018, 9, 10):Hour(1):DateTime(2018, 9, 10, 23),

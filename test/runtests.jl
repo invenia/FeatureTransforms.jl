@@ -7,8 +7,8 @@ using Documenter: doctest
 using FeatureTransforms
 using FeatureTransforms: _periodic
 using FeatureTransforms: cardinality, OneToOne, OneToMany, ManyToOne, ManyToMany
+using FeatureTransforms: fit!
 using FeatureTransforms.TestUtils
-using StatsBase
 using Tables: columntable, isrowtable, istable, rowtable
 using Test
 using TimeZones

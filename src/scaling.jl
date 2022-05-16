@@ -57,8 +57,8 @@ This can be restricted to certain slices via the keyword arguments (see below).
     the same `inds`, `dims`, or `cols` keywords when calling `apply`. Otherwise, `apply`
     might rescale the wrong data or throw an error.
 """
-function StatsBase.fit!(ss::StandardScaling, args...; kwargs...)
-    ss.fitted === true && @warn("StandardScaling is being refit, Y?")
+function fit!(ss::StandardScaling, args...; kwargs...)
+    ss.fitted === true && @warn("StandardScaling is being refit, why?")
     μ, σ = _fit(ss, args...; kwargs...)
     ss.μ, ss.σ, ss.fitted = μ, σ, true
     return ss

@@ -8,7 +8,6 @@ DocTestSetup = quote
     using DataFrames
     using Dates
     using FeatureTransforms
-    using StatsBase
 end
 ```
 

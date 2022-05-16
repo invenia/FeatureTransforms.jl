@@ -64,6 +64,8 @@ function fit!(ss::StandardScaling, args...; kwargs...)
     return ss
 end
 
+compute_stats(x) = (mean(x), std(x))
+
 function _fit(::StandardScaling, data::AbstractArray; dims=:, inds=:)
     return if dims isa Colon
         compute_stats(data)

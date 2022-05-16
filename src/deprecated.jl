@@ -61,8 +61,6 @@ function _depwarn()
     return nothing
 end
 
-compute_stats(x) = (mean(x), std(x))
-
 function _apply(A::AbstractArray, scaling::MeanStdScaling; inverse=false, eps=1e-3, kwargs...)
     inverse && return scaling.μ .+ scaling.σ .* A
     # Avoid division by 0
@@ -71,3 +69,6 @@ function _apply(A::AbstractArray, scaling::MeanStdScaling; inverse=false, eps=1e
     σ_safe = max(scaling.σ, eps)
     return (A .- scaling.μ) ./ σ_safe
 end
+
+# TODO: remove in v0.4 https://github.com/invenia/FeatureTransforms.jl/issues/82
+Base.@deprecate_binding is_transformable TestUtils.is_transformable

@@ -51,6 +51,13 @@
                     @test scaling.σ == 0.5
                 end
             end
+
+            @testset "refit" begin
+                x = rand(10)
+                scaling = StandardScaling()
+                fit!(scaling, x)
+                @test_throws ErrorException fit!(scaling, x)
+            end
         end
 
         @testset "Re-apply" begin

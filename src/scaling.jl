@@ -57,7 +57,7 @@ This can be restricted to certain slices via the keyword arguments (see below).
     might rescale the wrong data or throw an error.
 """
 function fit!(ss::StandardScaling, args...; kwargs...)
-    ss.μ isa Nothing || @warn("StandardScaling is being refit, why?")
+    ss.μ isa Nothing || throw(ErrorException("StandardScaling should not be refit."))
     ss.μ, ss.σ = _fit(ss, args...; kwargs...)
     return ss
 end

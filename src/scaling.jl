@@ -30,11 +30,10 @@ where μ and σ are the mean and standard deviation of the training data.
     By default _all the data_ is considered when `fit!`ing the mean and standard deviation.
 """
 mutable struct StandardScaling <: AbstractScaling
-    μ::Real
-    σ::Real
-    fitted::Bool
+    μ::Union{Real, Nothing}
+    σ::Union{Real, Nothing}
 
-    StandardScaling() = return new(0.0, 1.0, false)
+    StandardScaling() = return new(nothing, nothing)
 end
 
 """
@@ -58,9 +57,8 @@ This can be restricted to certain slices via the keyword arguments (see below).
     might rescale the wrong data or throw an error.
 """
 function fit!(ss::StandardScaling, args...; kwargs...)
-    ss.fitted === true && @warn("StandardScaling is being refit, why?")
-    μ, σ = _fit(ss, args...; kwargs...)
-    ss.μ, ss.σ, ss.fitted = μ, σ, true
+    ss.μ isa Nothing || @warn("StandardScaling is being refit, why?")
+    ss.μ, ss.σ = _fit(ss, args...; kwargs...)
     return ss
 end
 
@@ -81,7 +79,7 @@ function _fit(::StandardScaling, table; cols=_get_cols(table))
 end
 
 function _apply(A::AbstractArray, ss::StandardScaling; inverse=false, eps=1e-3, kwargs...)
-    ss.fitted === true || throw(ErrorException("`fit!` StandardScaling before applying."))
+    ss.μ isa Real || throw(ErrorException("`fit!` StandardScaling before applying."))
     inverse && return ss.μ .+ ss.σ .* A
     # Avoid division by 0
     # If std is 0 then data was uniform, so the scaled value would end up ≈ 0

@@ -14,7 +14,7 @@
     @testset "StandardScaling" begin
         @testset "constructor" begin
             ss = StandardScaling()
-            @test (ss.μ, ss.σ, ss.fitted) == (0.0, 1.0, false)
+            @test (ss.μ, ss.σ) == (nothing, nothing)
             @test cardinality(ss) == OneToOne()
             @test ss isa Transform
 

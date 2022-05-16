@@ -36,26 +36,6 @@ mutable struct StandardScaling <: AbstractScaling
     StandardScaling() = return new(nothing, nothing)
 end
 
-"""
-    fit!(scaling::StandardScaling, data::AbstractArray; dims=:, inds=:)
-    fit!(scaling::StandardScaling, table, [cols])
-
-Fit the [`StandardScaling`](@ref) transform to the given data. By default _all the data_
-is considered when computing the mean and standard deviation.
-This can be restricted to certain slices via the keyword arguments (see below).
-
-# `AbstractArray` keyword arguments
-* `dims=:`: the dimension along which to take the `inds` slices. Default uses all dims.
-* `inds=:`: the indices to use in computing the statistics. Default uses all indices.
-
-# `Table` keyword arguments
-* `cols`: the columns to use in computing the statistics. Default uses all columns.
-
-!!! note
-    If you want the `StandardScaling` to transform your data consistently you should use
-    the same `inds`, `dims`, or `cols` keywords when calling `apply`. Otherwise, `apply`
-    might rescale the wrong data or throw an error.
-"""
 function fit!(ss::StandardScaling, args...; kwargs...)
     ss.μ isa Nothing || throw(ErrorException("StandardScaling should not be refit."))
     ss.μ, ss.σ = _fit(ss, args...; kwargs...)

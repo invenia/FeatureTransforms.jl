@@ -20,7 +20,7 @@ true
 struct Composite <: Transform
     transforms::Tuple{Vararg{Transform}}
 
-    function Composite(transforms::Vector{<:Transform})
+    function Composite(transforms::Tuple{Vararg{Transform}})
         all(==(OneToOne()), map(cardinality, transforms)) && return new(transforms)
         throw(ArgumentError("Only OneToOne() transforms are supported."))
     end

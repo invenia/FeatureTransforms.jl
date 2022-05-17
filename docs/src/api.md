@@ -13,7 +13,7 @@ AbstractScaling
 HoD
 Power
 Periodic
-MeanStdScaling
+StandardScaling
 IdentityScaling
 InverseHyperbolicSine
 LinearCombination
@@ -34,4 +34,9 @@ FeatureTransforms.apply_append
 FeatureTransforms.is_transformable
 FeatureTransforms.transform!
 FeatureTransforms.transform
+```
+
+## Deprecated funtionality
+```@docs
+MeanStdScaling
 ```

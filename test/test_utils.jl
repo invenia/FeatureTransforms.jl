@@ -16,6 +16,7 @@
         result = FeatureTransforms.apply(M, t)
         @test result == expected
         @test result isa KeyedArray
+        @test deepcopy(t) == fit!(t)
     end
 
     @testset "FakeOneToManyTransform" begin
@@ -34,6 +35,7 @@
         result = FeatureTransforms.apply(M, t)
         @test result == expected
         @test result isa KeyedArray
+        @test deepcopy(t) == fit!(t)
     end
 
     @testset "FakeManyToOneTransform" begin
@@ -52,6 +54,7 @@
         result = FeatureTransforms.apply(M, t; dims=:b)
         @test result == expected
         @test result isa KeyedArray
+        @test deepcopy(t) == fit!(t)
     end
 
     @testset "FakeManyToManyTransform" begin
@@ -70,6 +73,7 @@
         result = FeatureTransforms.apply(M, t)
         @test result == expected
         @test result isa KeyedArray
+        @test deepcopy(t) == fit!(t)
     end
 
 

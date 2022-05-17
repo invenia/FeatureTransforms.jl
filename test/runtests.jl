@@ -7,6 +7,7 @@ using Documenter: doctest
 using FeatureTransforms
 using FeatureTransforms: _periodic
 using FeatureTransforms: cardinality, OneToOne, OneToMany, ManyToOne, ManyToMany
+using FeatureTransforms: fit!
 using FeatureTransforms.TestUtils
 using Tables: columntable, isrowtable, istable, rowtable
 using Test
@@ -31,4 +32,6 @@ using TimeZones
     include("types/matrix.jl")
     include("types/cube.jl")
     include("types/xarray.jl")
+
+    include("deprecated.jl")
 end

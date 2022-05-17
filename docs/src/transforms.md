@@ -2,12 +2,14 @@
 
 A `Transform` defines a transformation of data for feature engineering purposes.
 Some examples are scaling, periodic functions, linear combination, and one-hot encoding.
+Transforms can be stateless, for example the power transform, or they can be stateful and fit to the data, such as the [`StandardScaling`](@ref).
 
 ```@meta
 DocTestSetup = quote
     using DataFrames
     using Dates
     using FeatureTransforms
+    using FeatureTransforms: fit!
 end
 ```
 
@@ -18,6 +20,15 @@ For example, the following defines a squaring operation (i.e. raise to the power
 
 ```julia-repl
 julia> p = Power(2);
+```
+
+A stateful transform, such as a [`StandardScaling`](@ref) should also be fit to the data before it is applied:
+```julia-repl
+julia> s = StandardScaling();
+
+julia> x = rand(5);
+
+julia> FeatureTransforms.fit!(s, x);
 ```
 
 ## Methods to apply a transform
@@ -90,8 +101,8 @@ A single `Transform` instance can be applied to different data types, with suppo
 !!! note
 
     Some `Transform` subtypes have restrictions on how they can be applied once constructed.
-    For instance, `MeanStdScaling` stores the mean and standard deviation of some data, potentially specified via some dimension and column names.
-    So `MeanStdScaling` should only be applied to the same data, and for the same dimension and subset of column names, as those used in construction.
+    For instance, `StandardScaling` stores the mean and standard deviation of some data, potentially specified via some dimension and column names.
+    So `StandardScaling` should only be applied to the same data, and for the same dimension and subset of column names, as those used in construction.
 
 ## Applying to `AbstractArray`
 
@@ -144,15 +155,19 @@ julia> M
  1.0  5.0
  3.0  6.0
 
-julia> normalize_row = MeanStdScaling(M; dims=1, inds=[2])
-MeanStdScaling(3.0, 2.8284271247461903)
+julia> normalize_row = StandardScaling();
+
+julia> fit!(normalize_row, M; dims=1, inds=[2])
+StandardScaling(3.0, 2.8284271247461903)
 
 julia> normalize_row(M; dims=1, inds=[2])
 1×2 Matrix{Float64}:
  -0.707107  0.707107
 
-julia> normalize_col = MeanStdScaling(M; dims=2, inds=[2])
-MeanStdScaling(5.0, 1.0)
+julia> normalize_col = StandardScaling();
+
+julia> fit!(normalize_col, M; dims=2, inds=[2])
+StandardScaling(5.0, 1.0)
 
 julia> normalize_col(M; dims=2, inds=[2])
 3×1 Matrix{Float64}:
@@ -172,7 +187,9 @@ If no `header` is given, the default from [`Tables.table`](https://tables.juliad
 ```jldoctest transforms
 julia> nt = (a = [2.0, 1.0, 3.0], b = [4.0, 5.0, 6.0]);
 
-julia> scaling = MeanStdScaling(nt);  # compute statistics using all data
+julia> scaling = StandardScaling();
+
+julia> fit!(scaling, nt);  # compute statistics using all data
 
 julia> FeatureTransforms.apply(nt, scaling; header=[:a_norm, :b_norm])
 (a_norm = [-0.8017837257372732, -1.3363062095621219, -0.2672612419124244], b_norm = [0.2672612419124244, 0.8017837257372732, 1.3363062095621219])
@@ -219,12 +236,14 @@ julia> feature_df = hcat(hod_df, lc_df)
 ## Transform-specific keyword arguments
 
 Some transforms have specific keyword arguments that can be passed to `apply`/`apply!`.
-For example, `MeanStdScaling` can invert the original scaling using the `inverse` argument:
+For example, `StandardScaling` can invert the original scaling using the `inverse` argument:
 
 ```jldoctest transforms
 julia> nt = (a = [2.0, 1.0, 3.0], b = [4.0, 5.0, 6.0]);
 
-julia> scaling = MeanStdScaling(nt);
+julia> scaling = StandardScaling();
+
+julia> fit!(scaling, nt);
 
 julia> FeatureTransforms.apply!(nt, scaling);
 

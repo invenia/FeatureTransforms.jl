@@ -18,7 +18,7 @@ true
 ```
 """
 struct Composite <: Transform
-    transforms::Vector{<:Transform}
+    transforms::Tuple{Vararg{Transform}}
 
     function Composite(transforms::Vector{<:Transform})
         all(==(OneToOne()), map(cardinality, transforms)) && return new(transforms)

@@ -55,4 +55,6 @@ Base.:(∘)(::OneToOne, ::ManyToOne) = ManyToOne()
 Base.:(∘)(::OneToMany, ::ManyToOne) = ManyToMany()
 Base.:(∘)(::ManyToOne, ::ManyToMany) = ManyToOne()
 Base.:(∘)(::ManyToMany, ::ManyToMany) = ManyToMany()
-Base.:(∘)(c2::Cardinality, c1::Cardinality) = throw(ArgumentError("$c2 ∘ $c1 is undefined."))
+function Base.:(∘)(c2::Cardinality, c1::Cardinality)
+    return throw(ArgumentError("Cannot compose cardinalities: $c2 ∘ $c1."))
+end

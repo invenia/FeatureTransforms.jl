@@ -28,7 +28,7 @@ julia> s = StandardScaling();
 
 julia> x = rand(5);
 
-julia> FeatureTransforms.fit(s, x);
+julia> FeatureTransforms.fit!(s, x);
 ```
 
 ## Methods to apply a transform

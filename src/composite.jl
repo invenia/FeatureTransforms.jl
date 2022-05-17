@@ -21,11 +21,8 @@ struct Composite <: Transform
     transforms::Vector{<:Transform}
 
     function Composite(transforms::Vector{<:Transform})
-        if all(==(OneToOne()), map(cardinality, transforms))
-            return new(transforms)
-        else
-            throw(ArgumentError("Only OneToOne() transforms are supported."))
-        end
+        all(==(OneToOne()), map(cardinality, transforms)) && return new(transforms)
+        throw(ArgumentError("Only OneToOne() transforms are supported."))
     end
 end
 
@@ -33,7 +30,7 @@ cardinality(c::Composite) = ∘(map(cardinality, c.transforms)...)
 
 function fit!(c::Composite, data; kwargs...)
     for t in c.transforms
-        fit!(t, data,; kwargs...)
+        fit!(t, data; kwargs...)
         data = t(data)
     end
     return c

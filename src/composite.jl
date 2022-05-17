@@ -46,9 +46,9 @@ end
 
 # creating composite transforms: reverse the order so that c.transforms[1] is the first
 # transforms that gets applied
-Base.:(∘)(f::Transform, g::Transform) = Composite([g, f])
-Base.:(∘)(c::Composite, t::Transform) = Composite([t, c.transforms...])
-Base.:(∘)(t::Transform, c::Composite) = Composite([c.transforms..., t])
-Base.:(∘)(c::Composite, c2::Composite) = Composite([c2.transforms..., c.transforms...])
+Base.:(∘)(f::Transform, g::Transform) = Composite((g, f))
+Base.:(∘)(c::Composite, t::Transform) = Composite((t, c.transforms...))
+Base.:(∘)(t::Transform, c::Composite) = Composite((c.transforms..., t))
+Base.:(∘)(c::Composite, c2::Composite) = Composite((c2.transforms..., c.transforms...))
 
 Base.:(==)(c::Composite, d::Composite) = return all(map(==, c.transforms, d.transforms))

@@ -3,13 +3,13 @@
         id = IdentityScaling()
         power = Power(3.0)
         logt = LogTransform()
-        @test id ∘ id == Composite([id, id])
-        @test id ∘ id ∘ power == Composite([power, id, id])
-        @test power ∘ id ∘ power == Composite([power, id, power])
+        @test id ∘ id == Composite((id, id))
+        @test id ∘ id ∘ power == Composite((power, id, id))
+        @test power ∘ id ∘ power == Composite((power, id, power))
 
-        @test power ∘ (id ∘ logt) == Composite([logt, id, power])
-        @test (power ∘ id) ∘ logt == Composite([logt, id, power])
-        @test (power ∘ id) ∘ (logt ∘ id) == Composite([id, logt, id, power])
+        @test power ∘ (id ∘ logt) == Composite((logt, id, power))
+        @test (power ∘ id) ∘ logt == Composite((logt, id, power))
+        @test (power ∘ id) ∘ (logt ∘ id) == Composite((id, logt, id, power))
 
         @test_throws ArgumentError id ∘ LinearCombination([1, 2, 3])
         @test_throws ArgumentError OneHotEncoding([1, 2]) ∘ id

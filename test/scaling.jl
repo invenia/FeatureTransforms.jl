@@ -9,6 +9,11 @@
             @test IdentityScaling(123) == IdentityScaling()
             @test IdentityScaling([1, 2, 3]) == IdentityScaling()
         end
+
+        @testset "Transform does nothing" begin
+            x = ones(2, 3, 4)
+            @test FeatureTransforms.apply(x, IdentityScaling()) == x
+        end
     end
 
     @testset "StandardScaling" begin

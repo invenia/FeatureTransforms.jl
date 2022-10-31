@@ -13,6 +13,15 @@
         @testset "Transform does nothing" begin
             x = ones(2, 3, 4)
             @test FeatureTransforms.apply(x, IdentityScaling()) == x
+            @test FeatureTransforms.apply(x, IdentityScaling()) isa Array
+
+            table = DataFrame((a=[1, 2, 3], b=[4, 5, 6]))
+            @test FeatureTransforms.apply(table, IdentityScaling(); header=(:a, :b)) == table
+            @test FeatureTransforms.apply(table, IdentityScaling(); header=(:a, :b)) isa DataFrame
+
+            na = NamedDimsArray([1 2 3; 4 5 6], foo=["a", "b"], bar=[:x, :y, :z])
+            @test FeatureTransforms.apply(na, IdentityScaling()) == na
+            @test FeatureTransforms.apply(na, IdentityScaling()) isa NamedDimsArray
         end
     end
 

@@ -9,6 +9,7 @@ export Transform, transform, transform!
 export HoD, LinearCombination, OneHotEncoding, Periodic, Power
 export AbstractScaling, IdentityScaling, MeanStdScaling, StandardScaling
 export LogTransform, InverseHyperbolicSine
+export Composite
 
 include("utils.jl")
 include("traits.jl")
@@ -24,6 +25,7 @@ include("periodic.jl")
 include("power.jl")
 include("scaling.jl")
 include("temporal.jl")
+include("composite.jl")
 
 include("test_utils.jl")
 

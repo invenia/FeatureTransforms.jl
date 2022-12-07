@@ -25,6 +25,7 @@ using TimeZones
     include("scaling.jl")
     include("temporal.jl")
     include("traits.jl")
+    include("composite.jl")
     include("test_utils.jl")
 
     include("types/tables.jl")
